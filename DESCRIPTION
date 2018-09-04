@@ -1,0 +1,12 @@
+Package: UGenePred
+Type: Package
+Title: Unknown Gene Prediction Tools (and various measures)
+Version: 0.0.1
+Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
+Maintainer: <cp100u@hotmail.com>
+Description: Collection of various measures and tools put inside a redistributable R package.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports:
+  

@@ -2,3 +2,7 @@
 .project
 .git
 .Rproj
+.Rproj.user
+.RData
+.Rhistory
+.Rbuildignore
