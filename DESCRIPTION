@@ -3,10 +3,26 @@ Type: Package
 Title: Unknown Gene Prediction Tools (and various measures)
 Version: 0.0.1
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
+Authors@R: c(
+    person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
+    person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
+    person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Maintainer: <cp100u@hotmail.com>
 Description: Collection of various measures and tools put inside a redistributable R package.
 License: MIT
 Encoding: UTF-8
 LazyData: true
 Imports:
-  
+  GO.db,
+  graph,
+  RBGL,
+  GOSemSim,
+  GOSim,
+  igraph,
+  Rgraphviz,
+  ontologySimilarity,
+  ontologyIndex,
+  plyr
+Suggests:
+  ppiPre
+Depends: R (>= 3.4.4)

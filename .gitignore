@@ -1,8 +1,9 @@
-.DS_Store
-.project
+*.log
+*.DS_Store
+*.project
 .git
-.Rproj
-.Rproj.user
-.RData
-.Rhistory
-.Rbuildignore
+*.Rproj
+*.Rproj.user
+*.RData
+*.Rhistory
+*.Rbuildignore
