@@ -9,7 +9,7 @@ Authors@R: c(
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Maintainer: <cp100u@hotmail.com>
 Description: Collection of various measures and tools put inside a redistributable R package.
-License: MIT
+License: Unkown for now.
 Encoding: UTF-8
 LazyData: true
 Imports:
@@ -24,5 +24,7 @@ Imports:
   ontologyIndex,
   plyr
 Suggests:
-  ppiPre
+  ppiPre,
+    testthat
 Depends: R (>= 3.4.4)
+RoxygenNote: 6.1.0
