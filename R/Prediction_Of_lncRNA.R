@@ -64,64 +64,92 @@ FisherMetric <- function(x, y) {
 	    x1 <- x**2 / (sum(x**2))
 	    y1 <- y**2 / (sum(y**2))
 	    t <- x1 * y1
-	    return(acos(sum(sqrt(t))))
+	    s <- acos(sum(sqrt(t)))
+	    return(s)
             }
 
 # convert an ext ID to a term ID
+# dat = EG_ (Extracted genes with correct gene ontology and narrowed selection of top genes.)
+# List_Top_Genes (List of top 250 genes)
 ExtID2TermID <- function(dat, List_Top_Genes){
+  # add 1 for each gene that is in list top genes.
 	return( ddply(dat, .(go_id), function(x) nrow(x[(x$ensembl_gene_id %in% List_Top_Genes),])))
 	}
 
 # function for enrichment
 # We use an enrichment analysis to identify enriched Gene Ontology terms in the co-expressed gene sets
 # These are then used to predict GO terms for the un-annotated gene.
+# DF_ is the scoring/metrix dataframe from novel/chosen gene compared to all other genes.
 Enrichment_func <- function(DF_, onto) {
-
-  print(DF_)
-  # List of top 250 genes
-	List_Top_Genes <- DF_[c(1:CutOff), 1]
-	# EG_ -> Extracted genes with correct gene ontology? I think...
+  # EG_ -> Extracted genes with correct gene ontology.
 	if(onto == "MF") EG_ <- EnsemblID2GOID[(EnsemblID2GOID[ ,3] == "molecular_function"), ]
 	if(onto == "BP") EG_ <- EnsemblID2GOID[(EnsemblID2GOID[ ,3] == "biological_process"), ]
 
   # now filter EG to also extract only genes that are present in protein coding expression data.
 	EG_ <- EG_[(EG_$ensembl_gene_id %in% EnsemblID_PC), ]
 
+	# List of top 250 genes (Ensembl ID)
+	List_Top_Genes <- DF_[c(1:CutOff), 1]
 	# List of gene ontologies given the Extracted genes that are in the top 250 genes of the score dataframe.
+	# for each ensemble ID there are more gene ontologies.
+	# ListOfGos, 250 genes but all unqiue corresponding GO IDs
 	ListOfGos <- EG_[(EG_$ensembl_gene_id %in% List_Top_Genes),2]
 	ListOfGos <- unique(ListOfGos)
 	ListOfGos <- ListOfGos[which(!is.na(ListOfGos))]
 
-  ### LEFT OFF HERE
-	TermID2ExtID <- ddply(EG_, .(go_id), function(x) Freq_Anno=nrow(x))
+  # Count the amount of genes with the same GO ID and quantify them.
+	TermID2ExtID <- ddply(EG_, .(go_id), function(x) nrow(x))
+	# set the column name to Freq Anno. (This was broken before.)
+	colnames(TermID2ExtID)[2] <- "Freq_Anno"
 
+	# Filter the quantification to only have the top genes where the go ID corresponds
 	qTermID2ExtID <- TermID2ExtID[(TermID2ExtID$go_id %in% ListOfGos), ]
 
+	# ---
 
+  # Quantify EG_ in List of top genes (grab every go_id for corresponding ensembl IDs)
 	qExtID2TermID <- ExtID2TermID(EG_, List_Top_Genes)
 
+  # After this, filter it for existing Gene ontologies within the top GOs
 	qExtID2TermID <- qExtID2TermID[(qExtID2TermID[ ,1] %in% ListOfGos),2]
 
+  # now -1 all values from ensemble quantification (there is always 1 present)
 	n1 = qExtID2TermID-1
+	# calculate the difference between goid and ensembl quantification
 	n2 = qTermID2ExtID[ ,2]-qExtID2TermID
+	# ?...
 	n3 = length(unique(EnsemblID_PC)) - CutOff - qTermID2ExtID[ ,2] + qExtID2TermID
+	# n4 = cutoff
 	n4 = rep(CutOff, nrow(qTermID2ExtID))
+	# now bind into 1 df.
 	qTermID2ExtID <- cbind(qTermID2ExtID, n1, n2, n3, n4)
+	# select quantification values to at least be 5 for goID quantification.
 	qTermID2ExtID <- qTermID2ExtID[(qTermID2ExtID[ ,2]>=5),]
 
+	# select last 4 columns (n1,n2,n3,n4)
 	args.df<-qTermID2ExtID[,c(3:6)]
+	# calculate p-values using the hypergeometrix distribution.
 	pvalues <- apply(args.df, 1, function(n)
 		     min(phyper(0:n[1],n[2], n[3], n[4], lower.tail=FALSE)))
 
+	# Grab corresponding GOIDs
 	GOID <- qTermID2ExtID[ ,1]
+	# Replicate the ontology for the amount of rows
 	Ontology <- rep(onto, nrow(args.df))
+	# format the pvalues to have 3 digits at max.
 	Pvalue <- format(pvalues, scientific=TRUE, digits = 3)
+	# Benjamini & Hochberg multiple comparisons adjustment
 	fdr  <- p.adjust(pvalues, method = "fdr", n = length(pvalues))
+	# grab description of each gene ontology term using Term() from the annotationDbi package.
 	TERM <- Term(qTermID2ExtID[ ,1])
+	# Create a dataframe containing all results in a neat format.
 	D_EN <- data.frame(GOID=GOID, Ontology=Ontology, Pvalue=Pvalue, FDR=format(fdr, scientific=TRUE, digits = 3),Term=TERM)
 
+	# Omit NA's
 	D_EN <- na.omit(D_EN)
+	# Order the result by FDR (the adjusted p values)
 	D_EN <- D_EN[(order(as.numeric(D_EN[ ,4]))), ]
+	# Only keep every P-value that is significant
 	D_EN <- D_EN[(as.numeric(D_EN[ ,4])<.05),]
 	return(D_EN)
         }
@@ -143,7 +171,7 @@ Prediction_Function<-function(GeneID, Onto, Method){
 
 	# Target expression data
   Target_EX <- ExpressionData[( ExpressionData[,1] == GeneID ),]
-	Tareget_EX <- as.numeric( Target_EX[1,c(4:l)] )
+	Tareget_EX <- as.numeric( Target_EX[1,c(4:l)] ) # spelling error tarEget.
 
 	# these functions find score between target expression of target gene vs the rest of the desired protein coding genes.
 	# this is correlation for spearman and pearson, but the fisher and sobolev metrics are metrics of their own.
@@ -166,19 +194,23 @@ Prediction_Function<-function(GeneID, Onto, Method){
 
 	# filter NA's
 	DFScore <- na.omit(DFScore)
-	# filter gene ID's. ?
+	# filter gene ID's (Select everything except the chosen gene).
 	DFScore <- DFScore[(DFScore[,1]!=GeneID),]
 
 	# run the enrichments analysis'.
 	if( Method == "Pearson" | Method == "Spearman")  EnrichResult<-Enrichment_func( DFScore[ rev(order(DFScore[,2])), ], Onto)
 	if( Method == "SobolevMetric" | Method == "FisherMetric") EnrichResult<-Enrichment_func( DFScore[order(DFScore[,2]), ], Onto)
 	if( Method == "combine" ) {
+	      # Run enrichment for each method
 				EnrichPearson  <- Enrichment_func( DFScore[ rev(order(DFScore$SCORE_Pearson)), ], Onto)
 				EnrichSpearman <- Enrichment_func( DFScore[ rev(order(DFScore$SCORE_Spearman)), ], Onto)
 				EnrichSobolev  <- Enrichment_func( DFScore[     order(DFScore$SCORE_Sobolev) , ], Onto)
 				EnrichFisher   <- Enrichment_func( DFScore[     order(DFScore$SCORE_Fisher) , ], Onto)
+				# bind all results by row
 				EnrichCombine  <- rbind( EnrichPearson, EnrichSpearman, EnrichSobolev,  EnrichFisher )
+				# and keep the rows with the lowest corrected P-values.
 				EnrichCombine  <- ddply(EnrichCombine, .(GOID), function(x) x[which.min(x$FDR),])
+				# Order p-values on lowest > bigest
 				EnrichResult   <- EnrichCombine[ order(as.numeric(EnrichCombine$FDR)), ]
 				}
 	if(nrow(EnrichResult)>0){
