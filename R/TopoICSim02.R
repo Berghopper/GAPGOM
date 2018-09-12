@@ -129,6 +129,7 @@ GetOntology <-  function(gene, organism, ontology, dropCodes) {
         )
     # check for your specific gene in the database
     allGO <- gomap[[gene]]
+    # if the result is 0 or NA, return NA (no results.)
     if (is.null(allGO)) {
         return (NA)
         }
@@ -141,11 +142,12 @@ GetOntology <-  function(gene, organism, ontology, dropCodes) {
         drop <- evidence %in% dropCodes
         allGO <- allGO[!drop]
         }
-    # grab category
+    # grab ontology category
     category <- sapply(allGO, function(x) x$Ontology)
-    #
+    # sort on ontology to be the user selected one
     allGO <- allGO[category %in% ontology]
 
+    # again return NA, if no results.
     if(length(allGO)==0) return (NA)
     return (unlist(unique(names(allGO)))) #return the GOIDs
 }
@@ -178,7 +180,7 @@ ComAnc<-function(GOID1,GOID2,ont, organism){
 
     ancestor1 <- unlist(getAncestors(ont)[[GOID1]])
     ancestor2 <- unlist(getAncestors(ont)[[GOID2]])
-    # unlik ppipre the two GOIDs are always intersected (always the assumption that GOIDs will be different?)
+    # unlike ppipre, the two GOIDs are always intersected (always the assumption that GOIDs will be different?)
     commonAncestor <- intersect(ancestor1, ancestor2)
     return(commonAncestor)
 }
@@ -236,7 +238,7 @@ Longest_Path<-function(g, lca, root){
   		# Set node's path from root to path of max of added distances
   		mwdn <- as.vector(V(g)[nei(node,mode="in")])[match(mwd,wd)]
   		V(g)[node]$rpath <- list(c(unlist(V(g)[mwdn]$rpath), node))
-		L<-length(V(g)[node]$rpath[[1]])-1
+	  	L<-length(V(g)[node]$rpath[[1]])-1
 	}
 	# Longest path length is the largest distance from root
 	lpl <- max(V(g)$rdist, na.rm=TRUE)
@@ -256,43 +258,42 @@ TopoICSim_ti_tj <- function(GOID1, GOID2, ont, organism, WDG, GA, root){
   COMANC<-ComAnc(GOID1, GOID2, ont, organism)
   if (length(COMANC)!=0 && !is.na(COMANC)){
     for (x in COMANC){
-        # To identify all disjunctive common ancestors
-        ImmadiateChildren_x <- switch(ont, MF = GOMFCHILDREN[[x]],
-                                           BP = GOBPCHILDREN[[x]],
-                                           CC = GOCCCHILDREN[[x]])
-	if(x!="all"  &
-           x!=root   &
-           !is.na(x) &
-           length(intersect(ImmadiateChildren_x, COMANC))==0){
+      # To identify all disjunctive common ancestors
+      ImmadiateChildren_x <- switch(ont, MF = GOMFCHILDREN[[x]],
+                                         BP = GOBPCHILDREN[[x]],
+                                         CC = GOCCCHILDREN[[x]])
+    	if(x!="all"  &
+         x!=root   &
+         !is.na(x) &
+         length(intersect(ImmadiateChildren_x, COMANC))==0)
+    	{
+        #Subgraph from two GO terms GOID1 and GOID2
+        sg1 <- subGraph(c(get(GOID1, GA), GOID1), WDG)
+        sg2 <- subGraph(c(get(GOID2, GA), GOID2), WDG)
+        # Subgraph from a disjunctive common ancestor to root
+        sglca <- subGraph(c(get(x, GA), x), WDG)
+        sglca <- WSG(sglca)
+        wLP_x_root <- Longest_Path(sglca, x, root)
+        sg1 <- WSG(sg1)
+        sg1 <- igraph.to.graphNEL(sg1)
+        sp1 <- sp.between(sg1, GOID1, x)
+        ic_sp1 <- sp1[[1]]$length
+        length_sp1 <- length(sp1[[1]]$path_detail)
 
-           #Subgraph from two GO terms GOID1 and GOID2
-            sg1 <- subGraph(c(get(GOID1, GA), GOID1), WDG)
-            sg2 <- subGraph(c(get(GOID2, GA), GOID2), WDG)
-            # Subgraph from a disjunctive common ancestor to root
-	    sglca <- subGraph(c(get(x, GA), x), WDG)
-            sglca <- WSG(sglca)
-            wLP_x_root <- Longest_Path(sglca, x, root)
+        sg2 <- WSG(sg2)
+        sg2 <- igraph.to.graphNEL(sg2)
+        sp2 <- sp.between(sg2, GOID2, x)
+        ic_sp2 <- sp2[[1]]$length
+        length_sp2 <- length(sp2[[1]]$path_detail)
 
-	    sg1 <- WSG(sg1)
-	    sg1 <- igraph.to.graphNEL(sg1)
-	    sp1 <- sp.between(sg1, GOID1, x)
-	    ic_sp1 <- sp1[[1]]$length
-	    length_sp1 <- length(sp1[[1]]$path_detail)
+        IC_GOID_1 <- IC[GOID1][[1]]
+        IC_GOID_2 <- IC[GOID2][[1]]
+        if (!is.na(IC_GOID_1) & IC_GOID_1!=0) ic_sp1 <- ic_sp1+(1/(2*IC_GOID_1))
+        if (!is.na(IC_GOID_2) & IC_GOID_2!=0) ic_sp2 <- ic_sp2+(1/(2*IC_GOID_2))
 
-	    sg2 <- WSG(sg2)
-	    sg2 <- igraph.to.graphNEL(sg2)
-	    sp2 <- sp.between(sg2, GOID2, x)
-	    ic_sp2 <- sp2[[1]]$length
-	    length_sp2 <- length(sp2[[1]]$path_detail)
-
-            IC_GOID_1 <- IC[GOID1][[1]]
-	    IC_GOID_2 <- IC[GOID2][[1]]
-            if (!is.na(IC_GOID_1) & IC_GOID_1!=0) ic_sp1 <- ic_sp1+(1/(2*IC_GOID_1))
-            if (!is.na(IC_GOID_2) & IC_GOID_2!=0) ic_sp2 <- ic_sp2+(1/(2*IC_GOID_2))
-
-	    wSP_ti_tj_x <- (ic_sp1+ic_sp2)*(length_sp1+length_sp2-2)
-	    D_ti_tj_x <- c(D_ti_tj_x, wSP_ti_tj_x/wLP_x_root)
-	    }
+        wSP_ti_tj_x <- (ic_sp1+ic_sp2)*(length_sp1+length_sp2-2)
+        D_ti_tj_x <- c(D_ti_tj_x, wSP_ti_tj_x/wLP_x_root)
+      }
     }
   }
   if(!is.null(D_ti_tj_x)) {
@@ -303,6 +304,7 @@ TopoICSim_ti_tj <- function(GOID1, GOID2, ont, organism, WDG, GA, root){
 	}
   else {
 	All_info_GO_Pairs <- rbind(All_info_GO_Pairs, c(GOID1, GOID2, 0))
+	# assign dataframe to global variable namespace
 	assign("All_info_GO_Pairs", All_info_GO_Pairs,.GlobalEnv)
 	return(0)
 	}
@@ -330,7 +332,7 @@ TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
 
   root <- switch(ont, MF = "GO:0003674",
                       BP = "GO:0008150",
-                      CC = "GO:0005575")
+                      CC = "GO:0005575 ")
   WDG = ftM2graphNEL(as.matrix(xx[, 1:2]))
 
   go1 <- GetOntology(gene1, organism= organism, ontology= ont, dropCodes=drop)
@@ -358,7 +360,8 @@ TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
     }
   }
   if (!sum(!is.na(scores))) return(list(geneSim=NA, GO1=go1, GO2=go2))
-  scores<-sqrt(scores)
+  scores<-sqrt(scores) # Some scores seem unnecesary to calculate? Like, when they have the same GOID the similarity will always be 1.
+  #View(scores)
   sim <- max(sum(sapply(1:m, function(x) {max(scores[x,], na.rm=TRUE)}))/m ,
              sum(sapply(1:n, function(x) {max(scores[,x], na.rm=TRUE)}))/n)
   sim <- round(sim, digits=3)
@@ -388,7 +391,7 @@ cat(rep("\n", 3))
 cat("############################     EXAMPLE 2     ############################")
 cat("\n")
 list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915")
-# Function to calculate IntraSet similarity
+# Function to calculate IntraSet similarity, Interset not implemented however?
 IntraSetSim <- function(List_Genes){
 	IntraSim <- 0
         l <- length(List_Genes)
@@ -400,7 +403,7 @@ IntraSetSim <- function(List_Genes){
 			if(!is.na(TopoICSim_)) IntraSim <- IntraSim + TopoICSim_
 			}
 		}
-	return(IntraSim /(l*l))
+	return(IntraSim /(l^2))
 }
 
 cat("IntraSetSim(CL0099.10)  =  ", IntraSetSim(list1), rep("\n", 6))
