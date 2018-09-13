@@ -8,23 +8,20 @@ Authors@R: c(
     person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Maintainer: <cp100u@hotmail.com>
-Description: Collection of various measures and tools put inside a redistributable R package.
+Description: Collection of various measures and tools for lncRNA annotation prediction put inside a redistributable R package.
 License: Unkown for now.
 Encoding: UTF-8
 LazyData: true
 Imports:
-  GO.db,
+  plyr,
   graph,
   RBGL,
-  GOSemSim,
-  GOSim,
   igraph,
   Rgraphviz,
-  ontologySimilarity,
-  ontologyIndex,
-  plyr
+  GO.db,
+  GOSim,
+  GOSemSim
 Suggests:
-  ppiPre,
-    testthat
+  testthat
 Depends: R (>= 3.4.4)
 RoxygenNote: 6.1.0

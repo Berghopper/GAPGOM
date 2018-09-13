@@ -1,7 +1,7 @@
 
 # R code to measure similarity two genes based on TopoICSim algorithm.
 # Ehsani R, Drablos F. TopoICSim: A new semantic similarity measure based on gene ontology. In revision.
-# Written by Rezvan Ehsani, rezvan.ehsani@ntnu.no.
+# Written by Rezvan Ehsani, <rezvanehsani74@gmail.com>.
 
 ###################
 #rm(list = ls())
@@ -12,165 +12,39 @@ library("graph")
 library("RBGL")
 library("igraph")
 library("Rgraphviz")
-library("ontologySimilarity")
-library("ontologyIndex")
+library("GOSemSim")
 
 options(warn=-1)
 options(stringsAsFactors = FALSE)
 
-# Re-used from ppiPre package
-# (loads in correct package namespace for species database)
-CheckAnnotationPackage <- function(species){
-  if (species == "human")
-    if(!requireNamespace("org.Hs.eg.db"))
-      stop("The package org.Hs.eg.db is needed.")
-  if (species == "yeast")
-    if(!requireNamespace("org.Sc.sgd.db"))
-      stop("The package org.Sc.sgd.db is needed.")
-  if (species == "fly")
-    if(!requireNamespace("org.Dm.eg.db"))
-      stop("The package org.Dm.eg.db is needed.")
-  if (species == "mouse")
-    if(!requireNamespace("org.Mm.eg.db"))
-      stop("The package org.Mm.eg.db is needed.")
-  if (species == "rat")
-    if(!requireNamespace("org.Rn.eg.db"))
-      stop("The package org.Rn.eg.db is needed.")
-  if (species == "zebrafish")
-    if(!requireNamespace("org.Dr.eg.db"))
-      stop("The package org.Dr.eg.db is needed.")
-  if (species == "worm")
-    if(!requireNamespace("org.Ce.eg.db"))
-      stop("The package org.Ce.eg.db is needed.")
-  if (species == "arabidopsis")
-    if(!requireNamespace("org.At.tair.db"))
-      stop("The package org.At.tair.db is needed.")
-  if (species == "ecolik12")
-    if(!requireNamespace("org.EcK12.eg.db"))
-      stop("The package org.EcK12.eg.db is needed.")
-  if (species == "bovine")
-    if(!requireNamespace("org.Bt.eg.db"))
-      stop("The package org.Bt.eg.db is needed.")
-  if (species == "canine")
-    if(!requireNamespace("org.Cf.eg.db"))
-      stop("The package org.Cf.eg.db is needed.")
-  if (species == "anopheles")
-    if(!requireNamespace("org.Ag.eg.db"))
-      stop("The package org.Ag.eg.db is needed.")
-  if (species == "ecsakai")
-    if(!requireNamespace("org.EcSakai.eg.db"))
-      stop("The package org.EcSakai.eg.db is needed.")
-  if (species == "chicken")
-    if(!requireNamespace("org.Gg.eg.db"))
-      stop("The package org.Gg.eg.db is needed.")
-  if (species == "chimp")
-    if(!requireNamespace("org.Pt.eg.db"))
-      stop("The package org.Pt.eg.db is needed.")
-  if (species == "malaria")
-    if(!requireNamespace("org.Pf.plasmo.db"))
-      stop("The package org.Pf.plasmo.db is needed.")
-  if (species == "rhesus")
-    if(!requireNamespace("org.Mmu.eg.db"))
-      stop("The package org.Mmu.eg.db is needed.")
-  if (species == "pig")
-    if(!requireNamespace("org.Ss.eg.db"))
-      stop("The package org.Ss.eg.db is needed.")
-  if (species == "xenopus")
-    if(!requireNamespace("org.Xl.eg.db"))
-      stop("The package org.Xl.eg.db is needed.")
-}
-
-# Re-used from ppiPre package
-# Get gene ontology measures given a certain ontology of an organism.
-GetOntology <-  function(gene, organism, ontology, dropCodes) {
+# Set GO data
+Set_GO_Data <-  function(organism, ontology) {
     species <- switch(organism,
-                    human = "Hs",
-                    fly = "Dm",
-                    mouse = "Mm",
-                    rat = "Rn",
-                    yeast = "Sc",
-                    zebrafish = "Dr",
-                    worm = "Ce",
-                    arabidopsis = "At",
-                    ecolik12 = "EcK12",
-                    bovine	= "Bt",
-                    canine	= "Cf",
-                    anopheles	=	"Ag",
-                    ecsakai	=	"EcSakai",
-                    chicken	=	"Gg",
-                    chimp	=	"Pt",
-                    malaria	=	"Pf",
-                    rhesus	=	"Mmu",
-                    pig	= "Ss",
-                    xenopus	=	"Xl"
+                    human       = "org.Hs.eg.db",
+                    fly         = "org.Dm.eg.db",
+                    mouse       = "org.Mm.eg.db",
+                    rat         = "org.Rn.eg.db",
+                    yeast       = "org.Sc.sgd.db",
+                    zebrafish   = "org.Dr.eg.db",
+                    worm        = "org.Ce.eg.db",
+                    arabidopsis = "org.At.tair.db",
+                    ecolik12    = "org.EcK12.eg.db",
+                    bovine	= "org.Bt.eg.db",
+                    canine	= "org.Cf.eg.db",
+                    anopheles	= "org.Ag.eg.db",
+                    ecsakai	= "org.EcSakai.eg.db",
+                    chicken	= "org.Gg.eg.db",
+                    chimp	= "org.Pt.eg.db",
+                    malaria	= "org.Pf.plasmo.db",
+                    rhesus	= "org.Mmu.eg.db",
+                    pig	        = "org.Ss.eg.db",
+                    xenopus	= "org.Xl.eg.db"
     )
+    godata(species, ont=ontology, computeIC=TRUE)
+    }
 
-    # grab correct gene ontology map
-    gomap <- switch(organism,
-                    human = org.Hs.eg.db::org.Hs.egGO,
-                    fly = org.Dm.eg.db::org.Dm.egGO,
-                    mouse = org.Mm.eg.db::org.Mm.egGO,
-                    rat = org.Rn.eg.db::org.Rn.egGO,
-                    yeast = org.Sc.sgd.db::org.Sc.sgdGO,
-                    zebrafish = org.Dr.eg.db::org.Dr.egGO,
-                    worm = org.Ce.eg.db::org.Ce.egGO,
-                    arabidopsis = org.At.tair.db::org.At.tairGO,
-                    ecoli = org.EcK12.eg.db::org.EcK12.egGO,
-                    bovine	= org.Bt.eg.db::org.Bt.egGO,
-                    canine	= org.Cf.eg.db::org.Cf.egGO,
-                    anopheles	=	org.Ag.eg.db::org.Ag.egGO,
-                    ecsakai	=	org.EcSakai.eg.db::org.EcSakai.egGO,
-                    chicken	=	org.Gg.eg.db::org.Gg.egGO,
-                    chimp	=	org.Pt.eg.db::org.Pt.egGO,
-                    malaria	=	org.Pf.plasmo.db::org.Pf.plasmoGO,
-                    rhesus	=	org.Mmu.eg.db::org.Mmu.egGO,
-                    pig	= org.Ss.eg.db::org.Ss.egGO,
-                    xenopus	=	org.Xl.eg.db::org.Xl.egGO
-        )
-    # check for your specific gene in the database
-    allGO <- gomap[[gene]]
-    # if the result is 0 or NA, return NA (no results.)
-    if (is.null(allGO)) {
-        return (NA)
-        }
-    if (sum(!is.na(allGO)) == 0) {
-        return (NA)
-        }
-    if(!is.null(dropCodes)) {
-        # if dropcodes exist, drop them.
-        evidence <- sapply(allGO, function(x) x$Evidence)
-        drop <- evidence %in% dropCodes
-        allGO <- allGO[!drop]
-        }
-    # grab ontology category
-    category <- sapply(allGO, function(x) x$Ontology)
-    # sort on ontology to be the user selected one
-    allGO <- allGO[category %in% ontology]
-
-    # again return NA, if no results.
-    if(length(allGO)==0) return (NA)
-    return (unlist(unique(names(allGO)))) #return the GOIDs
-}
-
-# get gene ontology structure dataset.
-data(go)
-# calculate the information content for each go
-IC <- descendants_IC(go)
-
-# Re-used from ppiPre package (and gosim)
-# gets all ancestors
-getAncestors <- function(ont) {
-    Ancestors <- switch(ont,
-                        MF = "GOMFANCESTOR",
-                        BP = "GOBPANCESTOR",
-                        CC = "GOCCANCESTOR"
-                        )
-
-    return (eval(parse(text=Ancestors)))
-}
-
-# Re-used from ppiPre package (GetLatestCommonAncestor)
-ComAnc<-function(GOID1,GOID2,ont, organism){
+# Common Ancestor for two GOIDs
+ComAnc<-function(GOID1,GOID2,ont, organism, GA){
     rootCount <- max(IC[IC != Inf])
     IC["all"] = 0
     p1 <- IC[GOID1]/rootCount
@@ -178,9 +52,10 @@ ComAnc<-function(GOID1,GOID2,ont, organism){
     if(is.na(p1) || is.na(p2)) return (NA)
     if (p1 == 0 || p2 == 0) return (NA)
 
-    ancestor1 <- unlist(getAncestors(ont)[[GOID1]])
-    ancestor2 <- unlist(getAncestors(ont)[[GOID2]])
+    ancestor1 <- unlist(GA[[GOID1]])
+    ancestor2 <- unlist(GA[[GOID2]])
     # unlike ppipre, the two GOIDs are always intersected (always the assumption that GOIDs will be different?)
+	  ## YES, BECAUSE THE SAME GOIDs HAVE PERFECT SIMILARITY 1 BASED ON "TopoICSim_g1g2" FUNCTION.
     commonAncestor <- intersect(ancestor1, ancestor2)
     return(commonAncestor)
 }
@@ -255,7 +130,7 @@ All_info_GO_Pairs <- data.frame(GO_1=0, GO_2=0, S_1=0)
 TopoICSim_ti_tj <- function(GOID1, GOID2, ont, organism, WDG, GA, root){
 
   D_ti_tj_x <- c()
-  COMANC<-ComAnc(GOID1, GOID2, ont, organism)
+  COMANC<-ComAnc(GOID1, GOID2, ont, organism, GA)
   if (length(COMANC)!=0 && !is.na(COMANC)){
     for (x in COMANC){
       # To identify all disjunctive common ancestors
@@ -311,7 +186,7 @@ TopoICSim_ti_tj <- function(GOID1, GOID2, ont, organism, WDG, GA, root){
 }
 
 # TopoICSim algorithm to calculate similarity between two genes or gene products.
-TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
+TopoICSim_g1g2 <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
   # set ontology and organism
   ont <- match.arg(ont, c("MF", "BP", "CC"))
   organism <- match.arg(organism, c("human", "fly", "mouse",
@@ -335,8 +210,10 @@ TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
                       CC = "GO:0005575 ")
   WDG = ftM2graphNEL(as.matrix(xx[, 1:2]))
 
-  go1 <- GetOntology(gene1, organism= organism, ontology= ont, dropCodes=drop)
-  go2 <- GetOntology(gene2, organism= organism, ontology= ont, dropCodes=drop)
+  goAnno <- GO_Data@geneAnno
+  goAnno <- goAnno[!goAnno$EVIDENCE %in% drop,]
+  go1 <- as.character(unique(goAnno[goAnno[,1] == gene1, "GO"]))
+  go2 <- as.character(unique(goAnno[goAnno[,1] == gene2, "GO"]))
 
   if (sum(!is.na(go1)) == 0 || sum(!is.na(go2)) == 0) {
     return (list(geneSim=NA, GO1=go1, GO2=go2))
@@ -346,6 +223,7 @@ TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
   scores <- matrix(nrow=m, ncol=n)
   rownames(scores) <- go1
   colnames(scores) <- go2
+  if(gene1==gene2) return(1)
   for( i in 1:m ) {
     for (j in 1:n) {
       if (go1[i]==go2[j]) scores[i,j] <- 1
@@ -361,52 +239,65 @@ TopoICSim <- function(gene1, gene2, ont="MF", organism="yeast", drop=NULL){
   }
   if (!sum(!is.na(scores))) return(list(geneSim=NA, GO1=go1, GO2=go2))
   scores<-sqrt(scores) # Some scores seem unnecesary to calculate? Like, when they have the same GOID the similarity will always be 1.
+			## YES, I ADDED A NEW LINE FOR THIS CASE ABOVE  //if(gene1==gene2) return(1)//
   #View(scores)
   sim <- max(sum(sapply(1:m, function(x) {max(scores[x,], na.rm=TRUE)}))/m ,
              sum(sapply(1:n, function(x) {max(scores[,x], na.rm=TRUE)}))/n)
   sim <- round(sim, digits=3)
-  return (list(geneSim=sim, GO1=go1, GO2=go2))
+  return(sim)
+  #return (list(geneSim=sim, GO1=go1, GO2=go2))
 }
+
+
+# Calculate TopoICSim between two gene lists
+TopoICSim <- function(GeneList1, GeneList2, ont="MF", organism="human", drop=NULL){
+        GO_Data <- Set_GO_Data(organism=organism, ontology=ont)
+        IC <- GO_Data@IC
+        assign("GO_Data", GO_Data,.GlobalEnv)
+        assign("IC", IC,.GlobalEnv)
+        r1 <- length(GeneList1)
+        r2 <- length(GeneList2)
+        ScoreMatrix <- matrix(nrow=r1, ncol=r2)
+        rownames(ScoreMatrix) <- GeneList1
+        colnames(ScoreMatrix) <- GeneList2
+        for(i in 1:r1){
+            for(j in 1:r2){
+                ScoreMatrix[i,j] <- TopoICSim_g1g2(GeneList1[i], GeneList2[j], ont, organism, drop)
+                }
+            }
+        return(ScoreMatrix)
+        }
+
 
 cat(rep("\n", 6))
 
 # EXAMPLES
 
 # Example 1
-# Calculate TopoICSim between two human genes "219" and "8659"
-start.time <- Sys.time()
-
+# Calculate TopoICSim between two human genes "219" and "501"
 TopoICSimValue<-TopoICSim("218", "501", ont="MF", organism="human", drop=NULL)
-cat("############################     EXAMPLE 1     ############################")
+print("############################     EXAMPLE 1     ############################")
 cat("\n")
 cat("\n")
-cat("TopoICSim between two human genes 218 and 501 is: ")
+print("TopoICSim between two human genes 218 and 501 is: ")
 cat("\n")
 print(TopoICSimValue)
 
 cat(rep("\n", 3))
 
+
 # Example 2
 # Calculate IntraSet similarity for first Pfam clan gene set
-cat("############################     EXAMPLE 2     ############################")
+print("############################     EXAMPLE 2     ############################")
 cat("\n")
 list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915")
 # Function to calculate IntraSet similarity, Interset not implemented however?
-IntraSetSim <- function(List_Genes){
-	IntraSim <- 0
-        l <- length(List_Genes)
-	for(i in 1:l){
-		Gene1 <- toString(List_Genes[i])
-		for(j in 1:l){
-			Gene2 <- toString(List_Genes[j])
-			TopoICSim_<-TopoICSim(Gene1, Gene2, ont="MF", organism="human", drop=NULL)[[1]]
-			if(!is.na(TopoICSim_)) IntraSim <- IntraSim + TopoICSim_
-			}
-		}
-	return(IntraSim /(l^2))
-}
+## IN FACT HERE WE JUST PRESENTED TWO SIMPLE EXAMPLES THAT USER SEE HOW USE OF THE TopoICSim. WE WERE NOT GOING TO REPRODUCE ALL CALCULATIONS IN THE PAPER HERE.
+IntraSetSim <- TopoICSim(list1, list1, ont="MF", organism="human", drop=NULL)
+IntraSetSim
+cat("IntraSetSim(CL0099.10)  =  ", mean(IntraSetSim))
 
-cat("IntraSetSim(CL0099.10)  =  ", IntraSetSim(list1), rep("\n", 6))
+cat(rep("\n", 6))
 
 end.time <- Sys.time()
 time.taken <- end.time - start.time

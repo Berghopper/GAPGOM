@@ -29,7 +29,6 @@
 
 # load libs
 library(plyr)
-library(GOSemSim)
 library(GOSim)
 
 # set stringAsFactors to false so
@@ -113,14 +112,23 @@ Enrichment_func <- function(DF_, onto) {
   # After this, filter it for existing Gene ontologies within the top GOs
 	qExtID2TermID <- qExtID2TermID[(qExtID2TermID[ ,1] %in% ListOfGos),2]
 
-  # now -1 all values from ensemble quantification (there is always 1 present)
-	n1 = qExtID2TermID-1
-	# calculate the difference between goid and ensembl quantification
+
+	#			  GeneList | Genome
+	#		          ------------------
+	#	In Anno group 	  |   n1   |   n2  |
+	#	------------------------------------
+	#	Not in Anno group |   n3   |   n4  |
+	#	------------------------------------
+	#	Where, GeneList is the number of protein-coding genes that co-expressed with lncRNA, Genome is the number of all protein coding-genes,
+	#	In Anno group is the number of protein-coding genes that were both co-expressed with lncRNA and annotated in the Trem, and Not in Anno group
+	#	is the number of protein-coding genes that were co-expressed with lncRNA but were not annotated in the Trem
+
+	n1 = qExtID2TermID
 	n2 = qTermID2ExtID[ ,2]-qExtID2TermID
-	# ?...
 	n3 = length(unique(EnsemblID_PC)) - CutOff - qTermID2ExtID[ ,2] + qExtID2TermID
-	# n4 = cutoff
 	n4 = rep(CutOff, nrow(qTermID2ExtID))
+
+
 	# now bind into 1 df.
 	qTermID2ExtID <- cbind(qTermID2ExtID, n1, n2, n3, n4)
 	# select quantification values to at least be 5 for goID quantification.
@@ -130,7 +138,7 @@ Enrichment_func <- function(DF_, onto) {
 	args.df<-qTermID2ExtID[,c(3:6)]
 	# calculate p-values using the hypergeometrix distribution.
 	pvalues <- apply(args.df, 1, function(n)
-		     min(phyper(0:n[1],n[2], n[3], n[4], lower.tail=FALSE)))
+		     min(phyper(0:n[1]-1,n[2], n[3], n[4], lower.tail=FALSE)))
 
 	# Grab corresponding GOIDs
 	GOID <- qTermID2ExtID[ ,1]
@@ -229,3 +237,4 @@ end.time <- Sys.time()
 time.taken <- end.time - start.time
 
 time.taken
+
