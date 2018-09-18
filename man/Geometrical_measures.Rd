@@ -19,8 +19,7 @@ between x and y correspond for same or similar tissues for accurate
 similarity. x and y may also be swapped.}
 }
 \value{
-Hard to have one return section for all functions,
-might want to have a manual list here.
+score of similarity between the two vectors (type=double)
 }
 \description{
 These geometric functions will calculate the distance between two random
@@ -29,20 +28,14 @@ Given two gene expression value lists, semantic similarity will be
 calculated between them. This is then returned.
 }
 \details{
-Fisher metric is based on G. Lebanon et al.'s implementation. [1]
+Fisher metric is based on the G. Lebanon et al. implementation. [1]
 
-The sobolev metrix is based on T. Villmann et al's implementation. [2]
+The sobolev metrix is based on the T. Villmann et al. implementation. [2]
 }
-\section{After Arguments and Value sections}{
+\section{Notes}{
 
-Despite its location, this actually comes after the Arguments and Value
-sections.
-Also, don't need to use null, could annotate first function, and then
-using function name as the groupBy name is more intuitive.
-}
-
-\section{2. testffdklmvl}{
-NA
+Both sobolev_metric() and fisher_metric() should have exactly the same
+input and output types.
 }
 
 \references{
