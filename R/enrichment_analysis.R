@@ -28,7 +28,7 @@ enrichment_analysis <- function(ordered_score_df, ontology, ensembl_to_go_id_con
     # ---
 
     # Quantify extracted_genes in List of top genes (grab every go_id for corresponding ensembl IDs)
-    quantified_ext_id_to_term_id <- ext_id_to_term_id(extracted_genes, list_top_genes)
+    quantified_ext_id_to_term_id <- UGenePred::ext_id_to_term_id(extracted_genes, list_top_genes)
 
     # After this, filter it for existing Gene ontologylogies within the top GOs
     quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(quantified_ext_id_to_term_id[, 1] %in% list_of_gos), 2]

@@ -2,12 +2,36 @@
 % Please edit documentation in R/similarity_prediction.R
 \name{prediction_function}
 \alias{prediction_function}
-\title{UGenePred::prediction_function("ENSG00000228630", "BP", ExpressionData, EnsemblID2GOID, 4, ncol(ExpressionData))}
+\title{UGenePred - prediction_function()}
 \usage{
 prediction_function(gene_id, ontology, expression_data,
   ensembl_to_go_id_conversion_df, start_expression_col, end_expression_col,
   enrichment_cutoff = 250, method = "combine")
 }
+\arguments{
+\item{gene_id}{gene to be compared to the other GO terms.}
+
+\item{ontology}{desired ontology to use for prediction}
+
+\item{expression_data}{lncrna2function expression data matrix}
+
+\item{ensembl_to_go_id_conversion_df}{matrix with corresponding GOIDs and EnsemblIDs.}
+
+\item{start_expression_col}{should be the starting column containing expression values.}
+
+\item{end_expression_col}{should be the last column containing expression values.}
+
+\item{enrichment_cutoff}{default is 250}
+
+\item{method}{default is "combine"}
+}
+\value{
+The resulting matrix with prediction of similar GO terms.
+}
 \description{
+Predicts functions of un-annotated genes based on Gene Ontology and correlated expression patterns.
+}
+\examples{
 UGenePred::prediction_function("ENSG00000228630", "BP", ExpressionData, EnsemblID2GOID, 4, ncol(ExpressionData))
+
 }

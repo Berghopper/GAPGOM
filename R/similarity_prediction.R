@@ -1,9 +1,32 @@
-# Prediction Function; Input: 1- GeneID - Ensembl ID of the gene that you want to predict, e.g. ENSG00000228630 2- Onto - Ontology type, currently two options; MF(Molecular
-# Function) or BP(Biological Process) 3- Method - Currently five options; Pearson, Spearman, Fisher, Sobolev, combine Output: the output is a list of ontology terms, ordered
-# with respect to FDR values 1- GOID - Gene Ontology ID 2- Ontology - Ontology type (MF or BP) 3- FDR - False Positive Rate 4- Term - description of GOID BUG; Error: $ operator
-# is invalid for atomic vectors
+# Main function is Prediction Function;
+#
+#                       Input: 1- GeneID - Ensembl ID of the gene that you want to predict, e.g. ENSG00000228630
+#                              2- Onto - Ontology type, currently two options; MF(Molecular Function) or BP(Biological Process)
+#                              3- Method - Currently five options; Pearson, Spearman, Fisher, Sobolev, combine
+#
+#                       Output: the output is a list of ontology terms, ordered with respect to FDR values
+#                              1- GOID - Gene Ontology ID
+#                              2- Ontology - Ontology type (MF or BP)
+#                              3- FDR - False Positive Rate
+#                              4- Term - description of GOID
+#
+
+
+
+#' UGenePred - prediction_function()
 #'
-#' UGenePred::prediction_function("ENSG00000228630", "BP", ExpressionData, EnsemblID2GOID, 4, ncol(ExpressionData))
+#' Predicts functions of un-annotated genes based on Gene Ontology and correlated expression patterns.
+#'
+#' @param gene_id gene to be compared to the other GO terms.
+#' @param ontology desired ontology to use for prediction
+#' @param expression_data lncrna2function expression data matrix
+#' @param ensembl_to_go_id_conversion_df matrix with corresponding GOIDs and EnsemblIDs.
+#' @param start_expression_col should be the starting column containing expression values.
+#' @param end_expression_col should be the last column containing expression values.
+#' @param enrichment_cutoff default is 250
+#' @param method default is "combine"
+#' @return The resulting matrix with prediction of similar GO terms.
+#' @examples UGenePred::prediction_function("ENSG00000228630", "BP", ExpressionData, EnsemblID2GOID, 4, ncol(ExpressionData))
 #'
 #' @export
 prediction_function <- function(gene_id, ontology, expression_data, ensembl_to_go_id_conversion_df, start_expression_col, end_expression_col, enrichment_cutoff = 250, method = "combine") {

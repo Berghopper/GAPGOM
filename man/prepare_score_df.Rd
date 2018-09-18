@@ -13,8 +13,14 @@ prepare_score_df(pc_ensmbl_id, score, gene_id)
 
 \item{pc_ensmlb_id}{Ensmlb ID's for protein coding expression data.}
 }
+\value{
+The score dataframe with ensmbl ID's
+}
 \description{
 This function is an internal function and should not be called by the user.
+}
+\details{
+Prepared score dataframe for the enrichment analysis.
 }
 \section{Notes}{
 
