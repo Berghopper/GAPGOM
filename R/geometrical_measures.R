@@ -20,12 +20,12 @@
 #' similarity. x and y may also be swapped.
 #' @return score of similarity between the two vectors (type=double)
 #' @name Geometrical_measures
-#' @references [1] Villmann T: \strong{Sobolev metrixs for learning of functional
+#' @references [1]. Villmann T: \strong{Sobolev metrixs for learning of functional
 #' data - mathematical and theoretical aspects.} In:
 #' \emph{Machine Learning Reports}.
 #' Edited by Villmann T, Schleif F-m, vol. 1. Leipzig, Germany: Medical
 #' Department, University of Leipzig; 2007: 1-13.
-#' @references [2] Lebanon G: \strong{Learning riemannian metrics.} In:
+#' @references [2]. Lebanon G: \strong{Learning riemannian metrics.} In:
 #' \emph{Proceedings of the Nineteenth conference on Uncertainty in Artificial
 #' Intelligence; Acapulco Mexico.} Morgan Kaufmann Publishers Inc. 2003: 362-369
 #'

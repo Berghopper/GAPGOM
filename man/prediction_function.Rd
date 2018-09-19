@@ -4,8 +4,10 @@
 \alias{prediction_function}
 \title{UGenePred - prediction_function()}
 \usage{
-prediction_function(gene_id, ontology, expression_data,
-  ensembl_to_go_id_conversion_df, start_expression_col, end_expression_col,
+prediction_function(gene_id, ontology,
+  expression_data = UGenePred::expression_data,
+  ensembl_to_go_id_conversion_df = UGenePred::ensembl_id_to_go_id,
+  start_expression_col = 4, end_expression_col = 22,
   enrichment_cutoff = 250, method = "combine")
 }
 \arguments{

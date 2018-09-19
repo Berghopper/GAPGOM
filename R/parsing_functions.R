@@ -13,11 +13,11 @@
 #' @return The score dataframe with ensmbl ID's
 prepare_score_df <- function(pc_ensmbl_id, score, gene_id) {
     # score_df is the 'score' (correlation/metric) dataframe against target gene.  combine the dataframe if combine is selected, otherwise just add regular score.
-    score_df <- base::data.frame(pc_ensmbl_id, score)
-    score_df <- stats::na.omit(score_df)
-    # filter gene ID's (Select everything except the chosen gene).
-    score_df <- score_df[(score_df[, 1] != gene_id), ]
-    return(score_df)
+  score_df <- base::data.frame(pc_ensmbl_id, score)
+  score_df <- stats::na.omit(score_df)
+  # filter gene ID's (Select everything except the chosen gene).
+  score_df <- score_df[(score_df[, 1] != gene_id), ]
+  return(score_df)
 }
 
 #' UGenePred internal - ext_id_to_term_id()
@@ -33,6 +33,6 @@ prepare_score_df <- function(pc_ensmbl_id, score, gene_id) {
 #' @param list_top_genes The list_top_genes matrix
 #' @return return the quantified matrix
 ext_id_to_term_id <- function(data, list_top_genes) {
-    # add 1 for each gene that is in list top genes.
-    return(plyr::ddply(data, plyr::.(go_id), function(x) base::nrow(x[(x$ensembl_gene_id %in% list_top_genes), ])))
+  # add 1 for each gene that is in list top genes.
+  return(plyr::ddply(data, plyr::.(go_id), function(x) base::nrow(x[(x$ensembl_gene_id %in% list_top_genes), ])))
 }

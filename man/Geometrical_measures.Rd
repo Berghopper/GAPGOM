@@ -39,13 +39,13 @@ input and output types.
 }
 
 \references{
-[1] Villmann T: \strong{Sobolev metrixs for learning of functional
+[1]. Villmann T: \strong{Sobolev metrixs for learning of functional
 data - mathematical and theoretical aspects.} In:
 \emph{Machine Learning Reports}.
 Edited by Villmann T, Schleif F-m, vol. 1. Leipzig, Germany: Medical
 Department, University of Leipzig; 2007: 1-13.
 
-[2] Lebanon G: \strong{Learning riemannian metrics.} In:
+[2]. Lebanon G: \strong{Learning riemannian metrics.} In:
 \emph{Proceedings of the Nineteenth conference on Uncertainty in Artificial
 Intelligence; Acapulco Mexico.} Morgan Kaufmann Publishers Inc. 2003: 362-369
 }
