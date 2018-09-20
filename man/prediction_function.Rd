@@ -36,6 +36,6 @@ Predicts functions of un-annotated genes based on Gene Ontology and correlated e
 \examples{
 expression_data <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/lncRNA2function_data.txt', sep='\\t', head=TRUE)
 ensembl_id_to_goid <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/EG2GO.txt', sep='\\t',head=TRUE)
-UGenePred::prediction_function('ENSG00000228630', 'BP', expression_data, ensembl_id_to_goid, 4, ncol(ExpressionData))
+UGenePred::prediction_function('ENSG00000228630', 'BP')
 
 }
