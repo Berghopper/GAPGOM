@@ -25,7 +25,7 @@ prediction_function(gene_id, ontology,
 
 \item{enrichment_cutoff}{default is 250}
 
-\item{method}{default is "combine"}
+\item{method}{default is 'combine'}
 }
 \value{
 The resulting matrix with prediction of similar GO terms.
@@ -34,6 +34,8 @@ The resulting matrix with prediction of similar GO terms.
 Predicts functions of un-annotated genes based on Gene Ontology and correlated expression patterns.
 }
 \examples{
-UGenePred::prediction_function("ENSG00000228630", "BP", ExpressionData, EnsemblID2GOID, 4, ncol(ExpressionData))
+expression_data <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/lncRNA2function_data.txt', sep='\\t', head=TRUE)
+ensembl_id_to_goid <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/EG2GO.txt', sep='\\t',head=TRUE)
+UGenePred::prediction_function('ENSG00000228630', 'BP', expression_data, ensembl_id_to_goid, 4, ncol(ExpressionData))
 
 }

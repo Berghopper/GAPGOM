@@ -8,7 +8,7 @@
 #' @format A data frame with 33164 rows and 22 variables/columns:
 #' \describe{
 #'   \item{GeneID}{EnsemblID of gene}
-#'   \item{GeneType}{Type of gene. E.g. "protein_coding"}
+#'   \item{GeneType}{Type of gene. E.g. 'protein_coding'}
 #'   \item{GeneName}{Standard abbreviated gene name as it recognized in most
 #'   databases}
 #'   \item{x_FPKM}{Gene expression in FPKM (Fragments Per Kilobase Million)

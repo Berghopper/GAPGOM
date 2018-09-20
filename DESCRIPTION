@@ -20,7 +20,8 @@ Imports:
   Rgraphviz,
   GO.db,
   GOSim,
-  GOSemSim
+  GOSemSim,
+  AnnotationDbi
 Suggests:
   testthat
 Depends: R (>= 3.4.4)
