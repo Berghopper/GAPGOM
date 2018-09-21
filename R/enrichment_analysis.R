@@ -8,17 +8,23 @@ enrichment_analysis <- function(ordered_score_df,
                                   UGenePred::ensembl_id_to_go_id,
                                 enrichment_cutoff = 250) {
     # extracted_genes -> Extracted genes with correct gene ontology.
-    if (ontology == "MF")
-        extracted_genes <- ensembl_to_go_id_conversion_df[(ensembl_to_go_id_conversion_df[, 3] == "molecular_function"), ]
-    if (ontology == "BP")
-        extracted_genes <- ensembl_to_go_id_conversion_df[(ensembl_to_go_id_conversion_df[, 3] == "biological_process"), ]
-
-    # now filter EG to also extract only genes that are present in protein coding expression data.
+    if (ontology == "MF") {
+        extracted_genes <- ensembl_to_go_id_conversion_df[(
+          ensembl_to_go_id_conversion_df[, 3] == "molecular_function"), ]
+    }
+    if (ontology == "BP") {
+        extracted_genes <- ensembl_to_go_id_conversion_df[(
+          ensembl_to_go_id_conversion_df[, 3] == "biological_process"), ]
+    }
+    # now filter EG to also extract only genes that are present in protein
+    # coding expression data.
     extracted_genes <- extracted_genes[(extracted_genes$ensembl_gene_id %in% ensembl_id_pc), ]
 
     # List of top 250 genes (Ensembl ID)
     list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
-    # List of gene ontologies given the Extracted genes that are in the top 250 genes of the score dataframe.  for each ensemble ID there are more gene ontologies.
+    # List of gene ontologies given the Extracted genes that are in the top
+    # 250 genes of the score dataframe.  for each ensemble ID there are more
+    # gene ontologies.
     # list_of_gos, 250 genes but all unqiue corresponding GO IDs
     list_of_gos <- extracted_genes[(extracted_genes$ensembl_gene_id %in% list_top_genes), 2]
     list_of_gos <- base::unique(list_of_gos)
@@ -30,7 +36,7 @@ enrichment_analysis <- function(ordered_score_df,
     base::colnames(term_id_to_ext_id)[2] <- "Freq_Anno"
 
     # Filter the quantification to only have the top genes where the go ID corresponds
-    qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$go_id %in% list_of_gos), ]
+    qterm_id_to_ext_id <<- term_id_to_ext_id[(term_id_to_ext_id$go_id %in% list_of_gos), ]
 
     # ---
 
@@ -54,15 +60,20 @@ enrichment_analysis <- function(ordered_score_df,
     #	is the number of protein-coding genes that were co-expressed with lncRNA
     # but were not annotated in the Term
 
-    n1 = quantified_ext_id_to_term_id
-    n2 = qterm_id_to_ext_id[, 2] - quantified_ext_id_to_term_id
-    n3 = base::length(base::unique(ensembl_id_pc)) - enrichment_cutoff - qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
-    n4 = base::rep(enrichment_cutoff, base::nrow(qterm_id_to_ext_id)) # THIS IS SOMETHING TOO SMALL FOR THE HYPERGEOMETRIC FUNCTION, BREAKING THIS CODE!
+    n1 <- quantified_ext_id_to_term_id
+    n2 <- qterm_id_to_ext_id[, 2] - quantified_ext_id_to_term_id
+    n3 <- length(unique(ensembl_id_pc)) - enrichment_cutoff - qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
+    n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # THIS IS SOMETIMES
+    # SOMETHING TOO SMALL FOR THE HYPERGEOMETRIC FUNCTION, BREAKING THIS CODE!
 
     # now bind into 1 df.
     qterm_id_to_ext_id <- base::cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
     # try to remove all variables that have a too small
     qterm_id_to_ext_id <- qterm_id_to_ext_id[!(qterm_id_to_ext_id$n2+qterm_id_to_ext_id$n3 < qterm_id_to_ext_id$n4),]
+    if (nrow(qterm_id_to_ext_id) == 0) {
+      stop("N VARIABLES NOT VALID, ENRICHMENT TOO HIGH/TOTAL AMOUNT INVALID.
+           (Decrease cutoff?)")
+    }
     # now check if the df is empty, if so exit (critical bug that need fixing issue #1 on bitbucket)
     # select quantification values to at least be 5 for goID quantification.
     qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= 5), ]
