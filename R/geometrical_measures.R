@@ -19,7 +19,6 @@
 #' between x and y correspond for same or similar tissues for accurate
 #' similarity. x and y may also be swapped.
 #' @return score of similarity between the two vectors (type=double)
-#' @name Geometrical_measures
 #' @references [1]. Villmann T: \strong{Sobolev metrixs for learning of functional
 #' data - mathematical and theoretical aspects.} In:
 #' \emph{Machine Learning Reports}.
@@ -28,11 +27,11 @@
 #' @references [2]. Lebanon G: \strong{Learning riemannian metrics.} In:
 #' \emph{Proceedings of the Nineteenth conference on Uncertainty in Artificial
 #' Intelligence; Acapulco Mexico.} Morgan Kaufmann Publishers Inc. 2003: 362-369
-#'
+#' @name geometrical_measures
 NULL
 
 
-#' @rdname Geometrical_measures
+#' @rdname geometrical_measures
 #' @export
 sobolev_metric <- function(x, y) {
     x1 <- x^2/(base::sum(x^2))
@@ -44,7 +43,7 @@ sobolev_metric <- function(x, y) {
     return(s)
 }
 
-#' @rdname Geometrical_measures
+#' @rdname geometrical_measures
 #' @export
 fisher_metric <- function(x, y) {
     x1 <- x^2/(base::sum(x^2))

@@ -11,36 +11,74 @@
 #                              4- Term - description of GOID
 #
 
-#' UGenePred - prediction_function()
+#' UGenePred - expression_prediction_function()
 #'
-#' Predicts functions of un-annotated genes based on Gene Ontology and correlated expression patterns.
+#' Predicts annotation of un-annotated genes based on existing
+#' Gene Ontology annotation data and correlated expression patterns.
 #'
-#' @param gene_id gene to be compared to the other GO terms.
-#' @param ontology desired ontology to use for prediction
-#' @param expression_data lncrna2function expression data matrix
-#' @param ensembl_to_go_id_conversion_df matrix with corresponding GOIDs and EnsemblIDs.
-#' @param start_expression_col should be the starting column containing expression values.
-#' @param end_expression_col should be the last column containing expression values.
+#' This function is specifically made for predicting lncRNA annotation by
+#' assuming "guilt by association". For instance, the expression data in this
+#' package is actually based on mRNA expression data, but correlated with
+#' lncRNA. This expression data is the used in combination with mRNA GO
+#' annotation to calculate similarity scores between GO terms,
+#'
+#' @param gene_id gene EnsemblID to be compared to the other GO terms.
+#' @param ontology desired ontology to use for prediction. One of three;
+#' "BP" (Biological process), "MF" (Molecular function) or "CC"
+#' (Cellular Component). Cellular Component is not included with the package's
+#' standard data and will thus yield no results.
+#' @param expression_data expression data dataframe with at least 1 or more
+#' rows. Some of the columns should be named certain ways and the dataframe
+#' should contain certain information neccesary for calculation;
+#' 1st neccesary col; name; "GeneID" (EnsemblIDs should go here).
+#' 2nd neccesary col; name; "GeneType" (genetype as described in the Ensembl
+#' database).
+#' Next, a range of n-columns long, containing expression values, names do not
+#' matter here. (You can use the existing dataset as an example)
+#' @param ensembl_to_go_id_conversion_df dataframe with corresponding GOIDs and
+#' EnsemblIDs. As well as the expression value dataframe, this dataframe should
+#' contain certain information with specific columnnames as well;
+#' 1st neccesary col; name; "ensembl_gene_id" (Ensembl gene IDs).
+#' 2nd neccesary col; go_id; "go_id" (Gene Ontology term ID).
+#' 3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
+#' (You can use the existing dataset as an example)
+#' @param start_expression_col should be the starting column inside
+#' "expression_data" containing expression values.
+#' @param end_expression_col should be the last column inside "expression_data"
+#'  containing expression values.
 #' @param enrichment_cutoff default is 250
 #' @param method default is 'combine'
-#' @return The resulting matrix with prediction of similar GO terms.
+#' @return The resulting dataframe with prediction of similar GO terms.
 #' @examples
-#' expression_data <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/lncRNA2function_data.txt', sep='\t', head=TRUE)
-#' ensembl_id_to_goid <- read.table('/media/casper/USB_ccpeters/internship_thesis/papers/pred_lncRNA/EG2GO.txt', sep='\t',head=TRUE)
-#' UGenePred::prediction_function('ENSG00000228630', 'BP')
+#' UGenePred::expression_prediction_function('ENSG00000228630', 'BP')
 #'
+#'
+#' @importFrom plyr ddply .
 #' @export
-prediction_function <- function(gene_id, ontology, expression_data = UGenePred::expression_data, ensembl_to_go_id_conversion_df = UGenePred::ensembl_id_to_go_id, start_expression_col = 4,
-    end_expression_col = 22, enrichment_cutoff = 250, method = "combine") {
+expression_prediction_function <- function(gene_id,
+                                ontology,
+                                expression_data =
+                                  UGenePred::expression_data,
+                                ensembl_to_go_id_conversion_df =
+                                  UGenePred::ensembl_id_to_go_id,
+                                start_expression_col = 4,
+                                end_expression_col = 22,
+                                enrichment_cutoff = 250,
+                                method = "combine") {
+    old <- options(stringsAsFactors = FALSE)
+    on.exit(options(old), add = TRUE)
     # prepare the data with some special operations/vars that are needed later
-    expression_data_pc <- expression_data[(expression_data$GeneType == "protein_coding"), ]
+    expression_data_pc <- expression_data[
+      (expression_data$GeneType == "protein_coding"), ]
     ensembl_id_pc <- expression_data_pc$GeneID
 
     # Target expression data where gene id matches
-    target_expression_data <- expression_data[(expression_data[, 1] == gene_id), ]
-    target_expression_data <- base::as.numeric(target_expression_data[1, c(4:end_expression_col)])
+    target_expression_data <- expression_data[
+      (expression_data[, 1] == gene_id), ]
+    target_expression_data <- as.numeric(
+      target_expression_data[1, c(4:end_expression_col)])
 
-    # make args list for functions
+    # make args list for ambiguous functions
     args <- list("expression_data_pc" = expression_data_pc,
          "start_expression_col" = start_expression_col,
          "end_expression_col" = end_expression_col,
@@ -52,8 +90,10 @@ prediction_function <- function(gene_id, ontology, expression_data = UGenePred::
          "enrichment_cutoff" = enrichment_cutoff)
 
 
-    # these functions calculate score between target expression of target gene vs the rest of the desired protein coding genes.  this is either a correlation metric or a
-    # geometrical metric.  after score is calculated, these scores are enriched.
+    # these functions calculate score between target expression of target gene
+    # vs the rest of the desired protein coding genes.  this is either a
+    # correlation metric or a geometrical metric.
+    # after score is calculated, these scores are enriched.
     enrichment_result <- NULL
     if (method == "Pearson") {
         enrichment_result <- predict_pearson(args)
@@ -74,67 +114,91 @@ prediction_function <- function(gene_id, ontology, expression_data = UGenePred::
         enrichment_sobolev <- predict_sobolev(args)
         enrichment_fisher <- predict_fisher(args)
 
-        # before binding, add column for showing what method result is originated from.
-        enrichment_pearson[, "used_method"] <- base::rep(
-          "Pearson", base::nrow(enrichment_pearson)
+        # before binding, add column for showing what method result is
+        # originated from.
+        enrichment_pearson[, "used_method"] <- rep(
+          "Pearson", nrow(enrichment_pearson)
           )
-        enrichment_spearman[, "used_method"] <- base::rep(
-          "Spearman", base::nrow(enrichment_spearman)
+        enrichment_spearman[, "used_method"] <- rep(
+          "Spearman", nrow(enrichment_spearman)
           )
-        enrichment_sobolev[, "used_method"] <- base::rep(
-          "Sobolev", base::nrow(enrichment_sobolev)
+        enrichment_sobolev[, "used_method"] <- rep(
+          "Sobolev", nrow(enrichment_sobolev)
           )
-        enrichment_fisher[, "used_method"] <- base::rep(
-          "Fisher", base::nrow(enrichment_fisher)
+        enrichment_fisher[, "used_method"] <- rep(
+          "Fisher", nrow(enrichment_fisher)
           )
 
         # bind all results by row
-        combined_enrichment <- base::rbind(enrichment_pearson,
+        combined_enrichment <- rbind(enrichment_pearson,
                                            enrichment_spearman,
                                            enrichment_sobolev,
                                            enrichment_fisher)
         # and keep the rows with the lowest corrected P-values.
-        combined_enrichment <- plyr::ddply(combined_enrichment,
-                                           plyr::.(GOID), function(x)
-                                             x[base::which.min(x$FDR), ]
+        combined_enrichment <- ddply(combined_enrichment,
+                                           .(GOID), function(x)
+                                             x[which.min(x$FDR), ]
                                           )
         # Order p-values on lowest > bigest
-        enrichment_result <- combined_enrichment[base::order(base::as.numeric(combined_enrichment$FDR)), ]
+        enrichment_result <- combined_enrichment[order(
+          as.numeric(combined_enrichment$FDR)), ]
     } else {
-        cat("Selected method; \"", method, "\" does not exist! Refer to the help page for options.")
+        cat("Selected method; \"", method, "\" does not exist! Refer to the ",
+            "help page for options.", sep = "")
         return(NULL)
     }
     ###
 
     if (nrow(enrichment_result) > 0) {
         # number the rownames and return the enrichment results.
-        base::rownames(enrichment_result) <- c(1:base::nrow(enrichment_result))
+        rownames(enrichment_result) <- c(1:nrow(enrichment_result))
         return(enrichment_result)
     } else {
         print("Could not find any similar genes!")
     }
 }
 
+#' UGenePred internal - Ambiguous/prediction functions
+#'
+#' These functions are ambiguous/standardized functions that help make the
+#' enrichment analysis steps more streamlined. Most measures have their own
+#' specific way of their scores being calculated. For this, they have their own
+#' function clauses.
+#'
+#' @section Notes:
+#' These functions are internal functions and should not be called by the user.
+#'
+#' @name ambiguous_functions
+NULL
+
+#' @rdname ambiguous_functions
 ambiguous_scorecalc <- function(args, applyfunc) {
-  score <- base::apply(args$expression_data_pc
+  # apply the score calculation function
+  score <- apply(args$expression_data_pc
                        [, c(args$start_expression_col:
                               args$end_expression_col)],
                        1, applyfunc)
+  # prepare and format a datafrane to return
   score_df <- prepare_score_df(args$ensembl_id_pc, score, args$gene_id)
 
   return(score_df)
 }
 
+#' @rdname ambiguous_functions
 ambiguous_score_rev_sort <- function(score_df) {
-  return(score_df[base::rev(base::order(score_df[, 2])), ])
+  # reverse sorts the score column
+  return(score_df[rev(order(score_df[, 2])), ])
 }
 
+#' @rdname ambiguous_functions
 ambiguous_score_sort <- function(score_df) {
-  return(score_df[base::order(score_df[, 2]), ])
+  # sorts the score column
+  return(score_df[order(score_df[, 2]), ])
 }
 
-
+#' @rdname ambiguous_functions
 ambiguous_enrichment <- function(args, ordered_score_df) {
+  # run the enrichment analysis function.
   enrichment_result <- enrichment_analysis(
     ordered_score_df,
     args$ontology,
@@ -145,32 +209,36 @@ ambiguous_enrichment <- function(args, ordered_score_df) {
   return(enrichment_result)
 }
 
+#' @rdname ambiguous_functions
 predict_pearson <- function(args) {
-  score_df <- ambiguous_scorecalc(args, function(x) base::abs(stats::cor(
-    base::as.numeric(x), args$target_expression_data)))
+  score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
+    as.numeric(x), args$target_expression_data)))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
   return(enrichment_result)
 }
 
+#' @rdname ambiguous_functions
 predict_spearman <- function(args) {
-  score_df <- ambiguous_scorecalc(args, function(x) base::abs(stats::cor(
-    base::as.numeric(x), args$target_expression_data, method = "spearman")))
+  score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
+    as.numeric(x), args$target_expression_data, method = "spearman")))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
   return(enrichment_result)
 }
 
+#' @rdname ambiguous_functions
 predict_fisher <- function(args) {
-  score_df <- ambiguous_scorecalc(args, function(x) UGenePred::fisher_metric(
+  score_df <- ambiguous_scorecalc(args, function(x) fisher_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
   return(enrichment_result)
 }
 
+#' @rdname ambiguous_functions
 predict_sobolev <- function(args) {
-  score_df <- ambiguous_scorecalc(args, function(x) UGenePred::sobolev_metric(
+  score_df <- ambiguous_scorecalc(args, function(x) sobolev_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
