@@ -1,16 +1,3 @@
-# Main function is Prediction Function;
-#
-#                       Input: 1- GeneID - Ensembl ID of the gene that you want to predict, e.g. ENSG00000228630
-#                              2- Onto - Ontology type, currently two options; MF(Molecular Function) or BP(Biological Process)
-#                              3- Method - Currently five options; Pearson, Spearman, Fisher, Sobolev, combine
-#
-#                       Output: the output is a list of ontology terms, ordered with respect to FDR values
-#                              1- GOID - Gene Ontology ID
-#                              2- Ontology - Ontology type (MF or BP)
-#                              3- FDR - False Positive Rate
-#                              4- Term - description of GOID
-#
-
 #' UGenePred - expression_prediction_function()
 #'
 #' Predicts annotation of un-annotated genes based on existing
@@ -43,15 +30,29 @@
 #' 3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
 #' (You can use the existing dataset as an example)
 #' @param start_expression_col should be the starting column inside
-#' "expression_data" containing expression values.
+#' "expression_data" containing expression values. default is 4, catered to
+#' the included dataset.
 #' @param end_expression_col should be the last column inside "expression_data"
-#'  containing expression values.
-#' @param enrichment_cutoff default is 250
-#' @param method default is 'combine'
-#' @return The resulting dataframe with prediction of similar GO terms.
-#' @examples
-#' UGenePred::expression_prediction_function('ENSG00000228630', 'BP')
+#'  containing expression values. default is 22, catered to the included
+#'  dataset.
+#' @param enrichment_cutoff cutoff number for the amount of genes to be
+#' enriched in the enrichment analysis. (default is 250)
+#' @param method which statistical method to use for the prediction, currently
+#' there are 5 available; "Pearson", "Spearman", "Kendall", "Fisher", "Sobolev"
+#' and "combine".
 #'
+#' @return The resulting dataframe with prediction of similar GO terms.
+#' These are ordered with respect to FDR values. The following columns will be
+#' in the dataframe;
+#' GOID - Gene Ontology ID,
+#' Ontology - Ontology type (MF or BP),
+#' FDR - False Positive Rate,
+#' Term - description of GOID,
+#' used_method - the used method to determine the ontology term similarity
+#' @examples
+#' # Example with default dataset, take a look at the data documentation
+#' # to fully grasp what's going on.
+#' GAPGOM::expression_prediction_function('ENSG00000228630', 'BP')
 #'
 #' @importFrom plyr ddply .
 #' @export
@@ -83,6 +84,7 @@ expression_prediction_function <- function(gene_id,
          "start_expression_col" = start_expression_col,
          "end_expression_col" = end_expression_col,
          "target_expression_data" = target_expression_data,
+         "expression_data" = expression_data,
          "ensembl_id_pc" = ensembl_id_pc,
          "gene_id" = gene_id,
          "ontology" = ontology,
@@ -98,42 +100,32 @@ expression_prediction_function <- function(gene_id,
     if (method == "Pearson") {
         enrichment_result <- predict_pearson(args)
 
-    } else if (method == "Spearman") {
+    } else if (method == "spearman") {
         enrichment_result <- predict_spearman(args)
 
-    } else if (method == "FisherMetric") {
+    } else if (method == "kendall") {
+        enrichment_result <- predict_kendall(args)
+
+    }else if (method == "fisher") {
         enrichment_result <- predict_fisher(args)
 
-    } else if (method == "SobolevMetric") {
+    } else if (method == "sobolev") {
         enrichment_result <- predict_sobolev(args)
 
     } else if (method == "combine") {
         # Run enrichment for each method
         enrichment_pearson <- predict_pearson(args)
         enrichment_spearman <- predict_spearman(args)
+        enrichment_kendall <- predict_kendall(args)
         enrichment_sobolev <- predict_sobolev(args)
         enrichment_fisher <- predict_fisher(args)
 
-        # before binding, add column for showing what method result is
-        # originated from.
-        enrichment_pearson[, "used_method"] <- rep(
-          "Pearson", nrow(enrichment_pearson)
-          )
-        enrichment_spearman[, "used_method"] <- rep(
-          "Spearman", nrow(enrichment_spearman)
-          )
-        enrichment_sobolev[, "used_method"] <- rep(
-          "Sobolev", nrow(enrichment_sobolev)
-          )
-        enrichment_fisher[, "used_method"] <- rep(
-          "Fisher", nrow(enrichment_fisher)
-          )
-
         # bind all results by row
         combined_enrichment <- rbind(enrichment_pearson,
-                                           enrichment_spearman,
-                                           enrichment_sobolev,
-                                           enrichment_fisher)
+                                     enrichment_spearman,
+                                     enrichment_kendall,
+                                     enrichment_sobolev,
+                                     enrichment_fisher)
         # and keep the rows with the lowest corrected P-values.
         combined_enrichment <- ddply(combined_enrichment,
                                            .(GOID), function(x)
@@ -202,7 +194,7 @@ ambiguous_enrichment <- function(args, ordered_score_df) {
   enrichment_result <- enrichment_analysis(
     ordered_score_df,
     args$ontology,
-    ensembl_id_pc = args$ensembl_id_pc,
+    expression_data = args$expression_data,
     ensembl_to_go_id_conversion_df = args$ensembl_to_go_id_conversion_df,
     enrichment_cutoff = args$enrichment_cutoff
   )
@@ -210,11 +202,21 @@ ambiguous_enrichment <- function(args, ordered_score_df) {
 }
 
 #' @rdname ambiguous_functions
+ambiguous_method_origin <- function(enrichment_result, methodname) {
+  # add used_method column
+  enrichment_result[, "used_method"] <- rep(
+    methodname, nrow(enrichment_result))
+  return(enrichment_result)
+}
+
+#' @rdname ambiguous_functions
 predict_pearson <- function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data)))
+  example_score_df <<- score_df
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
+  enrichment_result <- ambiguous_method_origin(enrichment_result, "pearson")
   return(enrichment_result)
 }
 
@@ -224,6 +226,17 @@ predict_spearman <- function(args) {
     as.numeric(x), args$target_expression_data, method = "spearman")))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
+  enrichment_result <- ambiguous_method_origin(enrichment_result, "spearman")
+  return(enrichment_result)
+}
+
+#' @rdname ambiguous_functions
+predict_kendall <- function(args) {
+  score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
+    as.numeric(x), args$target_expression_data, method = "kendall")))
+  enrichment_result <- ambiguous_enrichment(args,
+                                            ambiguous_score_rev_sort(score_df))
+  enrichment_result <- ambiguous_method_origin(enrichment_result, "kendall")
   return(enrichment_result)
 }
 
@@ -233,6 +246,7 @@ predict_fisher <- function(args) {
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
+  enrichment_result <- ambiguous_method_origin(enrichment_result, "fisher")
   return(enrichment_result)
 }
 
@@ -242,5 +256,6 @@ predict_sobolev <- function(args) {
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
+  enrichment_result <- ambiguous_method_origin(enrichment_result, "sobolev")
   return(enrichment_result)
 }

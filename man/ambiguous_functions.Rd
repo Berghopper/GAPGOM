@@ -6,8 +6,10 @@
 \alias{ambiguous_score_rev_sort}
 \alias{ambiguous_score_sort}
 \alias{ambiguous_enrichment}
+\alias{ambiguous_method_origin}
 \alias{predict_pearson}
 \alias{predict_spearman}
+\alias{predict_kendall}
 \alias{predict_fisher}
 \alias{predict_sobolev}
 \title{UGenePred internal - Ambiguous/prediction functions}
@@ -20,9 +22,13 @@ ambiguous_score_sort(score_df)
 
 ambiguous_enrichment(args, ordered_score_df)
 
+ambiguous_method_origin(enrichment_result, methodname)
+
 predict_pearson(args)
 
 predict_spearman(args)
+
+predict_kendall(args)
 
 predict_fisher(args)
 

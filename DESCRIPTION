@@ -1,6 +1,6 @@
-Package: UGenePred
+Package: GAPGOM
 Type: Package
-Title: Unknown Gene Prediction Tools (and various measures)
+Title: novel Gene Annotation Prediction and other GO Metrics
 Version: 0.0.1
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
