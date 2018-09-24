@@ -1,4 +1,4 @@
-#' UGenePred - expression_prediction_function()
+#' GAPGOM - expression_prediction_function()
 #'
 #' Predicts annotation of un-annotated genes based on existing
 #' Gene Ontology annotation data and correlated expression patterns.
@@ -56,7 +56,7 @@
 #'
 #' @importFrom plyr ddply .
 #' @export
-expression_prediction_function <- function(gene_id,
+expression_prediction_function <- compiler::cmpfun(function(gene_id,
                                 ontology,
                                 expression_data =
                                   UGenePred::expression_data,
@@ -148,7 +148,7 @@ expression_prediction_function <- function(gene_id,
     } else {
         print("Could not find any similar genes!")
     }
-}
+})
 
 #' UGenePred internal - Ambiguous/prediction functions
 #'
@@ -164,7 +164,7 @@ expression_prediction_function <- function(gene_id,
 NULL
 
 #' @rdname ambiguous_functions
-ambiguous_scorecalc <- function(args, applyfunc) {
+ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
   # apply the score calculation function
   score <- apply(args$expression_data_pc
                        [, c(args$start_expression_col:
@@ -174,24 +174,24 @@ ambiguous_scorecalc <- function(args, applyfunc) {
   score_df <- prepare_score_df(args$ensembl_id_pc, score, args$gene_id)
 
   return(score_df)
-}
+})
 
 #' @rdname ambiguous_functions
-ambiguous_score_rev_sort <- function(score_df) {
+ambiguous_score_rev_sort <- compiler::cmpfun(function(score_df) {
   # reverse sorts the score column
   return(score_df[rev(order(score_df[, 2])), ])
-}
+})
 
 #' @rdname ambiguous_functions
-ambiguous_score_sort <- function(score_df) {
+ambiguous_score_sort <- compiler::cmpfun(function(score_df) {
   # sorts the score column
   return(score_df[order(score_df[, 2]), ])
-}
+})
 
 #' @rdname ambiguous_functions
-ambiguous_enrichment <- function(args, ordered_score_df) {
+ambiguous_enrichment <- compiler::cmpfun(function(args, ordered_score_df) {
   # run the enrichment analysis function.
-  enrichment_result <- enrichment_analysis(
+  enrichment_result <- GAPGOM::enrichment_analysis(
     ordered_score_df,
     args$ontology,
     expression_data = args$expression_data,
@@ -199,63 +199,62 @@ ambiguous_enrichment <- function(args, ordered_score_df) {
     enrichment_cutoff = args$enrichment_cutoff
   )
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-ambiguous_method_origin <- function(enrichment_result, methodname) {
+ambiguous_method_origin <- compiler::cmpfun(function(enrichment_result, methodname) {
   # add used_method column
   enrichment_result[, "used_method"] <- rep(
     methodname, nrow(enrichment_result))
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-predict_pearson <- function(args) {
+predict_pearson <- compiler::cmpfun(function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data)))
-  example_score_df <<- score_df
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "pearson")
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-predict_spearman <- function(args) {
+predict_spearman <- compiler::cmpfun(function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "spearman")))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "spearman")
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-predict_kendall <- function(args) {
+predict_kendall <- compiler::cmpfun(function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "kendall")))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_rev_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "kendall")
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-predict_fisher <- function(args) {
+predict_fisher <- compiler::cmpfun(function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) fisher_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "fisher")
   return(enrichment_result)
-}
+})
 
 #' @rdname ambiguous_functions
-predict_sobolev <- function(args) {
+predict_sobolev <- compiler::cmpfun(function(args) {
   score_df <- ambiguous_scorecalc(args, function(x) sobolev_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "sobolev")
   return(enrichment_result)
-}
+})

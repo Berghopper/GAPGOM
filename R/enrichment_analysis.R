@@ -1,4 +1,4 @@
-#' UGenePred - enrichment_analysis()
+#' GAPGOM - enrichment_analysis()
 #'
 #' Enriches score results from multiple methods to give a better idea of
 #' important similarities.
@@ -9,7 +9,8 @@
 #' lncRNA. This expression data is the used in combination with mRNA GO
 #' annotation to calculate similarity scores between GO terms,
 #'
-#' @param ordered_score_df the score dataframe
+#' @param ordered_score_df the score dataframe see documentation on
+#' GAPGOM::example_score_dataframe for formatting.
 #' @param ontology desired ontology to use for prediction. One of three;
 #' "BP" (Biological process), "MF" (Molecular function) or "CC"
 #' (Cellular Component). Cellular Component is not included with the package's
@@ -44,12 +45,13 @@
 #' row numbering. And it won't contain used method.
 #'
 #' @examples
-#' # TODO MAKE EXAMPLE RETURN A RESULT
+#' # see GAPGOM::example_score_dataframe help page for formatting on this
+#' # dataframe.
 #' GAPGOM::enrichment_analysis(GAPGOM::example_score_dataframe, "BP")
 #'
 #' @importFrom plyr ddply .
 #' @export
-enrichment_analysis <- function(ordered_score_df,
+enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
                                 ontology,
                                 expression_data = GAPGOM::expression_data,
                                 ensembl_to_go_id_conversion_df =
@@ -94,7 +96,7 @@ enrichment_analysis <- function(ordered_score_df,
 
   # Filter the quantification to only have the top genes where the go ID
   # corresponds
-  qterm_id_to_ext_id <<- term_id_to_ext_id[(term_id_to_ext_id$go_id %in%
+  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$go_id %in%
                                                 list_of_gos), ]
 
   # ---
@@ -132,13 +134,13 @@ enrichment_analysis <- function(ordered_score_df,
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
   # try to remove all variables that have a too small
-  qterm_id_to_ext_id <- qterm_id_to_ext_id[!(qterm_id_to_ext_id$n2+
-                                                 qterm_id_to_ext_id$n3 <
-                                                 qterm_id_to_ext_id$n4),]
-  if (nrow(qterm_id_to_ext_id) == 0) {
-    stop("N VARIABLES NOT VALID, ENRICHMENT TOO HIGH/TOTAL AMOUNT INVALID.
-         (Decrease cutoff?)")
-  }
+  #qterm_id_to_ext_id <- qterm_id_to_ext_id[!(qterm_id_to_ext_id$n2+
+  #                                               qterm_id_to_ext_id$n3 >
+  #                                               qterm_id_to_ext_id$n4),]
+  #if (nrow(qterm_id_to_ext_id) == 0) {
+  #  stop("N VARIABLES NOT VALID, ENRICHMENT TOO HIGH/TOTAL AMOUNT INVALID.
+  #       (Decrease cutoff?)")
+  #}
   # now check if the df is empty, if so exit (critical bug that need fixing issue #1 on bitbucket)
   # select quantification values to at least be 5 for goID quantification.
   qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= 5), ]
@@ -178,4 +180,4 @@ enrichment_analysis <- function(ordered_score_df,
       enrichment_dataframe[, 4]) < 0.05), ]
 
   return(enrichment_dataframe)
-}
+})

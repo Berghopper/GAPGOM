@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing_functions.R
 \name{ext_id_to_term_id}
 \alias{ext_id_to_term_id}
-\title{UGenePred internal - ext_id_to_term_id()}
+\title{GAPGOM internal - ext_id_to_term_id()}
 \usage{
 ext_id_to_term_id(data, list_top_genes)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing_functions.R
 \name{prepare_score_df}
 \alias{prepare_score_df}
-\title{UGenePred internal - prepare_score_df()}
+\title{GAPGOM internal - prepare_score_df()}
 \usage{
 prepare_score_df(pc_ensmbl_id, score, gene_id)
 }

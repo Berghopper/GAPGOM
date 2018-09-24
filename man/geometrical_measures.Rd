@@ -4,7 +4,7 @@
 \alias{geometrical_measures}
 \alias{sobolev_metric}
 \alias{fisher_metric}
-\title{UGenePred - Geometrical Similarity Measures}
+\title{GAPGOM - Geometrical Similarity Measures}
 \usage{
 sobolev_metric(x, y)
 

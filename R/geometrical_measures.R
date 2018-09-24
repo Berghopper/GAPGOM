@@ -1,4 +1,4 @@
-#' UGenePred - Geometrical Similarity Measures
+#' GAPGOM - Geometrical Similarity Measures
 #'
 #' These geometric functions will calculate the distance between two random
 #' sets of variables. In our usecase this would be an expression values (FPKM).
@@ -33,7 +33,7 @@ NULL
 
 #' @rdname geometrical_measures
 #' @export
-sobolev_metric <- function(x, y) {
+sobolev_metric <- compiler::cmpfun(function(x, y) {
     x1 <- x^2/(base::sum(x^2))
     y1 <- y^2/(base::sum(y^2))
     z1 <- x1 - y1
@@ -41,14 +41,14 @@ sobolev_metric <- function(x, y) {
     w <- 2 * pi * (1:base::length(FT))/(base::length(FT))
     s <- base::sum((1 + w) * base::abs(FT)^2)^(1/2)
     return(s)
-}
+})
 
 #' @rdname geometrical_measures
 #' @export
-fisher_metric <- function(x, y) {
+fisher_metric <- compiler::cmpfun(function(x, y) {
     x1 <- x^2/(base::sum(x^2))
     y1 <- y^2/(base::sum(y^2))
     t <- x1 * y1
     s <- base::acos(base::sum(base::sqrt(t)))
     return(s)
-}
+})

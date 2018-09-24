@@ -3,7 +3,7 @@
 \docType{data}
 \name{ensembl_id_to_go_id}
 \alias{ensembl_id_to_go_id}
-\title{EnsemblID -> GOID conversion table}
+\title{GAPGOM -  EnsemblID -> GOID conversion table}
 \format{A data frame with 252887 rows and 3 variables/columns:
 \describe{
   \item{ensembl_gene_id}{The EnsemblID of the gene.}

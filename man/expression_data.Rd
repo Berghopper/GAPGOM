@@ -3,7 +3,7 @@
 \docType{data}
 \name{expression_data}
 \alias{expression_data}
-\title{Expression data of lncRNAs.}
+\title{GAPGOM - Expression data of lncRNAs.}
 \format{A data frame with 33164 rows and 22 variables/columns:
 \describe{
   \item{GeneID}{EnsemblID of gene}

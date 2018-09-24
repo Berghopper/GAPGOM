@@ -1,7 +1,7 @@
 # Directed acyclic graph (DAG) mathematical functions/DAG navigation functions.
 
 # Common Ancestor for two GOIDs
-common_ancestor <- function(go_id1, go_id2, ontology, organism, go_annotation, information_content) {
+common_ancestor <- compiler::cmpfun(function(go_id1, go_id2, ontology, organism, go_annotation, information_content) {
     root_count <- max(information_content[information_content != Inf])
     information_content["all"] = 0
     p1 <- information_content[go_id1]/root_count
@@ -17,13 +17,13 @@ common_ancestor <- function(go_id1, go_id2, ontology, organism, go_annotation, i
     # 'Topoinformation_contentSim_g1g2' FUNCTION.
     common_ancestor <- intersect(ancestor1, ancestor2)
     return(common_ancestor)
-}
+})
 
 # Weighting subgraphs to get shortest and longest paths. Weighting edges is done by assigning average inverse half information_content from two corresponding nodes.
 
 # sub_graph = subgraph M = Edge matrix wm = weighted edge matrix
 
-set_edge_weight <- function(sub_graph, information_content) {
+set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
     M <- graph::edgeMatrix(sub_graph)
     wm <- graph::eWV(sub_graph, graph::edgeMatrix(sub_graph), useNNames = TRUE)
     Weights <- c()
@@ -42,10 +42,10 @@ set_edge_weight <- function(sub_graph, information_content) {
     sub_igraph <- igraph::igraph.from.graphNEL(sub_graph)
     sub_igraph <- igraph::set.edge.attribute(sub_igraph, name = "weight", value = Weights)
     return(sub_igraph)
-}
+})
 
 # Calculate weighted long path (winformation_content) between root and a disjunctive common ancestor by topological sorting algorithm.
-longest_path <- function(g, lca, root, information_content) {
+longest_path <- compiler::cmpfun(function(g, lca, root, information_content) {
 
     tsg <- igraph::topological.sort(g)
     # Set root path attributes Root distance
@@ -67,7 +67,7 @@ longest_path <- function(g, lca, root, information_content) {
         mwd <- max(wd)
         igraph::V(g)[node]$rdist <- mwd
         # Set node's path from root to path of max of added distances
-        mwdn <- as.vec1tor(igraph::V(g)[nei(node, mode = "in")])[match(mwd, wd)]
+        mwdn <- as.vector(igraph::V(g)[nei(node, mode = "in")])[match(mwd, wd)]
         V(g)[node]$rpath <- list(c(unlist(igraph::V(g)[mwdn]$rpath), node))
         L <- length(V(g)[node]$rpath[[1]]) - 1
     }
@@ -77,4 +77,4 @@ longest_path <- function(g, lca, root, information_content) {
     if (!is.na(information_content_lca) & information_content_lca != 0)
         lpl <- lpl + (1/(2 * information_content_lca))
     return(lpl * L)
-}
+})

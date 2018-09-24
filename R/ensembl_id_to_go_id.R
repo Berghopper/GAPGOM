@@ -1,4 +1,4 @@
-#' EnsemblID -> GOID conversion table
+#' GAPGOM -  EnsemblID -> GOID conversion table
 #'
 #' A dataframe containing EnsemblIDs and corresponding GOIDs for refering back
 #' and forth between the IDs.

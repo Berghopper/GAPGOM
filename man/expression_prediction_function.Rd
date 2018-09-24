@@ -2,7 +2,7 @@
 % Please edit documentation in R/similarity_prediction.R
 \name{expression_prediction_function}
 \alias{expression_prediction_function}
-\title{UGenePred - expression_prediction_function()}
+\title{GAPGOM - expression_prediction_function()}
 \usage{
 expression_prediction_function(gene_id, ontology,
   expression_data = UGenePred::expression_data,

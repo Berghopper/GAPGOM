@@ -2,11 +2,54 @@
 % Please edit documentation in R/topoicsim_algorithms.R
 \name{topo_ic_sim}
 \alias{topo_ic_sim}
-\title{Calculate topo_ic_sim between two gene lists}
+\title{GAPGOM - topo_ic_sim()}
 \usage{
-topo_ic_sim(gene_list1, gene_list2, ont = "MF", organism = "human",
-  drop = NULL)
+topo_ic_sim(gene_list1, gene_list2, ontology = "MF",
+  organism = "human", drop = NULL)
+}
+\arguments{
+\item{gene_list1}{The first gene vector of gene IDs. Note; THIS IS NOT THE
+ENSEMBLID. Instead use the gene ID adopted by NCBI.}
+
+\item{gene_list2}{Same type as gene_list1, will be compared to gene_list1.}
+
+\item{ontology}{desired ontology to use for similarity calculations.
+One of three;
+"BP" (Biological process),
+"MF" (Molecular function) or
+"CC" (Cellular Component).}
+
+\item{organism}{organism where to be scanned genes reside in, this option
+is neccesary to select the correct GO DAG. Options are based on the org.db
+bioconductor package;
+http://www.bioconductor.org/packages/release/BiocViews.html#___OrgDb
+Following options are available: "fly", "mouse", "rat", "yeast",
+"zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
+"anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
+"xenopus".}
+
+\item{drop}{vector of GOID you want to exclude from the analysis.}
+}
+\value{
+returns dataframe
 }
 \description{
-Calculate topo_ic_sim between two gene lists
+Algorithm to calculate similarity between two gene vectors.
+}
+\details{
+This function is made for calculating topological similarity between two
+gene lists of which each gene has its GO terms in the GO DAG structure.
+The topological similarity is based on edge weights and information
+content (IC). The output it a nxn matrix depending on the vector lengths.
+Intraset similarity can be calculated by comparing the same gene vector to
+itself and using mean() on the output. The same can be done for Interset
+similarity, but between two \strong{different} gene lists. [1]
+}
+\examples{
+
+}
+\references{
+[1] Ehsani R, Drabløs F: \strong{TopoICSim: a new semantic
+similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
+\strong{17}(1):296)
 }

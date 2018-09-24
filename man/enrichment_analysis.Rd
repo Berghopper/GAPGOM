@@ -2,7 +2,7 @@
 % Please edit documentation in R/enrichment_analysis.R
 \name{enrichment_analysis}
 \alias{enrichment_analysis}
-\title{UGenePred - enrichment_analysis()}
+\title{GAPGOM - enrichment_analysis()}
 \usage{
 enrichment_analysis(ordered_score_df, ontology,
   expression_data = GAPGOM::expression_data,
@@ -10,7 +10,8 @@ enrichment_analysis(ordered_score_df, ontology,
   enrichment_cutoff = 250)
 }
 \arguments{
-\item{ordered_score_df}{the score dataframe}
+\item{ordered_score_df}{the score dataframe see documentation on
+GAPGOM::example_score_dataframe for formatting.}
 
 \item{ontology}{desired ontology to use for prediction. One of three;
 "BP" (Biological process), "MF" (Molecular function) or "CC"
@@ -60,6 +61,8 @@ lncRNA. This expression data is the used in combination with mRNA GO
 annotation to calculate similarity scores between GO terms,
 }
 \examples{
+# see GAPGOM::example_score_dataframe help page for formatting on this
+# dataframe.
 GAPGOM::enrichment_analysis(GAPGOM::example_score_dataframe, "BP")
 
 }

@@ -1,4 +1,4 @@
-#' Expression data of lncRNAs.
+#' GAPGOM - Expression data of lncRNAs.
 #'
 #' A dataframe containing lncRNA expression values that have been correlated
 #' with mRNA expression. [1]
