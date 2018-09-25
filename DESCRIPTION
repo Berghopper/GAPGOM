@@ -9,7 +9,7 @@ Authors@R: c(
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Maintainer: <cp100u@hotmail.com>
 Description: Collection of various measures and tools for lncRNA annotation prediction put inside a redistributable R package.
-License: Unkown for now.
+License: MIT
 Encoding: UTF-8
 LazyData: true
 Imports:

@@ -12,7 +12,7 @@
 \alias{predict_kendall}
 \alias{predict_fisher}
 \alias{predict_sobolev}
-\title{UGenePred internal - Ambiguous/prediction functions}
+\title{GAPGOM internal - Ambiguous/prediction functions}
 \usage{
 ambiguous_scorecalc(args, applyfunc)
 

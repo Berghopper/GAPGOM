@@ -66,91 +66,91 @@ expression_prediction_function <- compiler::cmpfun(function(gene_id,
                                 end_expression_col = 22,
                                 enrichment_cutoff = 250,
                                 method = "combine") {
-    old <- options(stringsAsFactors = FALSE)
-    on.exit(options(old), add = TRUE)
-    # prepare the data with some special operations/vars that are needed later
-    expression_data_pc <- expression_data[
-      (expression_data$GeneType == "protein_coding"), ]
-    ensembl_id_pc <- expression_data_pc$GeneID
+  old <- options(stringsAsFactors = FALSE)
+  on.exit(options(old), add = TRUE)
+  # prepare the data with some special operations/vars that are needed later
+  expression_data_pc <- expression_data[
+    (expression_data$GeneType == "protein_coding"), ]
+  ensembl_id_pc <- expression_data_pc$GeneID
 
-    # Target expression data where gene id matches
-    target_expression_data <- expression_data[
-      (expression_data[, 1] == gene_id), ]
-    target_expression_data <- as.numeric(
-      target_expression_data[1, c(4:end_expression_col)])
+  # Target expression data where gene id matches
+  target_expression_data <- expression_data[
+    (expression_data[, 1] == gene_id), ]
+  target_expression_data <- as.numeric(
+    target_expression_data[1, c(4:end_expression_col)])
 
-    # make args list for ambiguous functions
-    args <- list("expression_data_pc" = expression_data_pc,
-         "start_expression_col" = start_expression_col,
-         "end_expression_col" = end_expression_col,
-         "target_expression_data" = target_expression_data,
-         "expression_data" = expression_data,
-         "ensembl_id_pc" = ensembl_id_pc,
-         "gene_id" = gene_id,
-         "ontology" = ontology,
-         "ensembl_to_go_id_conversion_df" = ensembl_to_go_id_conversion_df,
-         "enrichment_cutoff" = enrichment_cutoff)
+  # make args list for ambiguous functions
+  args <- list("expression_data_pc" = expression_data_pc,
+       "start_expression_col" = start_expression_col,
+       "end_expression_col" = end_expression_col,
+       "target_expression_data" = target_expression_data,
+       "expression_data" = expression_data,
+       "ensembl_id_pc" = ensembl_id_pc,
+       "gene_id" = gene_id,
+       "ontology" = ontology,
+       "ensembl_to_go_id_conversion_df" = ensembl_to_go_id_conversion_df,
+       "enrichment_cutoff" = enrichment_cutoff)
 
 
-    # these functions calculate score between target expression of target gene
-    # vs the rest of the desired protein coding genes.  this is either a
-    # correlation metric or a geometrical metric.
-    # after score is calculated, these scores are enriched.
-    enrichment_result <- NULL
-    if (method == "Pearson") {
-        enrichment_result <- predict_pearson(args)
+  # these functions calculate score between target expression of target gene
+  # vs the rest of the desired protein coding genes.  this is either a
+  # correlation metric or a geometrical metric.
+  # after score is calculated, these scores are enriched.
+  enrichment_result <- NULL
+  if (method == "Pearson") {
+    enrichment_result <- predict_pearson(args)
 
-    } else if (method == "spearman") {
-        enrichment_result <- predict_spearman(args)
+  } else if (method == "spearman") {
+    enrichment_result <- predict_spearman(args)
 
-    } else if (method == "kendall") {
-        enrichment_result <- predict_kendall(args)
+  } else if (method == "kendall") {
+    enrichment_result <- predict_kendall(args)
 
-    }else if (method == "fisher") {
-        enrichment_result <- predict_fisher(args)
+  } else if (method == "fisher") {
+    enrichment_result <- predict_fisher(args)
 
-    } else if (method == "sobolev") {
-        enrichment_result <- predict_sobolev(args)
+  } else if (method == "sobolev") {
+    enrichment_result <- predict_sobolev(args)
 
-    } else if (method == "combine") {
-        # Run enrichment for each method
-        enrichment_pearson <- predict_pearson(args)
-        enrichment_spearman <- predict_spearman(args)
-        enrichment_kendall <- predict_kendall(args)
-        enrichment_sobolev <- predict_sobolev(args)
-        enrichment_fisher <- predict_fisher(args)
+  } else if (method == "combine") {
+    # Run enrichment for each method
+    enrichment_pearson <- predict_pearson(args)
+    enrichment_spearman <- predict_spearman(args)
+    enrichment_kendall <- predict_kendall(args)
+    enrichment_sobolev <- predict_sobolev(args)
+    enrichment_fisher <- predict_fisher(args)
 
-        # bind all results by row
-        combined_enrichment <- rbind(enrichment_pearson,
-                                     enrichment_spearman,
-                                     enrichment_kendall,
-                                     enrichment_sobolev,
-                                     enrichment_fisher)
-        # and keep the rows with the lowest corrected P-values.
-        combined_enrichment <- ddply(combined_enrichment,
-                                           .(GOID), function(x)
-                                             x[which.min(x$FDR), ]
-                                          )
-        # Order p-values on lowest > bigest
-        enrichment_result <- combined_enrichment[order(
-          as.numeric(combined_enrichment$FDR)), ]
-    } else {
-        cat("Selected method; \"", method, "\" does not exist! Refer to the ",
-            "help page for options.", sep = "")
-        return(NULL)
-    }
-    ###
+    # bind all results by row
+    combined_enrichment <- rbind(enrichment_pearson,
+                                 enrichment_spearman,
+                                 enrichment_kendall,
+                                 enrichment_sobolev,
+                                 enrichment_fisher)
+    # and keep the rows with the lowest corrected P-values.
+    combined_enrichment <- ddply(combined_enrichment,
+                                       .(GOID), function(x)
+                                         x[which.min(x$FDR), ]
+                                      )
+    # Order p-values on lowest > bigest
+    enrichment_result <- combined_enrichment[order(
+      as.numeric(combined_enrichment$FDR)), ]
+  } else {
+    cat("Selected method; \"", method, "\" does not exist! Refer to the ",
+        "help page for options.", sep = "")
+    return(NULL)
+  }
+  ###
 
-    if (nrow(enrichment_result) > 0) {
-        # number the rownames and return the enrichment results.
-        rownames(enrichment_result) <- c(1:nrow(enrichment_result))
-        return(enrichment_result)
-    } else {
-        print("Could not find any similar genes!")
-    }
+  if (nrow(enrichment_result) > 0) {
+    # number the rownames and return the enrichment results.
+    rownames(enrichment_result) <- c(1:nrow(enrichment_result))
+    return(enrichment_result)
+  } else {
+    print("Could not find any similar genes!")
+  }
 })
 
-#' UGenePred internal - Ambiguous/prediction functions
+#' GAPGOM internal - Ambiguous/prediction functions
 #'
 #' These functions are ambiguous/standardized functions that help make the
 #' enrichment analysis steps more streamlined. Most measures have their own
@@ -191,7 +191,7 @@ ambiguous_score_sort <- compiler::cmpfun(function(score_df) {
 #' @rdname ambiguous_functions
 ambiguous_enrichment <- compiler::cmpfun(function(args, ordered_score_df) {
   # run the enrichment analysis function.
-  enrichment_result <- GAPGOM::enrichment_analysis(
+  enrichment_result <- enrichment_analysis(
     ordered_score_df,
     args$ontology,
     expression_data = args$expression_data,
@@ -202,7 +202,8 @@ ambiguous_enrichment <- compiler::cmpfun(function(args, ordered_score_df) {
 })
 
 #' @rdname ambiguous_functions
-ambiguous_method_origin <- compiler::cmpfun(function(enrichment_result, methodname) {
+ambiguous_method_origin <- compiler::cmpfun(function(enrichment_result, 
+                                                     methodname) {
   # add used_method column
   enrichment_result[, "used_method"] <- rep(
     methodname, nrow(enrichment_result))

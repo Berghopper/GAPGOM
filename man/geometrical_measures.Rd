@@ -4,7 +4,7 @@
 \alias{geometrical_measures}
 \alias{sobolev_metric}
 \alias{fisher_metric}
-\title{GAPGOM - Geometrical Similarity Measures}
+\title{GAPGOM internal - Geometrical Similarity Measures}
 \usage{
 sobolev_metric(x, y)
 
@@ -22,25 +22,26 @@ similarity. x and y may also be swapped.}
 score of similarity between the two vectors (type=double)
 }
 \description{
+These functions are internal functions and should not be called by the user.
+}
+\details{
 These geometric functions will calculate the distance between two random
 sets of variables. In our usecase this would be an expression values (FPKM).
 Given two gene expression value lists, semantic similarity will be
-calculated between them. This is then returned.
-}
-\details{
-Fisher metric is based on the G. Lebanon et al. implementation. [1]
-
-The sobolev metrix is based on the T. Villmann et al. implementation. [2]
+calculated between them. This is then returned. Fisher metric is based on 
+the G. Lebanon et al. implementation. [1] The sobolev metrix is based on 
+the T. Villmann et al. implementation. [2]
 }
 \section{Notes}{
 
 Both sobolev_metric() and fisher_metric() should have exactly the same
-input and output types.
+input and output types. Functions are used in predict_sobolev() and 
+predict_fisher().
 }
 
 \references{
-[1]. Villmann T: \strong{Sobolev metrixs for learning of functional
-data - mathematical and theoretical aspects.} In:
+[1]. Villmann T: \strong{Sobolev metrixs for learning of 
+functional data - mathematical and theoretical aspects.} In:
 \emph{Machine Learning Reports}.
 Edited by Villmann T, Schleif F-m, vol. 1. Leipzig, Germany: Medical
 Department, University of Leipzig; 2007: 1-13.

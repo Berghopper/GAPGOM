@@ -2,13 +2,17 @@
 % Please edit documentation in R/topoicsim_algorithms.R
 \name{topo_ic_sim_titj}
 \alias{topo_ic_sim_titj}
-\title{GAPGOM - topo_ic_sim_titj()}
+\title{GAPGOM internal - topo_ic_sim_titj()}
 \usage{
 topo_ic_sim_titj(go_id1, go_id2, ontology, organism, weighted_dag,
   go_annotation, root, IC, all_info_go_pairs = data.frame(GO_1 = 0, GO_2
   = 0, S_1 = 0))
 }
 \arguments{
+\item{go_id1}{GO term of first term.}
+
+\item{go_id2}{GO term of second term.}
+
 \item{ontology}{desired ontology to use for similarity calculations.
 One of three;
 "BP" (Biological process),
@@ -24,14 +28,27 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 "xenopus".}
 
+\item{weighted_dag}{DAG with weighted nodes.}
+
+\item{go_annotation}{GO annotation of the correct root node.}
+
+\item{root}{root node of the GO tree (MF, BP or CC) in databse string form.}
+
+\item{IC}{Information content of the two terms}
+
 \item{all_info_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. it is recommended to always keep
 this on default unless you know what you are doing.}
 }
+\value{
+list of score and all_info_go_pairs, the latter of which will be 
+reused.
+}
 \description{
-Algorithm to calculate similarity between two GO terms.
+This function is an internal function and should not be called by the user.
 }
 \details{
+Algorithm to calculate similarity between two GO terms.
 This function is made for calculating topological similarity of two GO
 terms in the GO DAG structure. The topological similarity is based on
 edge weights and information content (IC). [1]
@@ -40,7 +57,7 @@ edge weights and information content (IC). [1]
 
 }
 \references{
-[1] Ehsani R, Drabløs F: \strong{TopoICSim: a new semantic
+[1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 \strong{17}(1):296)
 }

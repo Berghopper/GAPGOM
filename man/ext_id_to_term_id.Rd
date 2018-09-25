@@ -22,6 +22,6 @@ Convert an ext ID to a term ID dat = EG_ (Extracted genes with correct gene onto
 }
 \section{Notes}{
 
-internal function used in enrichment_analysis()
+Internal function used in enrichment_analysis().
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/enrichment_analysis.R
 \name{enrichment_analysis}
 \alias{enrichment_analysis}
-\title{GAPGOM - enrichment_analysis()}
+\title{GAPGOM internal - enrichment_analysis()}
 \usage{
 enrichment_analysis(ordered_score_df, ontology,
   expression_data = GAPGOM::expression_data,
@@ -50,19 +50,19 @@ However, unlike in expression_prediction, this dataframe will have unsorted
 row numbering. And it won't contain used method.
 }
 \description{
-Enriches score results from multiple methods to give a better idea of
-important similarities.
+This function is an internal function and should not be called by the user.
 }
 \details{
+Enriches score results from multiple methods to give a better idea of
+important similarities.
 This function is specifically made for predicting lncRNA annotation by
 assuming "guilt by association". For instance, the expression data in this
 package is actually based on mRNA expression data, but correlated with
 lncRNA. This expression data is the used in combination with mRNA GO
 annotation to calculate similarity scores between GO terms,
 }
-\examples{
-# see GAPGOM::example_score_dataframe help page for formatting on this
-# dataframe.
-GAPGOM::enrichment_analysis(GAPGOM::example_score_dataframe, "BP")
+\section{Notes}{
 
+Internal function used in expression_prediction_function().
 }
+

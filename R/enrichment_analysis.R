@@ -1,13 +1,17 @@
-#' GAPGOM - enrichment_analysis()
+#' GAPGOM internal - enrichment_analysis()
 #'
+#' This function is an internal function and should not be called by the user.
+#' 
 #' Enriches score results from multiple methods to give a better idea of
 #' important similarities.
-#'
 #' This function is specifically made for predicting lncRNA annotation by
 #' assuming "guilt by association". For instance, the expression data in this
 #' package is actually based on mRNA expression data, but correlated with
 #' lncRNA. This expression data is the used in combination with mRNA GO
 #' annotation to calculate similarity scores between GO terms,
+#'
+#' @section Notes:
+#' Internal function used in expression_prediction_function().
 #'
 #' @param ordered_score_df the score dataframe see documentation on
 #' GAPGOM::example_score_dataframe for formatting.
@@ -33,7 +37,6 @@
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
 #'
-#'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
 #' in the dataframe;
@@ -44,13 +47,8 @@
 #' However, unlike in expression_prediction, this dataframe will have unsorted
 #' row numbering. And it won't contain used method.
 #'
-#' @examples
-#' # see GAPGOM::example_score_dataframe help page for formatting on this
-#' # dataframe.
-#' GAPGOM::enrichment_analysis(GAPGOM::example_score_dataframe, "BP")
-#'
+#' @import AnnotationDbi
 #' @importFrom plyr ddply .
-#' @export
 enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
                                 ontology,
                                 expression_data = GAPGOM::expression_data,
@@ -61,43 +59,43 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
                                     "protein_coding"), ]$GeneID
   # extracted_genes -> Extracted genes with correct gene ontology.
   if (ontology == "MF") {
-      extracted_genes <- ensembl_to_go_id_conversion_df[(
-        ensembl_to_go_id_conversion_df[, 3] == "molecular_function"), ]
+    extracted_genes <- ensembl_to_go_id_conversion_df[(
+      ensembl_to_go_id_conversion_df[, 3] == "molecular_function"), ]
   }
   if (ontology == "BP") {
-      extracted_genes <- ensembl_to_go_id_conversion_df[(
-        ensembl_to_go_id_conversion_df[, 3] == "biological_process"), ]
+    extracted_genes <- ensembl_to_go_id_conversion_df[(
+      ensembl_to_go_id_conversion_df[, 3] == "biological_process"), ]
   }
   if (ontology == "CC") {
-      # currently no such ontology in the default data. returns empty result.
-      extracted_genes <- ensembl_to_go_id_conversion_df[(
-          ensembl_to_go_id_conversion_df[, 3] == "cellular_component"), ]
+    # currently no such ontology in the default data. returns empty result.
+    extracted_genes <- ensembl_to_go_id_conversion_df[(
+      ensembl_to_go_id_conversion_df[, 3] == "cellular_component"), ]
   }
   # now filter EG to also extract only genes that are present in protein
   # coding expression data.
   extracted_genes <- extracted_genes[(extracted_genes$ensembl_gene_id %in%
-                                          ensembl_id_pc), ]
+                                        ensembl_id_pc), ]
 
-  # List of top 250 genes (Ensembl ID)
+  # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
-  # list_of_gos, 250 genes but all unqiue corresponding GO IDs
+  # list_of_gos, n genes but all unqiue corresponding GO IDs
   list_of_gos <- extracted_genes[(extracted_genes$ensembl_gene_id %in%
-                                      list_top_genes), 2]
+                                    list_top_genes), 2]
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
 
   # Count the amount of genes with the same GO ID and quantify them.
   term_id_to_ext_id <- ddply(extracted_genes, .(go_id), function(x) nrow(x))
   # set the column name to Freq Anno. (This was broken before.)
-  base::colnames(term_id_to_ext_id)[2] <- "Freq_Anno"
+  colnames(term_id_to_ext_id)[2] <- "Freq_Anno"
 
   # Filter the quantification to only have the top genes where the go ID
   # corresponds
   qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$go_id %in%
-                                                list_of_gos), ]
+                                              list_of_gos), ]
 
   # ---
 
@@ -128,20 +126,10 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
   n2 <- qterm_id_to_ext_id[, 2] - quantified_ext_id_to_term_id
   n3 <- length(unique(ensembl_id_pc)) - enrichment_cutoff -
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
-  n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # THIS IS SOMETIMES
-  # SOMETHING TOO SMALL FOR THE HYPERGEOMETRIC FUNCTION, BREAKING THIS CODE!
+  n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
 
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
-  # try to remove all variables that have a too small
-  #qterm_id_to_ext_id <- qterm_id_to_ext_id[!(qterm_id_to_ext_id$n2+
-  #                                               qterm_id_to_ext_id$n3 >
-  #                                               qterm_id_to_ext_id$n4),]
-  #if (nrow(qterm_id_to_ext_id) == 0) {
-  #  stop("N VARIABLES NOT VALID, ENRICHMENT TOO HIGH/TOTAL AMOUNT INVALID.
-  #       (Decrease cutoff?)")
-  #}
-  # now check if the df is empty, if so exit (critical bug that need fixing issue #1 on bitbucket)
   # select quantification values to at least be 5 for goID quantification.
   qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= 5), ]
 
@@ -151,7 +139,6 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
   pvalues <- apply(args.df, 1, function(n) min(phyper(0:n[1] - 1, n[2], n[3],
                                                       n[4],
                                                       lower.tail = FALSE)))
-
   # Grab corresponding go_ids
   go_id <- qterm_id_to_ext_id[, 1]
   # Replicate the ontology for the amount of rows
@@ -160,9 +147,10 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
   pvalues_formatted <- format(pvalues, scientific = TRUE, digits = 3)
   # Benjamini & Hochberg multiple comparisons adjustment
   fdr <- p.adjust(pvalues, method = "fdr", n = length(pvalues))
-  # grab description of each gene ontology term using Term() from the annotationDbi package.
+  # grab description of each gene ontology term using Term() from the 
+  # annotationDbi package.
 
-  term <- AnnotationDbi::Term(qterm_id_to_ext_id[, 1])
+  term <- Term(qterm_id_to_ext_id[, 1])
   # Create a dataframe containing all results in a neat format.
   enrichment_dataframe <- data.frame(GOID = go_id, Ontology = ontology,
                                      Pvalue = pvalues_formatted,

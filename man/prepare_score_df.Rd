@@ -24,6 +24,6 @@ Prepared score dataframe for the enrichment analysis.
 }
 \section{Notes}{
 
-internal function used in prediction_function()
+Internal function used in prediction_function().
 }
 

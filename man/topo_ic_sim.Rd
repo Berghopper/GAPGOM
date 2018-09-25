@@ -31,7 +31,8 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 }
 \value{
-returns dataframe
+returns dataframe containing similarities between corresponding
+Gene pairs.
 }
 \description{
 Algorithm to calculate similarity between two gene vectors.
@@ -46,10 +47,13 @@ itself and using mean() on the output. The same can be done for Interset
 similarity, but between two \strong{different} gene lists. [1]
 }
 \examples{
+list1 <- c("126133","221","218","216","8854","220","219","160428","224",
+"222","8659","501","64577","223","217","4329","10840","7915")
+GAPGOM::topo_ic_sim(list1, list1, ont="MF", organism="human", drop=NULL)
 
 }
 \references{
-[1] Ehsani R, Drabløs F: \strong{TopoICSim: a new semantic
+[1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 \strong{17}(1):296)
 }

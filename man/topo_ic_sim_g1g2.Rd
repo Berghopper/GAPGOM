@@ -9,6 +9,12 @@ topo_ic_sim_g1g2(gene1, gene2, go_data, ontology = "MF",
   all_info_go_pairs = data.frame(GO_1 = 0, GO_2 = 0, S_1 = 0))
 }
 \arguments{
+\item{gene1}{Gene ID of the first Gene.}
+
+\item{gene2}{Gene ID of the second Gene.}
+
+\item{go_data}{correct GO data from specefic species.}
+
 \item{ontology}{desired ontology to use for similarity calculations.
 One of three;
 "BP" (Biological process),
@@ -30,6 +36,10 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 representing similarity between the two. it is recommended to always keep
 this on default unless you know what you are doing.}
 }
+\value{
+similarity between genes taken from the mean of all term 
+similarities.
+}
 \description{
 Algorithm to calculate similarity between GO terms of two genes.
 }
@@ -39,10 +49,11 @@ given their GO terms in the GO DAG structure. The topological similarity is
 based on edge weights and information content (IC). [1]
 }
 \examples{
+GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", drop=NULL)
 
 }
 \references{
-[1] Ehsani R, Drabløs F: \strong{TopoICSim: a new semantic
+[1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 \strong{17}(1):296)
 }
