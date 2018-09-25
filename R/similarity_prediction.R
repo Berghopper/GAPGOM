@@ -38,7 +38,7 @@
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
 #' @param method which statistical method to use for the prediction, currently
-#' there are 5 available; "Pearson", "Spearman", "Kendall", "Fisher", "Sobolev"
+#' there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 #' and "combine".
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
@@ -97,50 +97,19 @@ expression_prediction_function <- compiler::cmpfun(function(gene_id,
   # correlation metric or a geometrical metric.
   # after score is calculated, these scores are enriched.
   enrichment_result <- NULL
-  if (method == "Pearson") {
-    enrichment_result <- predict_pearson(args)
-
-  } else if (method == "spearman") {
-    enrichment_result <- predict_spearman(args)
-
-  } else if (method == "kendall") {
-    enrichment_result <- predict_kendall(args)
-
-  } else if (method == "fisher") {
-    enrichment_result <- predict_fisher(args)
-
-  } else if (method == "sobolev") {
-    enrichment_result <- predict_sobolev(args)
-
-  } else if (method == "combine") {
-    # Run enrichment for each method
-    enrichment_pearson <- predict_pearson(args)
-    enrichment_spearman <- predict_spearman(args)
-    enrichment_kendall <- predict_kendall(args)
-    enrichment_sobolev <- predict_sobolev(args)
-    enrichment_fisher <- predict_fisher(args)
-
-    # bind all results by row
-    combined_enrichment <- rbind(enrichment_pearson,
-                                 enrichment_spearman,
-                                 enrichment_kendall,
-                                 enrichment_sobolev,
-                                 enrichment_fisher)
-    # and keep the rows with the lowest corrected P-values.
-    combined_enrichment <- ddply(combined_enrichment,
-                                       .(GOID), function(x)
-                                         x[which.min(x$FDR), ]
-                                      )
-    # Order p-values on lowest > bigest
-    enrichment_result <- combined_enrichment[order(
-      as.numeric(combined_enrichment$FDR)), ]
-  } else {
-    cat("Selected method; \"", method, "\" does not exist! Refer to the ",
-        "help page for options.", sep = "")
-    return(NULL)
-  }
-  ###
-
+  enrichment_result <- switch(method,
+    "pearson" =  predict_pearson(args),
+    "spearman" = predict_spearman(args),
+    "kendall" = predict_kendall(args),
+    "fisher" = predict_fisher(args),
+    "sobolev" = predict_sobolev(args),
+    "combine" = predict_combined(args),
+    function() {
+      cat("Selected method; \"", method, "\" does not exist! Refer to the ",
+          "help page for options.", sep = "")
+      return(NULL)
+    }
+  )
   if (nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(1:nrow(enrichment_result))
@@ -257,5 +226,31 @@ predict_sobolev <- compiler::cmpfun(function(args) {
   enrichment_result <- ambiguous_enrichment(args,
                                             ambiguous_score_sort(score_df))
   enrichment_result <- ambiguous_method_origin(enrichment_result, "sobolev")
+  return(enrichment_result)
+})
+
+#' @rdname ambiguous_functions
+predict_combined <- compiler::cmpfun(function(args) {
+  # Run enrichment for each method
+  enrichment_pearson <- predict_pearson(args)
+  enrichment_spearman <- predict_spearman(args)
+  enrichment_kendall <- predict_kendall(args)
+  enrichment_sobolev <- predict_sobolev(args)
+  enrichment_fisher <- predict_fisher(args)
+  
+  # bind all results by row
+  combined_enrichment <- rbind(enrichment_pearson,
+                               enrichment_spearman,
+                               enrichment_kendall,
+                               enrichment_sobolev,
+                               enrichment_fisher)
+  # and keep the rows with the lowest corrected P-values.
+  combined_enrichment <- ddply(combined_enrichment,
+                               .(GOID), function(x)
+                                 x[which.min(x$FDR), ]
+  )
+  # Order p-values on lowest > bigest
+  enrichment_result <- combined_enrichment[order(
+    as.numeric(combined_enrichment$FDR)), ]
   return(enrichment_result)
 })
