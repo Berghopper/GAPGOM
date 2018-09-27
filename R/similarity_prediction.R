@@ -59,9 +59,9 @@
 expression_prediction_function <- compiler::cmpfun(function(gene_id,
                                 ontology,
                                 expression_data =
-                                  UGenePred::expression_data,
+                                  GAPGOM::expression_data,
                                 ensembl_to_go_id_conversion_df =
-                                  UGenePred::ensembl_id_to_go_id,
+                                  GAPGOM::ensembl_id_to_go_id,
                                 start_expression_col = 4,
                                 end_expression_col = 22,
                                 enrichment_cutoff = 250,

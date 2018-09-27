@@ -5,8 +5,8 @@
 \title{GAPGOM - expression_prediction_function()}
 \usage{
 expression_prediction_function(gene_id, ontology,
-  expression_data = UGenePred::expression_data,
-  ensembl_to_go_id_conversion_df = UGenePred::ensembl_id_to_go_id,
+  expression_data = GAPGOM::expression_data,
+  ensembl_to_go_id_conversion_df = GAPGOM::ensembl_id_to_go_id,
   start_expression_col = 4, end_expression_col = 22,
   enrichment_cutoff = 250, method = "combine")
 }
@@ -47,7 +47,7 @@ dataset.}
 enriched in the enrichment analysis. (default is 250)}
 
 \item{method}{which statistical method to use for the prediction, currently
-there are 5 available; "Pearson", "Spearman", "Kendall", "Fisher", "Sobolev"
+there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 and "combine".}
 }
 \value{

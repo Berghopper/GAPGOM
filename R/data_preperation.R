@@ -28,3 +28,12 @@ set_go_data <- compiler::cmpfun(function(organism, ontology) {
                     xenopus = "org.Xl.eg.db")
   return(godata(species, ont = ontology, computeIC = TRUE))
 })
+
+#' @importFrom Biobase ExpressionSet
+cageset_to_expressionset <- function(cageset) {
+  # first calculate RPM values.
+  normed_tagcounts <- t(apply(cageset@tagCountMatrix, 1, function(x) {x/(nrow(cageset@tagCountMatrix)/1000000)}))
+  rownames(normed_tagcounts) <- with(cageset@CTSScoordinates, paste(chr, pos, strand, sep="_"))
+  
+  return(ExpressionSet(as.matrix(normed_tagcounts[1:1000,])))
+}

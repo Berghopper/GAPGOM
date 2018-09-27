@@ -55,7 +55,6 @@ topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
                                                  data.frame(GO_1 = 0,
                                                             GO_2 = 0,
                                                             S_1 = 0)) {
-  # =data.frame(GO_1=0, GO_2=0, S_1=0)
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   D_ti_tj_x <- c()

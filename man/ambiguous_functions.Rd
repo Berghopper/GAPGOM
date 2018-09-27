@@ -12,6 +12,7 @@
 \alias{predict_kendall}
 \alias{predict_fisher}
 \alias{predict_sobolev}
+\alias{predict_combined}
 \title{GAPGOM internal - Ambiguous/prediction functions}
 \usage{
 ambiguous_scorecalc(args, applyfunc)
@@ -33,6 +34,8 @@ predict_kendall(args)
 predict_fisher(args)
 
 predict_sobolev(args)
+
+predict_combined(args)
 }
 \description{
 These functions are ambiguous/standardized functions that help make the
