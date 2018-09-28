@@ -17,11 +17,11 @@ fdat_andf <- as(fdat, "AnnotatedDataFrame")
 new_obj <- Biobase::ExpressionSet(new_exp, featureData = fdat_andf)
 
 # fantom5 data load.
-fantom_load_raw <- function(filepath) {
+fantom_load_raw <- function(filepath, verbose = F) {
   options(stringsAsFactors = F)
   library(data.table)
   # '/media/casper/USB_ccpeters/internship_thesis/data/hg19.cage_peak_phase1and2combined_counts.osc.txt'
-  print("reading columnvariables...")
+  if (verbose) print("reading columnvariables...")
   con <- file(filepath, "r")
   translation_df <- data.frame(c(0,0,0))
   linecount <- 0
@@ -38,10 +38,14 @@ fantom_load_raw <- function(filepath) {
   translation_df <- as.data.frame(t(translation_df))
   rownames(translation_df) <- 1:nrow(translation_df)
   colnames(translation_df) <- c("type","key","value")
-  translation_df <<- translation_df
   close(con)
-  fan <<- fread(filepath, skip=linecount)
+  if (verbose) print("DONE")
+  if (verbose) print("loading table...")
+  fan <- fread(filepath, skip=linecount, showProgress = verbose)
+  if (verbose) print("DONE")
+  if (verbose) print("formatting column names...")
   colnames(fan) <- sapply(colnames(fan), function(x){translation_df[translation_df$key==x,]$value})
+  if (verbose) print("DONE")
   # now make a ExpressionSet LEFT OFF HERE
   translation_df[translation_df$type!="ColumnVariables" | translation_df$type!=0,]
   return(fan)
@@ -63,3 +67,12 @@ View(ft5)
 bla <- t(apply(ft5@tagCountMatrix, 1, function(x) {x/(nrow(ft5@tagCountMatrix)/1000000)}))
 rownames(bla) <- with(ft5@CTSScoordinates, paste(chr, pos, strand, sep="_"))
 bla
+
+#' @importFrom Biobase ExpressionSet
+cageset_to_expressionset <- function(cageset) {
+  # first calculate RPM values.
+  normed_tagcounts <- t(apply(cageset@tagCountMatrix, 1, function(x) {x/(nrow(cageset@tagCountMatrix)/1000000)}))
+  rownames(normed_tagcounts) <- with(cageset@CTSScoordinates, paste(chr, pos, strand, sep="_"))
+  
+  return(ExpressionSet(as.matrix(normed_tagcounts[1:1000,])))
+}

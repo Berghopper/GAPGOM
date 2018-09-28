@@ -5,6 +5,7 @@
 *.Rproj
 *.Rproj.user
 .RData
+.RDataTmp
 *.Rhistory
 *.Rbuildignore
 .Rproj.user
