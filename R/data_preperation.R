@@ -72,30 +72,23 @@ fantom_load_raw <- function(filepath, verbose = F) {
 }
 
 #' convert ft5 to expset
-#' @importFrom Biobase ExpressionSet
-fantom_to_expset <- function(fanraw, colselector, verbose = F) {
+#' @example 
+#' ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
+#' fantom_to_expset(ft5_r)
+#' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
+fantom_to_expset <- function(fanraw, verbose = F) {
   fan <- fanraw$table
   meta <- fanraw$meta
-  # try see if columnnames include any type of entrez id
-  colnames_fan <- colnames(fan)
-  exp <- regexec(".*entrez.*", colnames_fan)
-  regex_result <- unlist(regmatches(colnames_fan, exp))
-  if (length(regex_result)==0) {
-    stop("ERROR: entrez id column not found!")
-  } else if (length(regex_result) > 1) {
-    print(length(regex_result))
-    print(regex_result[1:100])
-    stop("ERROR: mutliple entrez ids?")
-  } else if (length(regex_result) == 1) {
-    # if regex result contains only 1 string, move on.
-    if (verbose) print("filtering out empty entrez ids...")
-    fan <- fan[!(is.na(fan[[regex_result]]) | fan[[regex_result]]==""),]
-    if (verbose) print("DONE")
-    if (verbose) print("converting to expressionset...")
-    expression_matrix <- as.matrix(fan[,colselector])
-    rownames(expression_matrix) <- fan[[regex_result]]
-    return(ExpressionSet(expression_matrix, ...=meta))
-  }
+  if (verbose) print("filtering out empty entrez ids...")
+  fan <- fan[!(is.na(fan$`entrezgene (genes) id associated with the transcript`) | fan$`entrezgene (genes) id associated with the transcript`==""),]
+  if (verbose) print("DONE")
+  if (verbose) print("converting to expressionset...")
+  expression_matrix <- as.matrix(fan[,7:ncol(fan)])
+  rownames(expression_matrix) <- fan$`CAGE peak id`
+  featuredat <- as.data.frame(fan[,2:6])
+  rownames(featuredat) <- fan$`CAGE peak id`
+  return(ExpressionSet(expression_matrix, featureData = new("AnnotatedDataFrame", data=featuredat),...=meta))
+  
 }
 
 
