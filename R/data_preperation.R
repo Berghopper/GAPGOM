@@ -72,7 +72,7 @@ fantom_load_raw <- function(filepath, verbose = F) {
 }
 
 #' convert ft5 to expset
-#' @example 
+#' @examples 
 #' ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
 #' fantom_to_expset(ft5_r)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
@@ -90,6 +90,17 @@ fantom_to_expset <- function(fanraw, verbose = F) {
   return(ExpressionSet(expression_matrix, featureData = new("AnnotatedDataFrame", data=featuredat),...=meta))
   
 }
+
+#' @importFrom GEOquery gunzip
+download_fantom5 <- function(down_dir, organism="human") {
+  url <- switch(organism, "human" = "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt.gz",
+         "mouse" = "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt.gz")
+  filename <- strsplit(url, "/")[[1]][length(strsplit(url, "/")[[1]])]
+  full_filename <- paste0(down_dir,"/",filename)
+  download.file(url, full_filename, "auto")
+  gunzip(full_filename, overwrite = T)
+}
+
 
 
 #' convert into expressionset

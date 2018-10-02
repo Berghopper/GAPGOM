@@ -9,3 +9,7 @@ fantom_to_expset(fanraw, verbose = F)
 \description{
 convert ft5 to expset
 }
+\examples{
+ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
+fantom_to_expset(ft5_r)
+}

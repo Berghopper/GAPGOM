@@ -16,7 +16,7 @@ NULL
 
 #' Common Ancestor for two GOIDs
 #' @rdname dag_funcs
-common_ancestor <- compiler::cmpfun(function(go_id1, go_id2, ontology, 
+.common_ancestor <- compiler::cmpfun(function(go_id1, go_id2, ontology, 
                                              organism, go_annotation, 
                                              information_content) {
   root_count <- max(information_content[information_content != Inf])
@@ -41,7 +41,7 @@ common_ancestor <- compiler::cmpfun(function(go_id1, go_id2, ontology,
 #' @importFrom graph edgeMatrix eWV
 #' @importFrom igraph igraph.from.graphNEL set.edge.attribute
 #' @rdname dag_funcs
-set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
+.set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
   edge_matrix <- edgeMatrix(sub_graph)
   weighted_edge_matrix <- eWV(sub_graph, edge_matrix, useNNames = TRUE)
   Weights <- c()
@@ -68,7 +68,7 @@ set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
 #' disjunctive common ancestor by topological sorting algorithm.
 #' @import igraph
 #' @rdname dag_funcs
-longest_path <- compiler::cmpfun(function(weighted_subgraph, 
+.longest_path <- compiler::cmpfun(function(weighted_subgraph, 
                                           last_common_ancestor, 
                                           root, 
                                           information_content) {

@@ -58,17 +58,17 @@ topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   D_ti_tj_x <- c()
-  common_ancestors <- common_ancestors(go_id1, go_id2, ontology, organism,
+  common_ancestor <- .common_ancestor(go_id1, go_id2, ontology, organism,
                                      go_annotation, IC)
-  if (length(common_ancestors) != 0 && !is.na(common_ancestors)) {
-    for (x in common_ancestors) {
+  if (length(common_ancestor) != 0 && !is.na(common_ancestor)) {
+    for (x in common_ancestor) {
       # To identify all disjunctive common ancestors
       immediate_children_x <- switch(ontology,
                                      MF = GOMFCHILDREN[[x]],
                                      BP = GOBPCHILDREN[[x]],
                                      CC = GOCCCHILDREN[[x]])
       if (x != "all" & x != root & !is.na(x) &
-        length(intersect(immediate_children_x, common_ancestors)) == 0) {
+        length(intersect(immediate_children_x, common_ancestor)) == 0) {
         # Subgraph from two GO terms go_id1 and go_id2
         sg1 <- subGraph(c(get(go_id1, go_annotation), go_id1),
                         weighted_dag)
@@ -76,15 +76,15 @@ topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
                         weighted_dag)
         # Subgraph from a disjunctive common ancestor to root
         sglca <- subGraph(c(get(x, go_annotation), x), weighted_dag)
-        sglca <- set_edge_weight(sglca, IC)
-        wLP_x_root <- longest_path(sglca, x, root, IC)
-        sg1 <- set_edge_weight(sg1, IC)
+        sglca <- .set_edge_weight(sglca, IC)
+        wLP_x_root <- .longest_path(sglca, x, root, IC)
+        sg1 <- .set_edge_weight(sg1, IC)
         sg1 <- igraph.to.graphNEL(sg1)
         sp1 <- sp.between(sg1, go_id1, x)
         ic_sp1 <- sp1[[1]]$length
         length_sp1 <- length(sp1[[1]]$path_detail)
 
-        sg2 <- set_edge_weight(sg2, IC)
+        sg2 <- .set_edge_weight(sg2, IC)
         sg2 <- igraph.to.graphNEL(sg2)
         sp2 <- sp.between(sg2, go_id2, x)
         ic_sp2 <- sp2[[1]]$length
