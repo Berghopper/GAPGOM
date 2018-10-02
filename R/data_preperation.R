@@ -29,7 +29,7 @@ set_go_data <- compiler::cmpfun(function(organism, ontology) {
   return(godata(species, ont = ontology, computeIC = TRUE))
 })
 
-#' strsplit(ft5_ranncom$table[!(is.na(ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`) | ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`==""),][1,5][[1]], "\\:")[[1]][2]
+# strsplit(ft5_ranncom$df[!(is.na(ft5_ranncom$df$`entrezgene (genes) id associated with the transcript`) | ft5_ranncom$df$`entrezgene (genes) id associated with the transcript`==""),][1,5][[1]], "\\:")[[1]][2]
 
 #' fantom5 data load.
 #' @importFrom data.table fread
@@ -59,16 +59,16 @@ fantom_load_raw <- function(filepath, verbose = F) {
   colnames(translation_df) <- c("type","key","value")
   close(con)
   if (verbose) print("DONE")
-  if (verbose) print("loading table...")
-  # load table
+  if (verbose) print("loading dataframe...")
+  # load df
   fan <- fread(filepath, skip=linecount, showProgress = verbose)
   if (verbose) print("DONE")
   if (verbose) print("formatting column names...")
   # and touch up column names
   colnames(fan) <- sapply(colnames(fan), function(x){translation_df[translation_df$key==x,]$value})
   if (verbose) print("DONE")
-  # return table+leftover metadata (header variables).
-  return(list(table=fan, meta=translation_df[translation_df$type!="ColumnVariables" | translation_df$type!=0,]))
+  # return df+leftover metadata (header variables).
+  return(list(df=fan, meta=translation_df[translation_df$type!="ColumnVariables" | translation_df$type!=0,]))
 }
 
 #' convert ft5 to expset
@@ -77,16 +77,19 @@ fantom_load_raw <- function(filepath, verbose = F) {
 #' fantom_to_expset(ft5_r)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 fantom_to_expset <- function(fanraw, verbose = F) {
-  fan <- fanraw$table
+  fan <- fanraw$df
   meta <- fanraw$meta
   if (verbose) print("filtering out empty entrez ids...")
   fan <- fan[!(is.na(fan$`entrezgene (genes) id associated with the transcript`) | fan$`entrezgene (genes) id associated with the transcript`==""),]
+  fan <- fan[1:10000,1:15]
   if (verbose) print("DONE")
   if (verbose) print("converting to expressionset...")
   expression_matrix <- as.matrix(fan[,7:ncol(fan)])
   rownames(expression_matrix) <- fan$`CAGE peak id`
   featuredat <- as.data.frame(fan[,2:6])
   rownames(featuredat) <- fan$`CAGE peak id`
+  print(nrow(featuredat))
+  print(nrow(expression_matrix))
   return(ExpressionSet(expression_matrix, featureData = new("AnnotatedDataFrame", data=featuredat),...=meta))
   
 }
@@ -107,6 +110,12 @@ download_fantom5 <- function(down_dir, organism="human") {
 fantom_load_expressionset <- function(filepath, colselector, verbose = F) {
   fanraw <- fantom_load_raw(filepath, verbose = verbose)
   return(fantom_to_expset(fanraw, colselector, verbose = verbose))
+}
+
+#' @export
+fantom_test_data <- function() {
+  ft5 <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
+  return(fantom_to_expset(ft5))
 }
 
 
