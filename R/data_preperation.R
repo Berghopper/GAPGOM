@@ -29,12 +29,11 @@ set_go_data <- compiler::cmpfun(function(organism, ontology) {
   return(godata(species, ont = ontology, computeIC = TRUE))
 })
 
-# strsplit(ft5_ranncom$df[!(is.na(ft5_ranncom$df$`entrezgene (genes) id associated with the transcript`) | ft5_ranncom$df$`entrezgene (genes) id associated with the transcript`==""),][1,5][[1]], "\\:")[[1]][2]
-
 #' fantom5 data load.
 #' @importFrom data.table fread
 #' @examples 
-#' ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/hg19.cage_peak_phase1and2combined_counts.osc.txt2", verbose=T)
+#' ft5 <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/human/hg19.cage_peak_phase1and2combined_counts.osc.txt", verbose=T)
+#' @export
 fantom_load_raw <- function(filepath, verbose = F) {
   old <- options(stringsAsFactors = F)
   on.exit(options(old), add = TRUE)
@@ -76,23 +75,29 @@ fantom_load_raw <- function(filepath, verbose = F) {
 #' ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
 #' fantom_to_expset(ft5_r)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
-fantom_to_expset <- function(fanraw, verbose = F) {
+fantom_to_expset <- function(fanraw, verbose = F, filter = TRUE) {
   fan <- fanraw$df
   meta <- fanraw$meta
-  if (verbose) print("filtering out empty entrez ids...")
-  fan <- fan[!(is.na(fan$`entrezgene (genes) id associated with the transcript`) | fan$`entrezgene (genes) id associated with the transcript`==""),]
-  #fan <- fan[1:10000,1:15]
+  if (filtered) {
+    if (verbose) print("filtering out empty entrez ids...")
+    fan <- fantom_filter_entrez(fan)
+  } 
   if (verbose) print("DONE")
   if (verbose) print("converting to expressionset...")
   expression_matrix <- as.matrix(fan[,7:ncol(fan)])
   rownames(expression_matrix) <- fan$`CAGE peak id`
   featuredat <- as.data.frame(fan[,2:6])
   rownames(featuredat) <- fan$`CAGE peak id`
-  print(nrow(featuredat))
-  print(nrow(expression_matrix))
   return(ExpressionSet(expression_matrix, featureData = new("AnnotatedDataFrame", data=featuredat),...=meta))
   
 }
+
+fantom_filter_entrez <- function(fan) {
+  return(fan[!(
+    is.na(fan$`entrezgene (genes) id associated with the transcript`) | 
+      fan$`entrezgene (genes) id associated with the transcript`==""),])
+}
+
 
 #' @importFrom GEOquery gunzip
 download_fantom5 <- function(down_dir, organism="human") {

@@ -7,18 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 \*Changes of commit versions will not be kept track of, instead only major and minor versions will keep a changelog;
 
 x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not the small "z" version changes, because this changes with every commit.
-All z changes will be kept track of in the unreleased minor version. There was an exception for the first version however, because this version didn't
+All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1).
 
 ## [0.1.0 - Unreleased]
 ### Planned changes/features (subject to changes)
-- Better input interface and refactoring towards ExpressionSet based system (this will be a lot of work...).
-- replacement for current example data by ExpressionSet class of fantom5 annotated data.
 ### Added
 - Changelog (NEWS.md).
+- Better input interface and refactoring towards ExpressionSet based system.
+- Replacement for current example data by ExpressionSet class of fantom5 annotated data (smaller subset).
+- Documentation file for new data.
 ### Changed
 - Small refactor to switch case in expression_prediction_function().
+- Documentation of lncRNApred related functions
 - Bumped up y version number to correct Bioconductor convention.
+### Removed
+- Old example/expression data, this will be re-added later once proper source is known.
 
 ## [0.0.1] - 2018-09-25
 ### Added

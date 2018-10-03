@@ -27,13 +27,8 @@
 #' database).
 #' Next, a range of n-columns long, containing expression values, names do not
 #' matter here. (You can use the existing dataset as an example)
-#' @param ensembl_to_go_id_conversion_df dataframe with corresponding GOIDs and
-#' EnsemblIDs. As well as the expression value dataframe, this dataframe should
-#' contain certain information with specific columnnames as well;
-#' 1st neccesary col; name; "ensembl_gene_id" (Ensembl gene IDs).
-#' 2nd neccesary col; go_id; "go_id" (Gene Ontology term ID).
-#' 3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
-#' (You can use the existing dataset as an example)
+#' @param id_translation_df dataframe with corresponding GOIDs,
+#' EntrezIDs and General ID defined by ExpressionSet. (rownames of ).
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
 #'
