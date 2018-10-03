@@ -36,6 +36,6 @@ prepare_score_df <- compiler::cmpfun(function(pc_ensmbl_id, score, gene_id) {
 #' @importFrom plyr ddply .
 ext_id_to_term_id <- compiler::cmpfun(function(data, list_top_genes) {
   # add 1 for each gene that is in list top genes.
-  return(ddply(data, .(go_id), function(x) nrow(x[(
-    x$ensembl_gene_id %in% list_top_genes), ])))
+  return(ddply(data, .(GO), function(x) nrow(x[(
+    x$ORIGID %in% list_top_genes), ])))
 })

@@ -76,3 +76,12 @@ cageset_to_expressionset <- function(cageset) {
   
   return(ExpressionSet(as.matrix(normed_tagcounts[1:1000,])))
 }
+
+colnames_fan <- colnames(GAPGOM::f5_testdat@featureData@data)
+exp <- regexec(".*entrez.*", colnames_fan)
+regex_result <- unlist(regmatches(colnames_fan, exp))
+GAPGOM::f5_testdat@featureData@data$regex_result
+GAPGOM::f5_testdat@featureData@data[,regex_result]
+
+GAPGOM::f5_testdat@featureData@data$regex_result
+is.null(GAPGOM::f5_testdat@featureData@data$regex_result)

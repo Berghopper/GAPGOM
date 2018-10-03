@@ -81,7 +81,7 @@ fantom_to_expset <- function(fanraw, verbose = F) {
   meta <- fanraw$meta
   if (verbose) print("filtering out empty entrez ids...")
   fan <- fan[!(is.na(fan$`entrezgene (genes) id associated with the transcript`) | fan$`entrezgene (genes) id associated with the transcript`==""),]
-  fan <- fan[1:10000,1:15]
+  #fan <- fan[1:10000,1:15]
   if (verbose) print("DONE")
   if (verbose) print("converting to expressionset...")
   expression_matrix <- as.matrix(fan[,7:ncol(fan)])

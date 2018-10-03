@@ -4,10 +4,8 @@
 \alias{enrichment_analysis}
 \title{GAPGOM internal - enrichment_analysis()}
 \usage{
-enrichment_analysis(ordered_score_df, ontology,
-  expression_data = GAPGOM::expression_data,
-  ensembl_to_go_id_conversion_df = GAPGOM::ensembl_id_to_go_id,
-  enrichment_cutoff = 250)
+enrichment_analysis(ordered_score_df, organism, ontology, expression_set,
+  id_select_vector, enrichment_cutoff = 250)
 }
 \arguments{
 \item{ordered_score_df}{the score dataframe see documentation on
@@ -17,6 +15,9 @@ GAPGOM::example_score_dataframe for formatting.}
 "BP" (Biological process), "MF" (Molecular function) or "CC"
 (Cellular Component). Cellular Component is not included with the package's
 standard data and will thus yield no results.}
+
+\item{enrichment_cutoff}{cutoff number for the amount of genes to be
+enriched in the enrichment analysis. (default is 250)}
 
 \item{expression_data}{dataframe with at least 1 or more
 rows. Some of the columns should be named certain ways and the dataframe
@@ -34,9 +35,6 @@ contain certain information with specific columnnames as well;
 2nd neccesary col; go_id; "go_id" (Gene Ontology term ID).
 3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
 (You can use the existing dataset as an example)}
-
-\item{enrichment_cutoff}{cutoff number for the amount of genes to be
-enriched in the enrichment analysis. (default is 250)}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.

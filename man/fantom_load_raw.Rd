@@ -2,13 +2,11 @@
 % Please edit documentation in R/data_preperation.R
 \name{fantom_load_raw}
 \alias{fantom_load_raw}
-\title{strsplit(ft5_ranncom$table[!(is.na(ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`) | ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`==""),][1,5][[1]], "\\:")[[1]][2]
-fantom5 data load.}
+\title{fantom5 data load.}
 \usage{
 fantom_load_raw(filepath, verbose = F)
 }
 \description{
-strsplit(ft5_ranncom$table[!(is.na(ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`) | ft5_ranncom$table$`entrezgene (genes) id associated with the transcript`==""),][1,5][[1]], "\\:")[[1]][2]
 fantom5 data load.
 }
 \examples{

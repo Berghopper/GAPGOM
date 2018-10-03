@@ -4,11 +4,8 @@
 \alias{expression_prediction_function}
 \title{GAPGOM - expression_prediction_function()}
 \usage{
-expression_prediction_function(gene_id, ontology,
-  expression_data = GAPGOM::expression_data,
-  ensembl_to_go_id_conversion_df = GAPGOM::ensembl_id_to_go_id,
-  start_expression_col = 4, end_expression_col = 22,
-  enrichment_cutoff = 250, method = "combine")
+expression_prediction_function(gene_id, expression_set, id_select_vector,
+  organism, ontology, enrichment_cutoff = 250, method = "combine")
 }
 \arguments{
 \item{gene_id}{gene EnsemblID to be compared to the other GO terms.}
@@ -17,6 +14,13 @@ expression_prediction_function(gene_id, ontology,
 "BP" (Biological process), "MF" (Molecular function) or "CC"
 (Cellular Component). Cellular Component is not included with the package's
 standard data and will thus yield no results.}
+
+\item{enrichment_cutoff}{cutoff number for the amount of genes to be
+enriched in the enrichment analysis. (default is 250)}
+
+\item{method}{which statistical method to use for the prediction, currently
+there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
+and "combine".}
 
 \item{expression_data}{expression data dataframe with at least 1 or more
 rows. Some of the columns should be named certain ways and the dataframe
@@ -42,13 +46,6 @@ the included dataset.}
 \item{end_expression_col}{should be the last column inside "expression_data"
 containing expression values. default is 22, catered to the included
 dataset.}
-
-\item{enrichment_cutoff}{cutoff number for the amount of genes to be
-enriched in the enrichment analysis. (default is 250)}
-
-\item{method}{which statistical method to use for the prediction, currently
-there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
-and "combine".}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
@@ -75,5 +72,7 @@ annotation to calculate similarity scores between GO terms,
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on.
 GAPGOM::expression_prediction_function('ENSG00000228630', 'BP')
-
+sort_list <- rownames(f5_testdat@assayData$exprs)[sample(10000, 1000)]
+gid <- "chr10:100007025..100007067,+"
+GAPGOM::expression_prediction_function(gid, GAPGOM::f5_testdat, sort_list, "mouse", "BP")
 }

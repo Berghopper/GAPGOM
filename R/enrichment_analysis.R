@@ -49,52 +49,40 @@
 #'
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
-enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
+enrichment_analysis <- compiler::cmpfun(function(
+                                id_translation_df,
+                                ordered_score_df,
+                                organism,
                                 ontology,
-                                expression_data = GAPGOM::expression_data,
-                                ensembl_to_go_id_conversion_df =
-                                  GAPGOM::ensembl_id_to_go_id,
+                                expression_set,
+                                id_select_vector,
                                 enrichment_cutoff = 250) {
-  ensembl_id_pc <- expression_data[(expression_data$GeneType ==
-                                    "protein_coding"), ]$GeneID
   # extracted_genes -> Extracted genes with correct gene ontology.
-  if (ontology == "MF") {
-    extracted_genes <- ensembl_to_go_id_conversion_df[(
-      ensembl_to_go_id_conversion_df[, 3] == "molecular_function"), ]
-  }
-  if (ontology == "BP") {
-    extracted_genes <- ensembl_to_go_id_conversion_df[(
-      ensembl_to_go_id_conversion_df[, 3] == "biological_process"), ]
-  }
-  if (ontology == "CC") {
-    # currently no such ontology in the default data. returns empty result.
-    extracted_genes <- ensembl_to_go_id_conversion_df[(
-      ensembl_to_go_id_conversion_df[, 3] == "cellular_component"), ]
-  }
-  # now filter EG to also extract only genes that are present in protein
-  # coding expression data.
-  extracted_genes <- extracted_genes[(extracted_genes$ensembl_gene_id %in%
-                                        ensembl_id_pc), ]
+  # now filter EG to also extract only genes that are present in user defined
+  # expression data rows. 
+  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
+                                        id_select_vector), ]
 
   # List of top n (cutoff) genes (Ensembl ID)
-  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
+  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1] ## FIX IN TOPLEVEL
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
   # list_of_gos, n genes but all unqiue corresponding GO IDs
-  list_of_gos <- extracted_genes[(extracted_genes$ensembl_gene_id %in%
-                                    list_top_genes), 2]
+  # REPLACE this also with help of a retrieval function via gosemsim
+  list_of_gos <- extracted_genes[(extracted_genes$ORIGID %in%
+                                    list_top_genes), 3]
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
 
   # Count the amount of genes with the same GO ID and quantify them.
-  term_id_to_ext_id <- ddply(extracted_genes, .(go_id), function(x) nrow(x))
+  term_id_to_ext_id <- ddply(extracted_genes, .(GO), function(x) nrow(x))
   # set the column name to Freq Anno. (This was broken before.)
   colnames(term_id_to_ext_id)[2] <- "Freq_Anno"
 
   # Filter the quantification to only have the top genes where the go ID
   # corresponds
-  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$go_id %in%
+  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$GO %in%
                                               list_of_gos), ]
 
   # ---
@@ -124,7 +112,7 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
 
   n1 <- quantified_ext_id_to_term_id
   n2 <- qterm_id_to_ext_id[, 2] - quantified_ext_id_to_term_id
-  n3 <- length(unique(ensembl_id_pc)) - enrichment_cutoff -
+  n3 <- length(unique(id_select_vector)) - enrichment_cutoff -
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
   n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
 
@@ -169,3 +157,35 @@ enrichment_analysis <- compiler::cmpfun(function(ordered_score_df,
 
   return(enrichment_dataframe)
 })
+
+generate_translation_df <- function(expression_set, organism, ontology) {
+  entrezid_col <- resolve_entrezid_col(expression_set)
+  go_data <- set_go_data(organism, ontology)
+  rowtracker = 0
+  entrez_go_dfs <- sapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
+    rowtracker <<- rowtracker + 1
+    #print(rowtracker)
+    #print(rownames(expression_set@assayData$exprs)[rowtracker])
+    entrez_id <- unlist(strsplit(entrezrawid, ":"))[2]
+    goids <- go_data@geneAnno[go_data@geneAnno==entrez_id,]$GO
+    if (length(goids) != 0){
+      return(data.frame(ORIGID=rownames(expression_set@assayData$exprs)[rowtracker], ENTREZID=entrezrawid, GO=goids))
+    }
+  })
+  entrez_go_df <- unique(as.data.frame(data.table::rbindlist(entrez_go_dfs)))
+  return(entrez_go_df)
+}
+
+
+
+#' resolve function for entrez
+resolve_entrezid_col <- function(expression_set) {
+  colnames_vector <- colnames(expression_set@featureData@data)
+  exp <- regexec(".*entrez.*", colnames_vector)
+  regex_result <- unlist(regmatches(colnames_vector, exp))
+  if (length(regex_result) < 1) {
+    return(NULL)
+  } else {
+    return(regex_result)
+  }
+}

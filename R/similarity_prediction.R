@@ -53,43 +53,42 @@
 #' # Example with default dataset, take a look at the data documentation
 #' # to fully grasp what's going on.
 #' GAPGOM::expression_prediction_function('ENSG00000228630', 'BP')
-#'
+#' sort_list <- rownames(f5_testdat@assayData$exprs)[sample(10000, 1000)]
+#' gid <- "chr10:100007025..100007067,+"
+#' GAPGOM::expression_prediction_function(gid, GAPGOM::f5_testdat, sort_list, "mouse", "BP")
 #' @importFrom plyr ddply .
+#' @import Biobase
 #' @export
-expression_prediction_function <- compiler::cmpfun(function(gene_id,
+expression_prediction_function <- function(gene_id,
+                                expression_set,
+                                id_select_vector,
+                                organism,
                                 ontology,
-                                expression_data =
-                                  GAPGOM::expression_data,
-                                ensembl_to_go_id_conversion_df =
-                                  GAPGOM::ensembl_id_to_go_id,
-                                start_expression_col = 4,
-                                end_expression_col = 22,
                                 enrichment_cutoff = 250,
                                 method = "combine") {
   old <- options(stringsAsFactors = FALSE)
   on.exit(options(old), add = TRUE)
   # prepare the data with some special operations/vars that are needed later
-  expression_data_pc <- expression_data[
-    (expression_data$GeneType == "protein_coding"), ]
-  ensembl_id_pc <- expression_data_pc$GeneID
+  expression_data_sorted <- expression_set@assayData$exprs[id_select_vector,] # used to be expression_data_pc
+  expression_data_sorted_ids <- rownames(expression_data_sorted) # used to be ensembl_id_pc
 
   # Target expression data where gene id matches
-  target_expression_data <- expression_data[
-    (expression_data[, 1] == gene_id), ]
-  target_expression_data <- as.numeric(
-    target_expression_data[1, c(4:end_expression_col)])
-
+  target_expression_data <- expression_set@assayData$exprs[gene_id,]
+  
+  id_translation_df <- generate_translation_df(expression_set, organism, ontology)
+  
   # make args list for ambiguous functions
-  args <- list("expression_data_pc" = expression_data_pc,
-       "start_expression_col" = start_expression_col,
-       "end_expression_col" = end_expression_col,
-       "target_expression_data" = target_expression_data,
-       "expression_data" = expression_data,
-       "ensembl_id_pc" = ensembl_id_pc,
-       "gene_id" = gene_id,
-       "ontology" = ontology,
-       "ensembl_to_go_id_conversion_df" = ensembl_to_go_id_conversion_df,
-       "enrichment_cutoff" = enrichment_cutoff)
+  args <- list(
+    "organism" = organism,
+    "id_translation_df" = id_translation_df,
+    "expression_set" = expression_set,
+    "expression_data_sorted" = expression_data_sorted,
+    "expression_data_sorted_ids" = expression_data_sorted_ids,
+    "id_select_vector" = id_select_vector,
+    "target_expression_data" = target_expression_data,
+    "gene_id" = gene_id,
+    "ontology" = ontology,
+    "enrichment_cutoff" = enrichment_cutoff)
 
 
   # these functions calculate score between target expression of target gene
@@ -117,7 +116,7 @@ expression_prediction_function <- compiler::cmpfun(function(gene_id,
   } else {
     print("Could not find any similar genes!")
   }
-})
+}
 
 #' GAPGOM internal - Ambiguous/prediction functions
 #'
@@ -135,12 +134,10 @@ NULL
 #' @rdname ambiguous_functions
 ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
   # apply the score calculation function
-  score <- apply(args$expression_data_pc
-                       [, c(args$start_expression_col:
-                              args$end_expression_col)],
+  score <- apply(args$expression_data_sorted,
                        1, applyfunc)
   # prepare and format a datafrane to return
-  score_df <- prepare_score_df(args$ensembl_id_pc, score, args$gene_id)
+  score_df <- prepare_score_df(args$expression_data_sorted_ids, score, args$gene_id)
 
   return(score_df)
 })
@@ -161,10 +158,12 @@ ambiguous_score_sort <- compiler::cmpfun(function(score_df) {
 ambiguous_enrichment <- compiler::cmpfun(function(args, ordered_score_df) {
   # run the enrichment analysis function.
   enrichment_result <- enrichment_analysis(
+    args$id_translation_df,
     ordered_score_df,
+    args$organism,
     args$ontology,
-    expression_data = args$expression_data,
-    ensembl_to_go_id_conversion_df = args$ensembl_to_go_id_conversion_df,
+    args$expression_set,
+    args$id_select_vector,
     enrichment_cutoff = args$enrichment_cutoff
   )
   return(enrichment_result)
