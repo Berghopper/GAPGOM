@@ -1,4 +1,4 @@
-#' GAPGOM - Expression data of lncRNAs.
+#' GAPGOM - FANTOM5 Expression data.
 #'
 #' A dataframe containing fantom5 expression values from the mouse genus.
 #' It does not contain all values as this would be too much to include with

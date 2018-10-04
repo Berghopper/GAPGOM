@@ -2,7 +2,7 @@
 .onAttach <- function(libname, pkgname) {
     pkgVersion <- packageDescription(pkgname, fields = "Version")
     msg <- paste0(pkgname, " v", pkgVersion, "\n",
-                  "For help/issues, refer to the readme FAQ or report an",
+                  "For help/issues, refer to the readme FAQ or report an ",
                   "issue on the issue page: ",
                   "https://bitbucket.org/Berghopper/ugenepred\n\n")
 

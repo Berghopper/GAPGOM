@@ -3,7 +3,7 @@
 \docType{data}
 \name{ft5_example_data}
 \alias{ft5_example_data}
-\title{GAPGOM - Expression data of lncRNAs.}
+\title{GAPGOM - FANTOM5 Expression data.}
 \format{An ExpressionSet containing the first 15 columns and 10000 rows of
 the mouse RLE normalized fantom5 expression dataset where entrezids are
 present. Annotation data can be found under;

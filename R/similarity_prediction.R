@@ -143,7 +143,6 @@ NULL
                        1, applyfunc)
   # prepare and format a datafrane to return
   score_df <- .prepare_score_df(args$expression_data_sorted_ids, score, args$gene_id)
-  View(score_df)
   return(score_df)
 })
 
