@@ -26,7 +26,7 @@ use correct convention yet (0.0.1).
 ### Fixed
 
 
-## [0.1.0]
+## [0.1.0 - Technically Tidied] - 2018-10-04
 ### Added
 - Changelog (NEWS.md).
 - Better input interface and refactoring towards ExpressionSet based system.
@@ -46,7 +46,7 @@ use correct convention yet (0.0.1).
 - file typo data_preperation.R --> data_preparation.R
 
 
-## [0.0.1] - 2018-09-25
+## [0.0.1 - baby steps] - 2018-09-25
 ### Added
 - Expression metric prediction algorithm made by Rezvan Ehsani and Finn Drablos.
 - TopoICSim algorithm/measure made by Rezvan Ehsani and Finn Drablos.
