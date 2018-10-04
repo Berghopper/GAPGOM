@@ -2,13 +2,27 @@
 % Please edit documentation in R/data_preperation.R
 \name{fantom_load_raw}
 \alias{fantom_load_raw}
-\title{fantom5 data load.}
+\title{GAPGOM - fantom_load_raw()}
 \usage{
 fantom_load_raw(filepath, verbose = F)
 }
+\arguments{
+\item{filepath}{filename of fantom5 file.}
+
+\item{verbose}{Switch to TRUE for extra messages. Default=FALSE}
+}
+\value{
+The resulting datatable containing raw fantom5 data. (Most of the
+time very large!)
+}
 \description{
-fantom5 data load.
+Loads raw fantom5 data from file.
+}
+\details{
+This function loads raw fantom5 data and returns the resulting data.table/
+data.frame object.
 }
 \examples{
-ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/hg19.cage_peak_phase1and2combined_counts.osc.txt2", verbose=T)
+ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
+verbose=T)
 }

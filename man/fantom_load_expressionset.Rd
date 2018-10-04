@@ -2,10 +2,38 @@
 % Please edit documentation in R/data_preperation.R
 \name{fantom_load_expressionset}
 \alias{fantom_load_expressionset}
-\title{convert into expressionset}
+\title{GAPGOM - fantom_load_expressionset()}
 \usage{
-fantom_load_expressionset(filepath, colselector, verbose = F)
+fantom_load_expressionset(filepath, filter = T, verbose = F)
+}
+\arguments{
+\item{filepath}{filename of fantom5 file.}
+
+\item{filter}{Filter, this causes only entries to be added that have an
+entrez ID. Normally this should be left on default (TRUE) because all
+algorithms in this library need the entrez IDs for translation.}
+
+\item{verbose}{Switch to TRUE for extra messages. Default=FALSE}
+}
+\value{
+The resulting ExpressionSet contains the original data. The 
+expressiondata can be found under ExpressionSet@assayData$exprs
+Other information (first 6 info columns) can be found under;
+ ExpressionSet@featureData@data
 }
 \description{
-convert into expressionset
+Loads and converts fantom5 data to an ExpressionSet
+}
+\details{
+This function loads fantom5 data and then converts it into an ExpresionSet.
+This ExpressionSet is then returned. When you don't want to instantly load
+and convert, use load_fantom_raw() instead and then convert it with
+fantom_to_expset(). The standard annotation columns always need to be kept!
+(First 6 columns). This is also true for at least 1 or more expression
+column(s). This function only accepts the RLE normalized data!
+}
+\examples{
+fantom_file <- "./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt"
+expset <- fantom_load_expression_set(fantom_file)
+View(expset)
 }

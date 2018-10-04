@@ -4,10 +4,13 @@
 \alias{enrichment_analysis}
 \title{GAPGOM internal - enrichment_analysis()}
 \usage{
-enrichment_analysis(ordered_score_df, organism, ontology, expression_set,
-  id_select_vector, enrichment_cutoff = 250)
+enrichment_analysis(id_translation_df, ordered_score_df, organism,
+  ontology, expression_set, id_select_vector, enrichment_cutoff = 250)
 }
 \arguments{
+\item{id_translation_df}{dataframe with corresponding GOIDs,
+EntrezIDs and General ID defined by ExpressionSet. (rownames of ).}
+
 \item{ordered_score_df}{the score dataframe see documentation on
 GAPGOM::example_score_dataframe for formatting.}
 
@@ -27,14 +30,6 @@ should contain certain information neccesary for calculation;
 database).
 Next, a range of n-columns long, containing expression values, names do not
 matter here. (You can use the existing dataset as an example)}
-
-\item{ensembl_to_go_id_conversion_df}{dataframe with corresponding GOIDs and
-EnsemblIDs. As well as the expression value dataframe, this dataframe should
-contain certain information with specific columnnames as well;
-1st neccesary col; name; "ensembl_gene_id" (Ensembl gene IDs).
-2nd neccesary col; go_id; "go_id" (Gene Ontology term ID).
-3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
-(You can use the existing dataset as an example)}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.

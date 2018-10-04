@@ -2,14 +2,35 @@
 % Please edit documentation in R/data_preperation.R
 \name{fantom_to_expset}
 \alias{fantom_to_expset}
-\title{convert ft5 to expset}
+\title{GAPGOM - fantom_to_expset()}
 \usage{
-fantom_to_expset(fanraw, verbose = F)
+fantom_to_expset(fanraw, filter = T, verbose = F)
+}
+\arguments{
+\item{fanraw}{raw data.table object from the fantom_load_raw() function.}
+
+\item{filter}{Filter, this causes only entries to be added that have an
+entrez ID. Normally this should be left on default (TRUE) because all
+algorithms in this library need the entrez IDs for translation.}
+
+\item{verbose}{Switch to TRUE for extra messages. Default=FALSE}
+}
+\value{
+The resulting ExpressionSet contains the original data. The 
+expressiondata can be found under ExpressionSet@assayData$exprs
+Other information (first 6 info columns) can be found under;
+ExpressionSet@featureData@data
 }
 \description{
-convert ft5 to expset
+Convert raw data.table/data.frame fantom5 object to a proper ExpressionSet.
+}
+\details{
+This function converts fantom5 data and converts it into an ExpresionSet.
+This ExpressionSet is then returned.
+This function only accepts the RLE normalized data!
 }
 \examples{
-ft5_r <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose=T)
-fantom_to_expset(ft5_r)
+ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
+verbose = T)
+expset <- fantom_to_expset(ft5, verbose = T)
 }
