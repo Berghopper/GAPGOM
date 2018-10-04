@@ -6,7 +6,7 @@
 #' @section Notes:
 #' This function is an internal function and should not be called by the user.
 #' @importFrom GOSemSim godata
-set_go_data <- compiler::cmpfun(function(organism, ontology) {
+.set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T) {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
                     mouse = "org.Mm.eg.db",
@@ -26,7 +26,7 @@ set_go_data <- compiler::cmpfun(function(organism, ontology) {
                     rhesus = "org.Mmu.eg.db",
                     pig = "org.Ss.eg.db",
                     xenopus = "org.Xl.eg.db")
-  return(godata(species, ont = ontology, computeIC = TRUE))
+  return(godata(species, ont = ontology, computeIC = computeIC))
 })
 
 #' GAPGOM - fantom_load_raw()

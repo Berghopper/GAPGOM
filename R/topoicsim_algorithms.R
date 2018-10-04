@@ -312,7 +312,7 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     timestart <- Sys.time()
-    go_data <- set_go_data(organism = organism, ontology = ontology)
+    go_data <- .set_go_data(organism = organism, ontology = ontology)
     r1 <- length(gene_list1)
     r2 <- length(gene_list2)
     score_matrix <- matrix(nrow = r1, ncol = r2)
