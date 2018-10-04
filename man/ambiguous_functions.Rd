@@ -2,46 +2,50 @@
 % Please edit documentation in R/similarity_prediction.R
 \name{ambiguous_functions}
 \alias{ambiguous_functions}
-\alias{ambiguous_scorecalc}
-\alias{ambiguous_score_rev_sort}
-\alias{ambiguous_score_sort}
-\alias{ambiguous_enrichment}
-\alias{ambiguous_method_origin}
-\alias{predict_pearson}
-\alias{predict_spearman}
-\alias{predict_kendall}
-\alias{predict_fisher}
-\alias{predict_sobolev}
-\alias{predict_combined}
+\alias{.ambiguous_scorecalc}
+\alias{.ambiguous_score_rev_sort}
+\alias{.ambiguous_score_sort}
+\alias{.ambiguous_enrichment}
+\alias{.ambiguous_method_origin}
+\alias{.predict_pearson}
+\alias{.predict_spearman}
+\alias{.predict_kendall}
+\alias{.predict_fisher}
+\alias{.predict_sobolev}
+\alias{.predict_combined}
+\alias{.generate_translation_df}
 \title{GAPGOM internal - Ambiguous/prediction functions}
 \usage{
-ambiguous_scorecalc(args, applyfunc)
+.ambiguous_scorecalc(args, applyfunc)
 
-ambiguous_score_rev_sort(score_df)
+.ambiguous_score_rev_sort(score_df)
 
-ambiguous_score_sort(score_df)
+.ambiguous_score_sort(score_df)
 
-ambiguous_enrichment(args, ordered_score_df)
+.ambiguous_enrichment(args, ordered_score_df)
 
-ambiguous_method_origin(enrichment_result, methodname)
+.ambiguous_method_origin(enrichment_result, methodname)
 
-predict_pearson(args)
+.predict_pearson(args)
 
-predict_spearman(args)
+.predict_spearman(args)
 
-predict_kendall(args)
+.predict_kendall(args)
 
-predict_fisher(args)
+.predict_fisher(args)
 
-predict_sobolev(args)
+.predict_sobolev(args)
 
-predict_combined(args)
+.predict_combined(args)
+
+.generate_translation_df(expression_set, organism, ontology)
 }
 \description{
 These functions are ambiguous/standardized functions that help make the
 enrichment analysis steps more streamlined. Most measures have their own
 specific way of their scores being calculated. For this, they have their own
-function clauses.
+function clauses. translation lookup from entrez to goid is also contained
+within these functions.
 }
 \section{Notes}{
 

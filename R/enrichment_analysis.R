@@ -15,20 +15,29 @@
 #'
 #' @param ordered_score_df the score dataframe see documentation on
 #' GAPGOM::example_score_dataframe for formatting.
+#' @param expression_set ExpressionSet class containing expression values and
+#' other useful information, see GAPGOM::f5_example_data
+#' documentation for further explanation of this type. If you want a custom
+#' ExpressionSet you have to define one yourself.
+#' @param id_select_vector gene rowname(s) that you want filtered out of the
+#' dataset. For example, let's say you need to only include protein coding
+#' genes. You then select all other genes that aren't and put the ids in this
+#' vector.
+#' @param id_translation_df dataframe that has translation between rowname,
+#' entrez id and GO ids (generated internally using GOSemSim+entrez ids).
+#' @param organism where to be scanned genes reside in, this option
+#' is neccesary to select the correct GO DAG. Options are based on the org.db
+#' bioconductor package;
+#' http://www.bioconductor.org/packages/release/BiocViews.html#___OrgDb
+#' Following options are available: "fly", "mouse", "rat", "yeast",
+#' "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
+#' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
+#' "xenopus". Fantom5 data only has "human" and "mouse" available depending
+#' on the dataset.
 #' @param ontology desired ontology to use for prediction. One of three;
 #' "BP" (Biological process), "MF" (Molecular function) or "CC"
 #' (Cellular Component). Cellular Component is not included with the package's
 #' standard data and will thus yield no results.
-#' @param expression_data dataframe with at least 1 or more
-#' rows. Some of the columns should be named certain ways and the dataframe
-#' should contain certain information neccesary for calculation;
-#' 1st neccesary col; name; "GeneID" (EnsemblIDs should go here).
-#' 2nd neccesary col; name; "GeneType" (genetype as described in the Ensembl
-#' database).
-#' Next, a range of n-columns long, containing expression values, names do not
-#' matter here. (You can use the existing dataset as an example)
-#' @param id_translation_df dataframe with corresponding GOIDs,
-#' EntrezIDs and General ID defined by ExpressionSet. (rownames of ).
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
 #'
@@ -44,13 +53,13 @@
 #'
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
-enrichment_analysis <- compiler::cmpfun(function(
-                                id_translation_df,
+.enrichment_analysis <- compiler::cmpfun(function(
                                 ordered_score_df,
-                                organism,
-                                ontology,
                                 expression_set,
                                 id_select_vector,
+                                id_translation_df,
+                                organism,
+                                ontology,
                                 enrichment_cutoff = 250) {
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
@@ -59,12 +68,11 @@ enrichment_analysis <- compiler::cmpfun(function(
                                         id_select_vector), ]
 
   # List of top n (cutoff) genes (Ensembl ID)
-  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1] ## FIX IN TOPLEVEL
+  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
   # list_of_gos, n genes but all unqiue corresponding GO IDs
-  # REPLACE this also with help of a retrieval function via gosemsim
   list_of_gos <- extracted_genes[(extracted_genes$ORIGID %in%
                                     list_top_genes), 3]
   list_of_gos <- unique(list_of_gos)
@@ -84,7 +92,7 @@ enrichment_analysis <- compiler::cmpfun(function(
 
   # Quantify extracted_genes in List of top genes (grab every go_id for
   # corresponding ensembl IDs)
-  quantified_ext_id_to_term_id <- ext_id_to_term_id(extracted_genes,
+  quantified_ext_id_to_term_id <- .ext_id_to_term_id(extracted_genes,
                                                     list_top_genes)
 
   # After this, filter it for existing Gene ontologies within the top GOs
@@ -153,34 +161,8 @@ enrichment_analysis <- compiler::cmpfun(function(
   return(enrichment_dataframe)
 })
 
-generate_translation_df <- function(expression_set, organism, ontology) {
-  entrezid_col <- resolve_entrezid_col(expression_set)
-  go_data <- set_go_data(organism, ontology)
-  rowtracker = 0
-  entrez_go_dfs <- sapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
-    rowtracker <<- rowtracker + 1
-    #print(rowtracker)
-    #print(rownames(expression_set@assayData$exprs)[rowtracker])
-    entrez_id <- unlist(strsplit(entrezrawid, ":"))[2]
-    goids <- go_data@geneAnno[go_data@geneAnno==entrez_id,]$GO
-    if (length(goids) != 0){
-      return(data.frame(ORIGID=rownames(expression_set@assayData$exprs)[rowtracker], ENTREZID=entrezrawid, GO=goids))
-    }
-  })
-  entrez_go_df <- unique(as.data.frame(data.table::rbindlist(entrez_go_dfs)))
-  return(entrez_go_df)
-}
 
 
 
-#' resolve function for entrez
-resolve_entrezid_col <- function(expression_set) {
-  colnames_vector <- colnames(expression_set@featureData@data)
-  exp <- regexec(".*entrez.*", colnames_vector)
-  regex_result <- unlist(regmatches(colnames_vector, exp))
-  if (length(regex_result) < 1) {
-    return(NULL)
-  } else {
-    return(regex_result)
-  }
-}
+
+

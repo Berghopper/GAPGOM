@@ -113,17 +113,19 @@ fantom_to_expset <- function(fanraw, filter = T, verbose = F) {
   meta <- fanraw$meta
   if (filter) {
     if (verbose) print("filtering out empty entrez ids...")
+    if (verbose) print("DONE")
     fan <- fantom_filter_entrez(fan)
   } 
-  if (verbose) print("DONE")
   if (verbose) print("converting to expressionset...")
   expression_matrix <- as.matrix(fan[,7:ncol(fan)])
   rownames(expression_matrix) <- fan$`CAGE peak id`
   featuredat <- as.data.frame(fan[,2:6])
   rownames(featuredat) <- fan$`CAGE peak id`
-  return(ExpressionSet(expression_matrix, 
-                       featureData = new("AnnotatedDataFrame", 
-                                         data=featuredat),...=meta)) # #6 issue
+  expset <- ExpressionSet(expression_matrix, 
+                featureData = new("AnnotatedDataFrame", 
+                                  data=featuredat),...=meta) # issue #6
+  if (verbose) print("DONE")
+  return(expset)
 }
 
 #' GAPGOM internal - fantom_filter_entrez()

@@ -8,7 +8,27 @@ expression_prediction_function(gene_id, expression_set, id_select_vector,
   organism, ontology, enrichment_cutoff = 250, method = "combine")
 }
 \arguments{
-\item{gene_id}{gene EnsemblID to be compared to the other GO terms.}
+\item{gene_id}{gene rowname to be compared to the other GO terms.}
+
+\item{expression_set}{ExpressionSet class containing expression values and
+other useful information, see GAPGOM::f5_example_data
+documentation for further explanation of this type. If you want a custom
+ExpressionSet you have to define one yourself.}
+
+\item{id_select_vector}{gene rowname(s) that you want filtered out of the
+dataset. For example, let's say you need to only include protein coding
+genes. You then select all other genes that aren't and put the ids in this
+vector.}
+
+\item{organism}{where to be scanned genes reside in, this option
+is neccesary to select the correct GO DAG. Options are based on the org.db
+bioconductor package;
+http://www.bioconductor.org/packages/release/BiocViews.html#___OrgDb
+Following options are available: "fly", "mouse", "rat", "yeast",
+"zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
+"anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
+"xenopus". Fantom5 data only has "human" and "mouse" available depending
+on the dataset.}
 
 \item{ontology}{desired ontology to use for prediction. One of three;
 "BP" (Biological process), "MF" (Molecular function) or "CC"
@@ -21,31 +41,6 @@ enriched in the enrichment analysis. (default is 250)}
 \item{method}{which statistical method to use for the prediction, currently
 there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 and "combine".}
-
-\item{expression_data}{expression data dataframe with at least 1 or more
-rows. Some of the columns should be named certain ways and the dataframe
-should contain certain information neccesary for calculation;
-1st neccesary col; name; "GeneID" (EnsemblIDs should go here).
-2nd neccesary col; name; "GeneType" (genetype as described in the Ensembl
-database).
-Next, a range of n-columns long, containing expression values, names do not
-matter here. (You can use the existing dataset as an example)}
-
-\item{ensembl_to_go_id_conversion_df}{dataframe with corresponding GOIDs and
-EnsemblIDs. As well as the expression value dataframe, this dataframe should
-contain certain information with specific columnnames as well;
-1st neccesary col; name; "ensembl_gene_id" (Ensembl gene IDs).
-2nd neccesary col; go_id; "go_id" (Gene Ontology term ID).
-3rd and last neccesary col; "namespace_1003" (Toplevel GO term).
-(You can use the existing dataset as an example)}
-
-\item{start_expression_col}{should be the starting column inside
-"expression_data" containing expression values. default is 4, catered to
-the included dataset.}
-
-\item{end_expression_col}{should be the last column inside "expression_data"
-containing expression values. default is 22, catered to the included
-dataset.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
@@ -71,8 +66,14 @@ annotation to calculate similarity scores between GO terms,
 \examples{
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on.
-GAPGOM::expression_prediction_function('ENSG00000228630', 'BP')
-sort_list <- rownames(f5_testdat@assayData$exprs)[sample(10000, 1000)]
-gid <- "chr10:100007025..100007067,+"
-GAPGOM::expression_prediction_function(gid, GAPGOM::f5_testdat, sort_list, "mouse", "BP")
+
+# grab 1000 random ids to filter out between 100 and max length
+sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[
+  sample(100:nrow(ft5_example_data@assayData$exprs), 1000)]
+gid <- "chr10:101953059..101953074,-"
+GAPGOM::expression_prediction_function(gid, 
+                                       GAPGOM::ft5_example_data, 
+                                       sort_list, 
+                                       "mouse", 
+                                       "BP")
 }

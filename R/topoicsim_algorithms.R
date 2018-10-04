@@ -43,7 +43,7 @@
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
-topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
+.topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
                                                go_id2,
                                                ontology,
                                                organism,
@@ -237,7 +237,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
           # if this is not the case (row is not present), then run topo_ic_sim 
           # between 2 terms.
           topo_ic_sim_term_result <-
-            topo_ic_sim_titj(go1[i],
+            .topo_ic_sim_titj(go1[i],
                               go2[j],
                               ontology,
                               organism,
