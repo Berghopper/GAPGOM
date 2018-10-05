@@ -50,11 +50,7 @@
                                                weighted_dag,
                                                go_annotation,
                                                root,
-                                               IC,
-                                               all_info_go_pairs =
-                                                 data.frame(GO_1 = 0,
-                                                            GO_2 = 0,
-                                                            S_1 = 0)) {
+                                               IC) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   D_ti_tj_x <- c()
@@ -67,6 +63,7 @@
                                      MF = GOMFCHILDREN[[x]],
                                      BP = GOBPCHILDREN[[x]],
                                      CC = GOCCCHILDREN[[x]])
+      
       if (x != "all" & x != root & !is.na(x) &
         length(intersect(immediate_children_x, common_ancestor)) == 0) {
         # Subgraph from two GO terms go_id1 and go_id2
@@ -83,13 +80,11 @@
         sp1 <- sp.between(sg1, go_id1, x)
         ic_sp1 <- sp1[[1]]$length
         length_sp1 <- length(sp1[[1]]$path_detail)
-
         sg2 <- .set_edge_weight(sg2, IC)
         sg2 <- igraph.to.graphNEL(sg2)
         sp2 <- sp.between(sg2, go_id2, x)
         ic_sp2 <- sp2[[1]]$length
         length_sp2 <- length(sp2[[1]]$path_detail)
-
         IC_GOID_1 <- IC[go_id1][[1]]
         IC_GOID_2 <- IC[go_id2][[1]]
         if (!is.na(IC_GOID_1) & IC_GOID_1 != 0)
@@ -104,11 +99,9 @@
   }
   if (!is.null(D_ti_tj_x)) {
       sim <- round(1 - (atan(min(D_ti_tj_x, na.rm = TRUE))/(pi/2)), 3)
-      all_info_go_pairs <- rbind(all_info_go_pairs, c(go_id1, go_id2, sim))
-      return(list(score = sim, go_pairs = all_info_go_pairs))
+      return(sim)
   } else {
-      all_info_go_pairs <- rbind(all_info_go_pairs, c(go_id1, go_id2, 0))
-      return(list(score = 0, go_pairs = all_info_go_pairs))
+      return(0)
   }
 })
 
@@ -154,14 +147,13 @@
 #' @export
 topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                             gene2,
-                                            go_data,
                                             ontology = "MF",
                                             organism = "yeast",
+                                            go_data = NULL,
                                             drop = NULL,
-                                            all_info_go_pairs =
-                                              data.frame(GO_1 = 0,
-                                                         GO_2 = 0,
-                                                         S_1 = 0)) {
+                                            translation_to_goids = NULL,
+                                            all_info_go_pairs = NULL
+                                            ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   # set ontology and organism
@@ -186,7 +178,10 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                     "pig",
                                     "xenopus"))
   # Initial definitions and sets based on organism and ontology type
-
+  if (is.null(go_data)) {
+    go_data <- .set_go_data(organism = organism, ontology = ontology) 
+  }
+  
   xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
                        BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
 
@@ -196,72 +191,84 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
                  CC = "GO:0005575 ")
   weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
-
-  goAnno <- go_data@geneAnno
-  goAnno <- goAnno[!goAnno$EVIDENCE %in% drop, ]
-  go1 <- as.character(unique(goAnno[goAnno[, 1] == gene1, "GO"]))
-  go2 <- as.character(unique(goAnno[goAnno[, 1] == gene2, "GO"]))
-
-  if (sum(!is.na(go1)) == 0 || sum(!is.na(go2)) == 0) {
-    return(list(geneSim = NA, GO1 = go1, GO2 = go2))
+  
+  if (is.null(translation_to_goids)) {
+    # lookup goids of all gene ids
+    translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
+                                           go_data, 
+                                           drop = drop)
   }
-  m <- length(go1)
-  n <- length(go2)
-  scores <- matrix(nrow = m, ncol = n)
-  rownames(scores) <- go1
-  colnames(scores) <- go2
+  if (is.null(all_info_go_pairs)) {
+    go_unique_list <- unique(translation_to_goids$GO)
+    all_info_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
+                                                         go_unique_list)
+  }
+  gos1 <<- as.character(translation_to_goids[translation_to_goids$ID==gene1,]$GO)
+  gos2 <<- as.character(translation_to_goids[translation_to_goids$ID==gene2,]$GO)
+
+  if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
+    return(list(geneSim = NA, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
+  }
+  scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   IC <- go_data@IC
-  if (gene1 == gene2)
-      return(1)
-  for (i in 1:m) {
-    for (j in 1:n) {
-      if (go1[i] == go2[j]) {
-        scores[i, j] <- 1
-      } else {
-        # get the subset of the GO pair.
-        DF <- subset(all_info_go_pairs,
-                     (all_info_go_pairs[, 1] == go1[i] &
-                        all_info_go_pairs[, 2] == go2[j]))
-        # now check if they are present, if 0 rows are returned, then check the 
-        # inverse combination
-        if (nrow(DF) == 0) {
-          DF <- subset(all_info_go_pairs,
-                       (all_info_go_pairs[, 1] == go2[j] &
-                          all_info_go_pairs[, 2] == go1[i]))
-        }
-        # if this is not returning 0, set score to whatever it already
-        # is in the scores df.
-        if (nrow(DF) != 0) {
-          scores[i, j] <- as.numeric(DF[1, 3])
-        } else {
-          # if this is not the case (row is not present), then run topo_ic_sim 
-          # between 2 terms.
-          topo_ic_sim_term_result <-
-            .topo_ic_sim_titj(go1[i],
-                              go2[j],
-                              ontology,
-                              organism,
-                              weighted_dag,
-                              go_annotation,
-                              root,
-                              IC,
-                              all_info_go_pairs = all_info_go_pairs)
-          scores[i, j] <- topo_ic_sim_term_result$score
-          all_info_go_pairs <- topo_ic_sim_term_result$go_pairs
-        }
+  
+  unique_pairs <<- .expand.grid.unique(gos1, gos2)
+  
+  #View(all_info_go_pairs)
+  #View(unique_pairs)
+  apply(unique_pairs, 1, function(pair) {
+    go1 <- pair[1]
+    go2 <- pair[2]
+    # if this is not the case (row is not present), then run topo_ic_sim 
+    # between 2 terms.
+    if (is.na(all_info_go_pairs[go1, go2])) {
+      score <-
+        .topo_ic_sim_titj(go1,
+                          go2,
+                          ontology,
+                          organism,
+                          weighted_dag,
+                          go_annotation,
+                          root,
+                          IC)
+      #View(scores)
+      if (go1 %in% rownames(scores) && go2 %in% colnames(scores)) {
+        scores[go1, go2] <<- score
+      } 
+      if (go2 %in% rownames(scores) && go1 %in% colnames(scores)) {
+        scores[go2, go1] <<- score  
+      }
+      all_info_go_pairs[go1, go2] <<- score
+      all_info_go_pairs[go2, go1] <<- score
+    } else {
+      if (go1 %in% rownames(scores) && go2 %in% colnames(scores)) {
+        scores[go1, go2] <<- all_info_go_pairs[go1, go2]  
+      } 
+      if (go2 %in% rownames(scores) && go1 %in% colnames(scores)) {
+        scores[go2, go1] <<- all_info_go_pairs[go1, go2]  
       }
     }
+    
+    #print(dim(all_info_go_pairs))
+  })
+  #print(scores)
+  #print(dim(scores))
+  #print(unique_pairs)
+  if (!sum(!is.na(scores))) {
+    #print("uhoh...")
+    return(list(geneSim = NA, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
   }
-  if (!sum(!is.na(scores)))
-      return(list(geneSim = NA, GO1 = go1, GO2 = go2))
   scores <- sqrt(scores)
+  m <- length(gos1)
+  n <- length(gos2)
   sim <- max(sum(sapply(1:m, function(x) {
       max(scores[x, ], na.rm = TRUE)
   }))/m, sum(sapply(1:n, function(x) {
       max(scores[, x], na.rm = TRUE)
   }))/n)
   sim <- round(sim, digits = 3)
-  return(sim)
+  #print(sim)
+  return(list(geneSim = sim, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
 })
 
 #' GAPGOM - topo_ic_sim()
@@ -312,22 +319,47 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     timestart <- Sys.time()
+    print(timestart)
     go_data <- .set_go_data(organism = organism, ontology = ontology)
-    r1 <- length(gene_list1)
-    r2 <- length(gene_list2)
-    score_matrix <- matrix(nrow = r1, ncol = r2)
-    rownames(score_matrix) <- gene_list1
-    colnames(score_matrix) <- gene_list2
-    for (i in 1:r1) {
-        for (j in 1:r2) {
-            score_matrix[i, j] <- topo_ic_sim_g1g2(gene_list1[i],
-                                                   gene_list2[j], 
-                                                   go_data, 
-                                                   ontology,
-                                                   organism, drop)
-        }
-    }
+    # lookup goids of all gene ids
+    translation_to_goids <<- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
+                                           go_data, 
+                                           drop = drop)
+    
+    # set up score matrix in advance
+    score_matrix <<- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
+    
+    go_unique_list <- unique(translation_to_goids$GO)
+    all_info_go_pairs <<- .prepare_score_matrix_topoicsim(go_unique_list, 
+                                                         go_unique_list)
+    
+    
+    
+    # only loop through necesary vectors (unique pairs)
+    unique_pairs <- .expand.grid.unique(gene_list1, gene_list2)
+    apply(unique_pairs, 1, function(pair) {
+      gene1 <- pair[1]
+      gene2 <- pair[2]
+      genepair_result <- topo_ic_sim_g1g2(gene1,
+                                          gene2, 
+                                          ontology,
+                                          organism, 
+                                          go_data = go_data, 
+                                          drop = drop, 
+                                          translation_to_goids = translation_to_goids,
+                                          all_info_go_pairs = all_info_go_pairs)
+      
+      if (gene1 %in% rownames(score_matrix) && gene2 %in% colnames(score_matrix)) {
+        score_matrix[gene1, gene2] <<- genepair_result$geneSim
+      } 
+      if (gene2 %in% rownames(score_matrix) && gene2 %in% colnames(score_matrix)) {
+        score_matrix[gene2, gene1] <<- genepair_result$geneSim # set opposite pair to the same value 
+      }
+      all_info_go_pairs <<- genepair_result$all_info_go_pairs
+    })
     endtime <- Sys.time() - timestart
+    print(endtime)
     cat("took; ", endtime, "s\n")
     return(score_matrix)
 })
+

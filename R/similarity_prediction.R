@@ -261,25 +261,24 @@ NULL
 
 #' @rdname ambiguous_functions
 .generate_translation_df <- function(expression_set, organism, ontology) {
-  entrezid_col <- .resolve_entrezid_col(expression_set)
+  entrezid_col <- .resolve_entrezid_col(expression_set) # add keys support
   go_data <- .set_go_data(organism, ontology, computeIC = F)
-  trans_df <- new.env()
-  trans_df$rowtracker <- 0
-  trans_df$passed_ids <- list()
-  entrez_go_dfs <- sapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
-    trans_df$rowtracker <- trans_df$rowtracker + 1
+  rowtracker <- 0
+  passed_ids <- list()
+  entrez_go_dfs <<- lapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
+    rowtracker <<- rowtracker + 1
     #print(rowtracker)
     #print(rownames(expression_set@assayData$exprs)[rowtracker])
     entrez_id <- unlist(strsplit(entrezrawid, ":"))[2]
     # test if id has already occured earlier
-    goids <- trans_df$passed_ids[[entrez_id]]
+    goids <<- passed_ids[[entrez_id]]
     if (is.null(goids)) {
-      goids <- go_data@geneAnno[go_data@geneAnno==entrez_id,]$GO # fix double lookup  
-      trans_df$passed_ids[[entrez_id]] <- c(goids)
+      goids <- go_data@geneAnno[go_data@geneAnno==entrez_id,]$GO
+      passed_ids[[entrez_id]] <<- c(goids)
       }
     #View(goids)
     if (length(goids) != 0){
-      return(data.frame(ORIGID=rownames(expression_set@assayData$exprs)[trans_df$rowtracker], ENTREZID=entrezrawid, GO=goids))
+      return(data.frame(ORIGID=rownames(expression_set@assayData$exprs)[rowtracker], ENTREZID=entrezrawid, GO=goids))
     }
   })
   entrez_go_df <- unique(as.data.frame(data.table::rbindlist(entrez_go_dfs)))

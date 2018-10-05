@@ -40,3 +40,25 @@
   return(ddply(data, .(GO), function(x) nrow(x[(
     x$ORIGID %in% list_top_genes), ])))
 })
+
+.go_ids_lookup <- function(ids, go_data, drop=NULL) {
+  gene_anno <- go_data@geneAnno[!go_data@geneAnno$EVIDENCE %in% drop, ]
+  
+  passed_ids <<- list()
+  go_dfs <<- lapply(ids, function(id) {
+    # test if id has already occured earlier
+    goids <- passed_ids[[id]]
+    if (is.null(goids)) {
+      goids <- unique(gene_anno[gene_anno==as.character(id),]$GO)
+      passed_ids[[id]] <<- c(goids)
+    }
+    if (length(goids) != 0) {
+      return(data.frame(ID=id, GO=goids))
+    }
+  })
+  go_df <- unique(as.data.frame(data.table::rbindlist(go_dfs)))
+  return(go_df)
+}
+
+
+
