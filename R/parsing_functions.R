@@ -60,5 +60,14 @@
   return(go_df)
 }
 
-
+.set_values <- function(item1, item2, the_matrix, value) {
+  # set opposite pair to the same value if it exists
+  if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
+    the_matrix[item1, item2] <- value
+  } 
+  if (item2 %in% rownames(the_matrix) && item1 %in% colnames(the_matrix)) {
+    the_matrix[item2, item1] <- value 
+  }
+  return(the_matrix)
+}
 

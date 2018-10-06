@@ -212,7 +212,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   IC <- go_data@IC
   
-  unique_pairs <<- .expand.grid.unique(gos1, gos2)
+  unique_pairs <<- .unique_combos(gos1, gos2)
   
   #View(all_info_go_pairs)
   #View(unique_pairs)
@@ -232,21 +232,12 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                           root,
                           IC)
       #View(scores)
-      if (go1 %in% rownames(scores) && go2 %in% colnames(scores)) {
-        scores[go1, go2] <<- score
-      } 
-      if (go2 %in% rownames(scores) && go1 %in% colnames(scores)) {
-        scores[go2, go1] <<- score  
-      }
+      scores <<- .set_values(go1, go2, scores, score)
       all_info_go_pairs[go1, go2] <<- score
       all_info_go_pairs[go2, go1] <<- score
     } else {
-      if (go1 %in% rownames(scores) && go2 %in% colnames(scores)) {
-        scores[go1, go2] <<- all_info_go_pairs[go1, go2]  
-      } 
-      if (go2 %in% rownames(scores) && go1 %in% colnames(scores)) {
-        scores[go2, go1] <<- all_info_go_pairs[go1, go2]  
-      }
+      # set already existing value.
+      scores <<- .set_values(go1, go2, scores, all_info_go_pairs[go1, go2])
     }
     
     #print(dim(all_info_go_pairs))
@@ -318,25 +309,26 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                          drop = NULL) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
+    
     timestart <- Sys.time()
     print(timestart)
+    
     go_data <- .set_go_data(organism = organism, ontology = ontology)
     # lookup goids of all gene ids
-    translation_to_goids <<- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
+    translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
                                            go_data, 
                                            drop = drop)
     
     # set up score matrix in advance
-    score_matrix <<- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
+    score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
     
     go_unique_list <- unique(translation_to_goids$GO)
-    all_info_go_pairs <<- .prepare_score_matrix_topoicsim(go_unique_list, 
+    all_info_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
                                                          go_unique_list)
     
     
-    
     # only loop through necesary vectors (unique pairs)
-    unique_pairs <- .expand.grid.unique(gene_list1, gene_list2)
+    unique_pairs <- .unique_combos(gene_list1, gene_list2)
     apply(unique_pairs, 1, function(pair) {
       gene1 <- pair[1]
       gene2 <- pair[2]
@@ -346,20 +338,15 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                           organism, 
                                           go_data = go_data, 
                                           drop = drop, 
-                                          translation_to_goids = translation_to_goids,
+                                          translation_to_goids = 
+                                            translation_to_goids,
                                           all_info_go_pairs = all_info_go_pairs)
       
-      if (gene1 %in% rownames(score_matrix) && gene2 %in% colnames(score_matrix)) {
-        score_matrix[gene1, gene2] <<- genepair_result$geneSim
-      } 
-      if (gene2 %in% rownames(score_matrix) && gene2 %in% colnames(score_matrix)) {
-        score_matrix[gene2, gene1] <<- genepair_result$geneSim # set opposite pair to the same value 
-      }
+      score_matrix <<- .set_values(gene1, gene2, score_matrix, 
+                                  genepair_result$geneSim)
       all_info_go_pairs <<- genepair_result$all_info_go_pairs
     })
-    endtime <- Sys.time() - timestart
-    print(endtime)
-    cat("took; ", endtime, "s\n")
+    print(Sys.time()-timestart)
     return(score_matrix)
 })
 

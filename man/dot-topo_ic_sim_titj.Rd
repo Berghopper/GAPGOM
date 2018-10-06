@@ -5,8 +5,7 @@
 \title{GAPGOM internal - topo_ic_sim_titj()}
 \usage{
 .topo_ic_sim_titj(go_id1, go_id2, ontology, organism, weighted_dag,
-  go_annotation, root, IC, all_info_go_pairs = data.frame(GO_1 = 0, GO_2
-  = 0, S_1 = 0))
+  go_annotation, root, IC)
 }
 \arguments{
 \item{go_id1}{GO term of first term.}

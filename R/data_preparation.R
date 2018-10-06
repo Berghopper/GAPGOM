@@ -45,42 +45,17 @@
   matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
   #print(matched_by_row)
   #matched_by_row <- matched_by_row[!is.na(matched_by_row)]
-  for (i in seq_along(matched_by_row)) {
-    if(!is.na(matched_by_row[i])) {
+  lapply(which(!is.na(matched_by_row[seq_along(matched_by_row)])), function(i) {
       row <- i
       col <- matched_by_row[i]
-      score_matrix[row, col] <- 1.0
-    }
-  }
+      score_matrix[row, col] <<- 1.0
+  })
   return(score_matrix)
 }
 
-.expand.grid.unique <- function(v1, v2) {
-  df <- data.frame(matrix(ncol=2))
-  counter = 0
-  for (name1 in v1) {
-    for (name2 in v2) {
-      if (name1 != name2){
-        counter = counter + 1
-        df[counter,] <- c(name1, name2)
-      }
-    }
-  }
-  return(df)
+#' @import data.table
+#' @importFrom plyr .
+.unique_combos <- function(v1, v2) {
+  intermediate <- unique(CJ(v1, v2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
+  return(intermediate[V1 != V2])
 }
-
-# .expand.grid.unique <- function(x, y, include.equals=FALSE)
-# {
-#   x <- unique(x)
-#   
-#   y <- unique(y)
-#   
-#   g <- function(i)
-#   {
-#     z <- setdiff(y, x[seq_len(i-include.equals)])
-#     
-#     if(length(z)) cbind(x[i], z, deparse.level=0)
-#   }
-#   
-#   do.call(rbind, lapply(seq_along(x), g))
-# }

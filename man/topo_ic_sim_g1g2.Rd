@@ -4,16 +4,14 @@
 \alias{topo_ic_sim_g1g2}
 \title{GAPGOM - topo_ic_sim_g1g2()}
 \usage{
-topo_ic_sim_g1g2(gene1, gene2, go_data, ontology = "MF",
-  organism = "yeast", drop = NULL,
-  all_info_go_pairs = data.frame(GO_1 = 0, GO_2 = 0, S_1 = 0))
+topo_ic_sim_g1g2(gene1, gene2, ontology = "MF", organism = "yeast",
+  go_data = NULL, drop = NULL, translation_to_goids = NULL,
+  all_info_go_pairs = NULL)
 }
 \arguments{
 \item{gene1}{Gene ID of the first Gene.}
 
 \item{gene2}{Gene ID of the second Gene.}
-
-\item{go_data}{correct GO data from specefic species.}
 
 \item{ontology}{desired ontology to use for similarity calculations.
 One of three;
@@ -29,6 +27,8 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 "xenopus".}
+
+\item{go_data}{correct GO data from specefic species.}
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 
