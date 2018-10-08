@@ -31,8 +31,18 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 }
 \value{
-returns dataframe containing similarities between corresponding
-Gene pairs.
+List containing the following;
+$GeneSim;
+similarity between genes taken from the mean of all term 
+similarities within those genes. (matrix of similarities between genes).
+Take the mean of this matrix to either get the InterSetSim or IntraSetSim
+depending on your input.
+$GO1;
+vector of GO's from first gene
+$GO2;
+vector of GO's from second gene
+$AllGoPairs;
+All possible GO combinations with their semantic distances (matrix)
 }
 \description{
 Algorithm to calculate similarity between two gene vectors.

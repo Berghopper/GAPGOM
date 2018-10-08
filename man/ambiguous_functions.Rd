@@ -13,7 +13,6 @@
 \alias{.predict_fisher}
 \alias{.predict_sobolev}
 \alias{.predict_combined}
-\alias{.generate_translation_df}
 \title{GAPGOM internal - Ambiguous/prediction functions}
 \usage{
 .ambiguous_scorecalc(args, applyfunc)
@@ -37,15 +36,12 @@
 .predict_sobolev(args)
 
 .predict_combined(args)
-
-.generate_translation_df(expression_set, organism, ontology)
 }
 \description{
 These functions are ambiguous/standardized functions that help make the
 enrichment analysis steps more streamlined. Most measures have their own
 specific way of their scores being calculated. For this, they have their own
-function clauses. translation lookup from entrez to goid is also contained
-within these functions.
+function clauses.
 }
 \section{Notes}{
 

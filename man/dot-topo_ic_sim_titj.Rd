@@ -35,12 +35,12 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 
 \item{IC}{Information content of the two terms}
 
-\item{all_info_go_pairs}{dataframe of GO Term pairs with a column
+\item{all_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. it is recommended to always keep
 this on default unless you know what you are doing.}
 }
 \value{
-list of score and all_info_go_pairs, the latter of which will be 
+list of score and all_go_pairs, the latter of which will be 
 reused.
 }
 \description{

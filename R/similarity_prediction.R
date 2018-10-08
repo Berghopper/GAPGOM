@@ -79,7 +79,7 @@ expression_prediction_function <- function(gene_id,
   
   # Generate the translation df using gosemsim.
   print("Looking up GO terms...")
-  id_translation_df <<- .generate_translation_df(expression_set, organism, 
+  id_translation_df <- .generate_translation_df(expression_set, organism, 
                                                 ontology)
   
   # make args list for ambiguous functions
@@ -128,8 +128,7 @@ expression_prediction_function <- function(gene_id,
 #' These functions are ambiguous/standardized functions that help make the
 #' enrichment analysis steps more streamlined. Most measures have their own
 #' specific way of their scores being calculated. For this, they have their own
-#' function clauses. translation lookup from entrez to goid is also contained
-#' within these functions.
+#' function clauses.
 #'
 #' @section Notes:
 #' These functions are internal functions and should not be called by the user.
@@ -143,7 +142,8 @@ NULL
   score <- apply(args$expression_data_sorted,
                        1, applyfunc)
   # prepare and format a datafrane to return
-  score_df <- .prepare_score_df(args$expression_data_sorted_ids, score, args$gene_id)
+  score_df <- .prepare_score_df(args$expression_data_sorted_ids, score, 
+                                args$gene_id)
   return(score_df)
 })
 
@@ -259,55 +259,4 @@ NULL
   return(enrichment_result)
 })
 
-#' @rdname ambiguous_functions
-.generate_translation_df <- function(expression_set, organism, ontology) {
-  entrezid_col <- .resolve_entrezid_col(expression_set) # add keys support
-  go_data <<- .set_go_data(organism, ontology, computeIC = F)
-  #go_gene_anno <<- go_data@geneAnno
-  go_gene_anno <<- data.table(go_data@geneAnno)
-  
-  # convert entrez_ids
-  all_entrezzes <- unlist(lapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
-    entrez_split <- unlist(strsplit(entrezrawid, ",|:"), F, F)
-    entrez_ids <- entrez_split[seq(2, length(entrez_split), 2)]
-    return(entrez_ids)
-  }), F, F)
-  
-  go_gene_anno <<- go_gene_anno[go_gene_anno$ENTREZID %in% all_entrezzes,]
-  rowtracker <- 0
-  passed_ids <<- list()
-  
-  entrez_go_dfs <<- lapply(expression_set@featureData@data[,entrezid_col], function(entrezrawid) {
-    rowtracker <<- rowtracker + 1
-    #print(rowtracker)
-    #print(rownames(expression_set@assayData$exprs)[rowtracker])
-    entrez_split <- unlist(strsplit(entrezrawid, ",|:"))
-    entrez_ids <- entrez_split[seq(2, length(entrez_split), 2)]
-    
-    # test if id has already occured earlier
-    goids <<- passed_ids[[entrezrawid]]
-    if (is.null(goids)) {
-      goids <- go_gene_anno[go_gene_anno$ENTREZID %in% entrez_ids,]$GO
-      non_duplicated_goids <- goids[!duplicated(goids)]
-      passed_ids[[entrezrawid]] <<- c(non_duplicated_goids)
-      }
-    #View(goids)
-    if (length(goids) != 0){
-      return(CJ(ORIGID=rownames(expression_set@assayData$exprs)[rowtracker], ENTREZID=entrezrawid, GO=goids))
-    }
-  })
-  entrez_go_df <- unique(as.data.frame(data.table::rbindlist(entrez_go_dfs)))
-  return(entrez_go_df)
-}
 
-#' resolve function for entrez
-.resolve_entrezid_col <- function(expression_set) {
-  colnames_vector <- colnames(expression_set@featureData@data)
-  exp <- regexec(".*entrez.*", colnames_vector)
-  regex_result <- unlist(regmatches(colnames_vector, exp))
-  if (length(regex_result) < 1) {
-    return(NULL)
-  } else {
-    return(regex_result)
-  }
-}

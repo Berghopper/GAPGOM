@@ -16,7 +16,7 @@
 #' verbose=T)
 #' @importFrom data.table fread
 #' @export
-fantom_load_raw <- function(filepath, verbose = F) {
+fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
   old <- options(stringsAsFactors = F)
   on.exit(options(old), add = TRUE)
   # first parse fantom column variables.
@@ -50,7 +50,7 @@ fantom_load_raw <- function(filepath, verbose = F) {
   if (verbose) print("DONE")
   # return df+leftover metadata (header variables).
   return(list(df=fan, meta=translation_df[translation_df$type!="ColumnVariables" | translation_df$type!=0,]))
-}
+})
 
 #' GAPGOM - fantom_to_expset()
 #'
@@ -77,13 +77,13 @@ fantom_load_raw <- function(filepath, verbose = F) {
 #' expset <- fantom_to_expset(ft5, verbose = T)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @export
-fantom_to_expset <- function(fanraw, filter = T, verbose = F) {
+fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
   fan <- fanraw$df
   meta <- fanraw$meta
   if (filter) {
     if (verbose) print("filtering out empty entrez ids...")
     if (verbose) print("DONE")
-    fan <- fantom_filter_entrez(fan)
+    fan <- .fantom_filter_entrez(fan)
   } 
   if (verbose) print("converting to expressionset...")
   expression_matrix <- as.matrix(fan[,7:ncol(fan)])
@@ -95,19 +95,19 @@ fantom_to_expset <- function(fanraw, filter = T, verbose = F) {
                                             data=featuredat),...=meta) # issue #6
   if (verbose) print("DONE")
   return(expset)
-}
+})
 
-#' GAPGOM internal - fantom_filter_entrez()
+#' GAPGOM internal - .fantom_filter_entrez()
 #'
 #' filter on entrez id with raw fantom5 matrix.
 #' 
 #' @section Notes:
 #' This function is an internal function and should not be called by the user.
-fantom_filter_entrez <- function(fan) {
+.fantom_filter_entrez <- compiler::cmpfun(function(fan) {
   return(fan[!(
     is.na(fan$`entrezgene (genes) id associated with the transcript`) | 
       fan$`entrezgene (genes) id associated with the transcript`==""),])
-}
+})
 
 #' GAPGOM - fantom_load_expressionset()
 #'
@@ -136,10 +136,12 @@ fantom_filter_entrez <- function(fan) {
 #' expset <- fantom_load_expression_set(fantom_file)
 #' View(expset)
 #' @export
-fantom_load_expressionset <- function(filepath, filter = T, verbose = F) {
+fantom_load_expressionset <- compiler::cmpfun(function(filepath, 
+                                                       filter = T, 
+                                                       verbose = F) {
   fanraw <- fantom_load_raw(filepath, verbose = verbose)
   return(fantom_to_expset(fanraw, filter = filter, verbose = verbose))
-}
+})
 
 #' GAPGOM - fantom_download()
 #'
@@ -162,7 +164,7 @@ fantom_load_expressionset <- function(filepath, filter = T, verbose = F) {
 #' fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
 #' @importFrom GEOquery gunzip
 #' @export
-fantom_download <- function(down_dir, organism="human", unpack = T, 
+fantom_download <- compiler::cmpfun(function(down_dir, organism="human", unpack = T, 
                             noprompt = F) {
   baseurl <- "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/"
   url <- switch(organism, 
@@ -210,4 +212,4 @@ fantom_download <- function(down_dir, organism="human", unpack = T,
     full_filename <- substr(full_filename, 1, len(full_filename)-3)
   }
   return(full_filename)
-}
+})

@@ -11,19 +11,26 @@ All z changes will be kept track of in the unreleased minor (y) version. There w
 use correct convention yet (0.0.1).
 
 ## [0.2.0 - Unreleased]
-### Planned changes/features (subject to changes)
+### Planned changes/features (subject to changes) *=not yet implemented
 ### Added
 - TopoICSim performance improvements
 - lncRNApred performance improvements
-- parallelisation
-- Rcpp performance tweaks
+- parallelisation*
+- Rcpp performance tweaks*
 ### Changed
-- Implementations of measure calculations -> changed to Rcpp versions.
-- Implementation of DAG functions - performance improvements (not sure how yet)
-- Implementation of entrez -> goid lookup. (some ids get looked up twice.)
-- data.frame subsetting with .subset2()?
+- Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
+- All functions are now pre-compiled*
+- Imports (per function)*
+- Comments, a lot of em*
+- Implementations of measure calculations -> changed to Rcpp versions.*
+- Implementation of DAG functions - performance improvements (not sure how yet)*
+- Implementation of entrez -> goid lookup. (some ids get looked up twice.) 
+- data.frame subsetting/ddply functions --> replaced with way faster data.table alternatives
 ### Removed
 ### Fixed
+- R depends version (3.4.4 --> 3.5.1)
+- Performance bug in TopoICSim (#4)
+- Performance bug in entrez -> goid lookup (#5)
 
 
 ## [0.1.0 - Technically Tidied] - 2018-10-04

@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: novel Gene Annotation Prediction and other GO Metrics
-Version: 0.1.4
+Version: 0.1.5
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
@@ -26,7 +26,8 @@ Imports:
   GEOquery,
   AnnotationDbi,
   data.table,
-  Biobase
+  Biobase,
+  compiler
 Suggests:
   org.Dm.eg.db,
   org.Rn.eg.db,
@@ -46,5 +47,5 @@ Suggests:
   org.Ss.eg.db,
   org.Xl.eg.db,
   testthat
-Depends: R (>= 3.4.4)
+Depends: R (>= 3.5.1)
 RoxygenNote: 6.1.0

@@ -6,7 +6,7 @@
 \usage{
 topo_ic_sim_g1g2(gene1, gene2, ontology = "MF", organism = "yeast",
   go_data = NULL, drop = NULL, translation_to_goids = NULL,
-  all_info_go_pairs = NULL)
+  all_go_pairs = NULL)
 }
 \arguments{
 \item{gene1}{Gene ID of the first Gene.}
@@ -32,13 +32,21 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 
-\item{all_info_go_pairs}{dataframe of GO Term pairs with a column
+\item{all_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. it is recommended to always keep
 this on default unless you know what you are doing.}
 }
 \value{
+List containing the following;
+$GeneSim;
 similarity between genes taken from the mean of all term 
 similarities.
+$GO1;
+vector of GO's from first gene
+$GO2;
+vector of GO's from second gene
+$AllGoPairs;
+All possible GO combinations with their semantic distances (matrix)
 }
 \description{
 Algorithm to calculate similarity between GO terms of two genes.

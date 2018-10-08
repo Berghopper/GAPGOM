@@ -26,10 +26,10 @@
 #' @param go_annotation GO annotation of the correct root node.
 #' @param root root node of the GO tree (MF, BP or CC) in databse string form.
 #' @param IC Information content of the two terms
-#' @param all_info_go_pairs dataframe of GO Term pairs with a column
+#' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. it is recommended to always keep
 #' this on default unless you know what you are doing.
-#' @return list of score and all_info_go_pairs, the latter of which will be 
+#' @return list of score and all_go_pairs, the latter of which will be 
 #' reused.
 #' @examples
 #'
@@ -130,12 +130,21 @@
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
 #' @param drop vector of GOID you want to exclude from the analysis.
-#' @param all_info_go_pairs dataframe of GO Term pairs with a column
+#' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. it is recommended to always keep
 #' this on default unless you know what you are doing.
 #'
-#' @return similarity between genes taken from the mean of all term 
+#' @return List containing the following;
+#' $GeneSim;
+#' similarity between genes taken from the mean of all term 
 #' similarities.
+#' $GO1;
+#' vector of GO's from first gene
+#' $GO2;
+#' vector of GO's from second gene
+#' $AllGoPairs;
+#' All possible GO combinations with their semantic distances (matrix)
+#' 
 #' @examples
 #' GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", drop=NULL)
 #'
@@ -152,7 +161,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                             go_data = NULL,
                                             drop = NULL,
                                             translation_to_goids = NULL,
-                                            all_info_go_pairs = NULL
+                                            all_go_pairs = NULL
                                             ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
@@ -177,11 +186,27 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                     "rhesus",
                                     "pig",
                                     "xenopus"))
-  # Initial definitions and sets based on organism and ontology type
+  # arg checking and queries
+  # check if go data is present.
   if (is.null(go_data)) {
     go_data <- .set_go_data(organism = organism, ontology = ontology) 
   }
+  # check if translation table is present.
+  if (is.null(translation_to_goids)) {
+    # lookup goids of all gene ids
+    translation_to_goids <- .go_ids_lookup(c(gene1, gene2), 
+                                           go_data, 
+                                           drop = drop)
+  }
   
+  # check if all_go pairs matrix is present (for optimization)
+  if (is.null(all_go_pairs)) {
+    go_unique_list <- unique(translation_to_goids$GO)
+    all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
+                                                         go_unique_list)
+  }
+  
+  # Initial definitions and sets based on organism and ontology type
   xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
                        BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
 
@@ -192,36 +217,26 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                  CC = "GO:0005575 ")
   weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
   
-  if (is.null(translation_to_goids)) {
-    # lookup goids of all gene ids
-    translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
-                                           go_data, 
-                                           drop = drop)
-  }
-  if (is.null(all_info_go_pairs)) {
-    go_unique_list <- unique(translation_to_goids$GO)
-    all_info_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                         go_unique_list)
-  }
-  gos1 <<- as.character(translation_to_goids[translation_to_goids$ID==gene1,]$GO)
-  gos2 <<- as.character(translation_to_goids[translation_to_goids$ID==gene2,]$GO)
+  
+  # get goids for both genes
+  gos1 <- as.character(translation_to_goids[translation_to_goids$ID==gene1,]$GO)
+  gos2 <- as.character(translation_to_goids[translation_to_goids$ID==gene2,]$GO)
 
   if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
-    return(list(geneSim = NA, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
+    return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, 
+                AllGoPairs = all_go_pairs))
   }
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   IC <- go_data@IC
   
   unique_pairs <<- .unique_combos(gos1, gos2)
   
-  #View(all_info_go_pairs)
-  #View(unique_pairs)
   apply(unique_pairs, 1, function(pair) {
     go1 <- pair[1]
     go2 <- pair[2]
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
-    if (is.na(all_info_go_pairs[go1, go2])) {
+    if (is.na(all_go_pairs[go1, go2])) {
       score <-
         .topo_ic_sim_titj(go1,
                           go2,
@@ -231,23 +246,22 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                           go_annotation,
                           root,
                           IC)
-      #View(scores)
       scores <<- .set_values(go1, go2, scores, score)
-      all_info_go_pairs[go1, go2] <<- score
-      all_info_go_pairs[go2, go1] <<- score
+      all_go_pairs[go1, go2] <<- score
+      all_go_pairs[go2, go1] <<- score
     } else {
       # set already existing value.
-      scores <<- .set_values(go1, go2, scores, all_info_go_pairs[go1, go2])
+      scores <<- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
     }
     
-    #print(dim(all_info_go_pairs))
+    #print(dim(all_go_pairs))
   })
   #print(scores)
   #print(dim(scores))
   #print(unique_pairs)
   if (!sum(!is.na(scores))) {
     #print("uhoh...")
-    return(list(geneSim = NA, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
+    return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
@@ -259,7 +273,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   }))/n)
   sim <- round(sim, digits = 3)
   #print(sim)
-  return(list(geneSim = sim, GO1 = gos1, GO2 = gos2, all_info_go_pairs = all_info_go_pairs))
+  return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
 })
 
 #' GAPGOM - topo_ic_sim()
@@ -291,8 +305,18 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
 #' @param drop vector of GOID you want to exclude from the analysis.
-#' @return returns dataframe containing similarities between corresponding
-#' Gene pairs.
+#' @return List containing the following;
+#' $GeneSim;
+#' similarity between genes taken from the mean of all term 
+#' similarities within those genes. (matrix of similarities between genes).
+#' Take the mean of this matrix to either get the InterSetSim or IntraSetSim
+#' depending on your input.
+#' $GO1;
+#' vector of GO's from first gene
+#' $GO2;
+#' vector of GO's from second gene
+#' $AllGoPairs;
+#' All possible GO combinations with their semantic distances (matrix)
 #' @examples
 #' list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 #' "222","8659","501","64577","223","217","4329","10840","7915")
@@ -323,7 +347,7 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
     
     go_unique_list <- unique(translation_to_goids$GO)
-    all_info_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
+    all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
                                                          go_unique_list)
     
     
@@ -340,13 +364,16 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                           drop = drop, 
                                           translation_to_goids = 
                                             translation_to_goids,
-                                          all_info_go_pairs = all_info_go_pairs)
+                                          all_go_pairs = all_go_pairs)
       
       score_matrix <<- .set_values(gene1, gene2, score_matrix, 
-                                  genepair_result$geneSim)
-      all_info_go_pairs <<- genepair_result$all_info_go_pairs
+                                  genepair_result$GeneSim)
+      all_go_pairs <<- genepair_result$AllGoPairs
     })
     print(Sys.time()-timestart)
-    return(score_matrix)
+    return(list(GeneSim=score_matrix, 
+                GeneList1 = gene_list1, 
+                GeneList2 = gene_list2,
+                AllGoPairs = all_go_pairs))
 })
 
