@@ -36,20 +36,28 @@
 #' @return return the quantified matrix
 #' @importFrom plyr ddply .
 .ext_id_to_term_id <- compiler::cmpfun(function(data, list_top_genes) {
-  # add 1 for each gene that is in list top genes.
-  return(ddply(data, .(GO), function(x) nrow(x[(
-    x$ORIGID %in% list_top_genes), ])))
+  # add 1 for each go that is in list top genes.
+  dtdata <<- as.data.table(data)
+  quantified_only <- dtdata[dtdata$ORIGID %in% as.data.table(list_top_genes)[[1]], .N, by=GO]
+  non_quantified_gos <- unique(extracted_genes[!(extracted_genes$GO %in% quantified_only$GO), ]$GO)
+  return(as.data.frame(rbind(quantified_only, list(non_quantified_gos, rep(0, length(non_quantified_gos))))))
 })
 
+.term_id_to_ext_id <- function(data) {
+  dtdata <- as.data.table(data)
+  return(as.data.frame(dtdata[, .N, by=GO]))
+}
+
 .go_ids_lookup <- function(ids, go_data, drop=NULL) {
-  gene_anno <- go_data@geneAnno[!go_data@geneAnno$EVIDENCE %in% drop, ]
+  gene_anno <- data.table(go_data@geneAnno)
+  gene_anno <- gene_anno[!gene_anno$EVIDENCE %in% drop, ]
   
   passed_ids <<- list()
   go_dfs <<- lapply(ids, function(id) {
     # test if id has already occured earlier
     goids <- passed_ids[[id]]
     if (is.null(goids)) {
-      goids <- unique(gene_anno[gene_anno==as.character(id),]$GO)
+      goids <- unique(gene_anno[gene_anno[,1]==as.character(id),]$GO)
       passed_ids[[id]] <<- c(goids)
     }
     if (length(goids) != 0) {

@@ -64,11 +64,11 @@
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
   # expression data rows. 
-  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
+  extracted_genes <<- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
 
   # List of top n (cutoff) genes (Ensembl ID)
-  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
+  list_top_genes <<- ordered_score_df[c(1:enrichment_cutoff), 1]
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
@@ -79,25 +79,29 @@
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
 
   # Count the amount of genes with the same GO ID and quantify them.
-  term_id_to_ext_id <- ddply(extracted_genes, .(GO), function(x) nrow(x))
+  term_id_to_ext_id <- .term_id_to_ext_id(extracted_genes)
   # set the column name to Freq Anno. (This was broken before.)
   colnames(term_id_to_ext_id)[2] <- "Freq_Anno"
 
   # Filter the quantification to only have the top genes where the go ID
   # corresponds
-  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$GO %in%
+  qterm_id_to_ext_id <<- term_id_to_ext_id[(term_id_to_ext_id$GO %in%
                                               list_of_gos), ]
+  # now order qterm so go's correspond later
+  qterm_id_to_ext_id <- qterm_id_to_ext_id[order(qterm_id_to_ext_id$GO),]
 
   # ---
 
   # Quantify extracted_genes in List of top genes (grab every go_id for
   # corresponding ensembl IDs)
-  quantified_ext_id_to_term_id <- .ext_id_to_term_id(extracted_genes,
+  quantified_ext_id_to_term_id <<- .ext_id_to_term_id(extracted_genes,
                                                     list_top_genes)
 
   # After this, filter it for existing Gene ontologies within the top GOs
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(
-      quantified_ext_id_to_term_id[, 1] %in% list_of_gos), 2]
+      quantified_ext_id_to_term_id[, 1] %in% list_of_gos), ]
+  # now order the thing so go's correspond with others
+  quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[order(quantified_ext_id_to_term_id$GO), 2]
 
 
   #			              GeneList | Genome
