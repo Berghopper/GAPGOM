@@ -8,21 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not the small "z" version changes, because this changes with every commit.
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
-use correct convention yet (0.0.1).
+use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
 ## [0.2.0 - Unreleased]
 ### Planned changes/features (subject to changes) *=not yet implemented
 ### Added
 - TopoICSim performance improvements
 - lncRNApred performance improvements
-- parallelisation*
+- ~~parallelisation~~ **FAILED**
 - Rcpp performance tweaks*
 - some small extra options for similarity prediction
 ### Changed
 - Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
-- All functions are now pre-compiled*
-- Imports (per function)*
-- Comments, a lot of em*
+- All functions are now pre-compiled
+- Imports (per function)
+- Comments, a lot of em
 - Implementations of measure calculations -> changed to Rcpp versions.*
 - Implementation of DAG functions - performance improvements (not sure how yet)*
 - Implementation of entrez -> goid lookup. (some ids get looked up twice.) 

@@ -45,7 +45,7 @@ NULL
   edge_matrix <- edgeMatrix(sub_graph)
   weighted_edge_matrix <- eWV(sub_graph, edge_matrix, useNNames = TRUE)
   Weights <- c()
-  for (i in 1:length(names(weighted_edge_matrix))) {
+  lapply(seq_along(names(weighted_edge_matrix)), function(i) {
     go <- strsplit(names(weighted_edge_matrix)[i], "->")
     ic1 <- information_content[go[[1]][1]]
     ic2 <- information_content[go[[1]][2]]
@@ -55,8 +55,8 @@ NULL
       w1 <- 1/(2 * ic1)
     if (!is.na(ic2) & ic2 != 0)
       w2 <- 1/(2 * ic2)
-    Weights <- c(Weights, (w1 + w2))
-  }
+    Weights <<- c(Weights, (w1 + w2))
+  })
   sub_igraph <- igraph.from.graphNEL(sub_graph)
   sub_igraph <- set.edge.attribute(sub_igraph, 
                                    name = "weight", 
@@ -80,8 +80,9 @@ NULL
   # Get longest path from root to every node
   L = 0
   for (node in tsg[-1]) {
-    if (tsg[node][[1]]$name == root)
+    if (tsg[node][[1]]$name == root) {
         break
+      }
     # Get distance from node's predecessors
     w <- E(weighted_subgraph)[to(node)]$weight
     # Get distance from root to node's predecessors

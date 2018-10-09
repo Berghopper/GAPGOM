@@ -78,6 +78,7 @@ expression_prediction_function <- function(gene_id,
                                 method = "combine",
                                 significance = 0.05,
                                 filter_pvals = FALSE) {
+  starty <- Sys.time()
   # prepare the data with some special operations/vars that are needed later
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
@@ -132,6 +133,7 @@ expression_prediction_function <- function(gene_id,
   if (length(enrichment_result) > 0 && nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(1:nrow(enrichment_result))
+    print(Sys.time()-starty)
     return(enrichment_result)
   } else {
     print("Could not find any similar genes!")
@@ -151,6 +153,8 @@ expression_prediction_function <- function(gene_id,
 #' @name ambiguous_functions
 NULL
 
+#' @importFrom future plan multiprocess
+#' @importFrom future.apply future_apply
 #' @rdname ambiguous_functions
 .ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
   # apply the score calculation function

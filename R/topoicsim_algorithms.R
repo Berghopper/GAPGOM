@@ -53,11 +53,10 @@
                                                IC) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
-  D_ti_tj_x <- c()
   common_ancestor <- .common_ancestor(go_id1, go_id2, ontology, organism,
                                      go_annotation, IC)
   if (length(common_ancestor) != 0 && !is.na(common_ancestor)) {
-    for (x in common_ancestor) {
+    D_ti_tj_x <- lapply(common_ancestor, function(x) {
       # To identify all disjunctive common ancestors
       immediate_children_x <- switch(ontology,
                                      MF = GOMFCHILDREN[[x]],
@@ -93,9 +92,10 @@
           ic_sp2 <- ic_sp2 + (1/(2 * IC_GOID_2))
 
         wSP_ti_tj_x <- (ic_sp1 + ic_sp2) * (length_sp1 + length_sp2 - 2)
-        D_ti_tj_x <- c(D_ti_tj_x, wSP_ti_tj_x/wLP_x_root)
+        return(wSP_ti_tj_x/wLP_x_root)
       }
-    }
+    })
+    D_ti_tj_x <- unlist(D_ti_tj_x, F, F)
   }
   if (!is.null(D_ti_tj_x)) {
       sim <- round(1 - (atan(min(D_ti_tj_x, na.rm = TRUE))/(pi/2)), 3)
@@ -254,13 +254,8 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
       scores <<- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
     }
     
-    #print(dim(all_go_pairs))
   })
-  #print(scores)
-  #print(dim(scores))
-  #print(unique_pairs)
   if (!sum(!is.na(scores))) {
-    #print("uhoh...")
     return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
   }
   scores <- sqrt(scores)
@@ -272,7 +267,6 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
       max(scores[, x], na.rm = TRUE)
   }))/n)
   sim <- round(sim, digits = 3)
-  #print(sim)
   return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
 })
 
@@ -325,6 +319,8 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
+#' @importFrom future plan multiprocess
+#' @importFrom future.apply future_apply
 #' @export
 topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                          gene_list2,
@@ -353,6 +349,7 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
+    
     apply(unique_pairs, 1, function(pair) {
       gene1 <- pair[1]
       gene2 <- pair[2]

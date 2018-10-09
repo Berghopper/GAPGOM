@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: novel Gene Annotation Prediction and other GO Metrics
-Version: 0.1.6
+Version: 0.1.7
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
@@ -13,10 +13,12 @@ License: MIT
 Encoding: UTF-8
 LazyData: true
 Imports:
+  compiler,
   plyr,
+  data.table,
+  igraph,
   graph,
   RBGL,
-  igraph,
   Rgraphviz,
   GO.db,
   org.Hs.eg.db,
@@ -25,9 +27,7 @@ Imports:
   GOSemSim,
   GEOquery,
   AnnotationDbi,
-  data.table,
-  Biobase,
-  compiler
+  Biobase
 Suggests:
   org.Dm.eg.db,
   org.Rn.eg.db,
