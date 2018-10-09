@@ -40,6 +40,7 @@
 #' standard data and will thus yield no results.
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
+#' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -60,11 +61,13 @@
                                 id_translation_df,
                                 organism,
                                 ontology,
-                                enrichment_cutoff = 250) {
+                                enrichment_cutoff,
+                                significance,
+                                filter_pvals) {
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
   # expression data rows. 
-  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
+  extracted_genes <- id_translation_df[!(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
 
   # List of top n (cutoff) genes (Ensembl ID)
@@ -130,16 +133,20 @@
 
   # select last 4 columns (n1,n2,n3,n4)
   args.df <- qterm_id_to_ext_id[, c(3:6)]
+  
   # calculate p-values using the hypergeometrix distribution.
   pvalues <- apply(args.df, 1, function(n) min(phyper(0:n[1] - 1, n[2], n[3],
                                                       n[4],
                                                       lower.tail = FALSE)))
+  # if the is no significant pvalues, return empty numeric array. This doesn't
+  # interfere with rbind later on in combine method.
+  if (length(pvalues) == 0) {
+    return(numeric())
+  }
   # Grab corresponding go_ids
   go_id <- qterm_id_to_ext_id[, 1]
   # Replicate the ontology for the amount of rows
   ontology <- rep(ontology, nrow(args.df))
-  # format the pvalues to have 3 digits at max.
-  pvalues_formatted <- format(pvalues, scientific = TRUE, digits = 3)
   # Benjamini & Hochberg multiple comparisons adjustment
   fdr <- p.adjust(pvalues, method = "fdr", n = length(pvalues))
   # grab description of each gene ontology term using Term() from the 
@@ -147,10 +154,10 @@
 
   term <- Term(qterm_id_to_ext_id[, 1])
   # Create a dataframe containing all results in a neat format.
-  enrichment_dataframe <- data.frame(GOID = go_id, Ontology = ontology,
-                                     Pvalue = pvalues_formatted,
-                                     FDR = format(fdr, scientific = TRUE,
-                                                  digits = 3),
+  enrichment_dataframe <- data.frame(GOID = go_id, 
+                                     Ontology = ontology,
+                                     Pvalue = pvalues,
+                                     FDR = fdr,
                                      Term = term)
 
   # Omit NA's
@@ -158,10 +165,15 @@
   # Order the result by FDR (the adjusted p values)
   enrichment_dataframe <- enrichment_dataframe[(order(as.numeric(
       enrichment_dataframe[, 4]))), ]
-  # Only keep every P-value that is significant
+  # Only keep every P-value that is significant (set by user)
   enrichment_dataframe <- enrichment_dataframe[(as.numeric(
-      enrichment_dataframe[, 4]) < 0.05), ]
-
+      enrichment_dataframe[, 4]) < significance), ]
+  # filter out 0's if set by user.
+  if (filter_pvals) {
+    enrichment_dataframe <- enrichment_dataframe[(as.numeric(
+      enrichment_dataframe[, 4]) !=0), ]
+  }
+  
   return(enrichment_dataframe)
 })
 

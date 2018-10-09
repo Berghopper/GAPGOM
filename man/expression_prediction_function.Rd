@@ -5,7 +5,8 @@
 \title{GAPGOM - expression_prediction_function()}
 \usage{
 expression_prediction_function(gene_id, expression_set, id_select_vector,
-  organism, ontology, enrichment_cutoff = 250, method = "combine")
+  organism, ontology, enrichment_cutoff = 250, method = "combine",
+  significance = 0.05, filter_pvals = FALSE)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -41,6 +42,11 @@ enriched in the enrichment analysis. (default is 250)}
 \item{method}{which statistical method to use for the prediction, currently
 there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 and "combine".}
+
+\item{significance}{normalized p-values (fdr) that are below this number 
+will be kept. has to be a float/double between 0-1. Default is 0.05}
+
+\item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
@@ -65,15 +71,20 @@ annotation to calculate similarity scores between GO terms,
 }
 \examples{
 # Example with default dataset, take a look at the data documentation
-# to fully grasp what's going on.
+# to fully grasp what's going on with making of the filter etc. (Biobase 
+# ExpressionSet)
 
-# grab 1000 random ids to filter out between 100 and max length
-sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[
-  sample(100:nrow(ft5_example_data@assayData$exprs), 1000)]
-gid <- "chr10:101953059..101953074,-"
+# make a filter of all the ids that contain a 0 in their expression row.
+sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
+apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
+function(row) {all(row==0)}),])
+# set an artbitrary gene you want to find similarities for. (5th row in this
+# case)
+gid <- rownames(ft5_example_data@assayData$exprs)[5]
 GAPGOM::expression_prediction_function(gid, 
                                        GAPGOM::ft5_example_data, 
                                        sort_list, 
                                        "mouse", 
-                                       "BP")
+                                       "BP"
+                                       )
 }

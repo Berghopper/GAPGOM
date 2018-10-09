@@ -36,6 +36,9 @@
 #' @param method which statistical method to use for the prediction, currently
 #' there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 #' and "combine".
+#' @param significance normalized p-values (fdr) that are below this number 
+#' will be kept. has to be a float/double between 0-1. Default is 0.05
+#' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -47,17 +50,22 @@
 #' used_method - the used method to determine the ontology term similarity
 #' @examples
 #' # Example with default dataset, take a look at the data documentation
-#' # to fully grasp what's going on.
+#' # to fully grasp what's going on with making of the filter etc. (Biobase 
+#' # ExpressionSet)
 #' 
-#' # grab 1000 random ids to filter out between 100 and max length
-#' sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[
-#'   sample(100:nrow(ft5_example_data@assayData$exprs), 1000)]
-#' gid <- "chr10:101953059..101953074,-"
+#' # make a filter of all the ids that contain a 0 in their expression row.
+#' sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
+#' apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
+#' function(row) {all(row==0)}),])
+#' # set an artbitrary gene you want to find similarities for. (5th row in this
+#' # case)
+#' gid <- rownames(ft5_example_data@assayData$exprs)[5]
 #' GAPGOM::expression_prediction_function(gid, 
 #'                                        GAPGOM::ft5_example_data, 
 #'                                        sort_list, 
 #'                                        "mouse", 
-#'                                        "BP")
+#'                                        "BP"
+#'                                        )
 #' @importFrom plyr ddply .
 #' @import Biobase
 #' @export
@@ -67,11 +75,16 @@ expression_prediction_function <- function(gene_id,
                                 organism,
                                 ontology,
                                 enrichment_cutoff = 250,
-                                method = "combine") {
-  old <- options(stringsAsFactors = FALSE)
-  on.exit(options(old), add = TRUE)
+                                method = "combine",
+                                significance = 0.05,
+                                filter_pvals = FALSE) {
   # prepare the data with some special operations/vars that are needed later
-  expression_data_sorted <- expression_set@assayData$exprs[id_select_vector,]
+  old <- options(stringsAsFactors = FALSE, warn=-1)
+  on.exit(options(old), add = TRUE)
+  
+  expression_data_sorted <- expression_set@assayData$exprs[rownames(
+    expression_set@assayData$exprs)!=id_select_vector,]
+  #if(expression_data_sorted)
   expression_data_sorted_ids <- rownames(expression_data_sorted)
 
   # Target expression data where gene id matches
@@ -93,7 +106,9 @@ expression_prediction_function <- function(gene_id,
     "target_expression_data" = target_expression_data,
     "organism" = organism,
     "ontology" = ontology,
-    "enrichment_cutoff" = enrichment_cutoff)
+    "enrichment_cutoff" = enrichment_cutoff,
+    "significance" = significance,
+    "filter_pvals" = filter_pvals)
 
 
   # these functions calculate score between target expression of target gene
@@ -114,7 +129,7 @@ expression_prediction_function <- function(gene_id,
       return(NULL)
     }
   )
-  if (nrow(enrichment_result) > 0) {
+  if (length(enrichment_result) > 0 && nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(1:nrow(enrichment_result))
     return(enrichment_result)
@@ -169,7 +184,9 @@ NULL
     args$id_translation_df,
     args$organism,
     args$ontology,
-    enrichment_cutoff = args$enrichment_cutoff
+    args$enrichment_cutoff,
+    args$significance,
+    args$filter_pvals
   )
   return(enrichment_result)
 })
@@ -178,8 +195,10 @@ NULL
 .ambiguous_method_origin <- compiler::cmpfun(function(enrichment_result, 
                                                      methodname) {
   # add used_method column
-  enrichment_result[, "used_method"] <- rep(
-    methodname, nrow(enrichment_result))
+  if (length(enrichment_result) != 0) {
+    enrichment_result[, "used_method"] <- rep(
+      methodname, nrow(enrichment_result))
+  }
   return(enrichment_result)
 })
 
@@ -248,6 +267,9 @@ NULL
                                enrichment_kendall,
                                enrichment_sobolev,
                                enrichment_fisher)
+  if (length(combined_enrichment) == 0) {
+    return(combined_enrichment)
+  }
   # and keep the rows with the lowest corrected P-values.
   combined_enrichment <- ddply(combined_enrichment,
                                .(GOID), function(x)

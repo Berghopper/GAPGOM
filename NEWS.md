@@ -17,6 +17,7 @@ use correct convention yet (0.0.1).
 - lncRNApred performance improvements
 - parallelisation*
 - Rcpp performance tweaks*
+- some small extra options for similarity prediction
 ### Changed
 - Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
 - All functions are now pre-compiled*
@@ -31,6 +32,8 @@ use correct convention yet (0.0.1).
 - R depends version (3.4.4 --> 3.5.1)
 - Performance bug in TopoICSim (#4)
 - Performance bug in entrez -> goid lookup (#5)
+- fdr bug (#7)
+- bug where id_select_vector was actually select for rather than filtered for. (#8)
 
 
 ## [0.1.0 - Technically Tidied] - 2018-10-04

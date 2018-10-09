@@ -5,7 +5,8 @@
 \title{GAPGOM internal - enrichment_analysis()}
 \usage{
 .enrichment_analysis(ordered_score_df, expression_set, id_select_vector,
-  id_translation_df, organism, ontology, enrichment_cutoff = 250)
+  id_translation_df, organism, ontology, enrichment_cutoff, significance,
+  filter_pvals)
 }
 \arguments{
 \item{ordered_score_df}{the score dataframe see documentation on
@@ -41,6 +42,8 @@ standard data and will thus yield no results.}
 
 \item{enrichment_cutoff}{cutoff number for the amount of genes to be
 enriched in the enrichment analysis. (default is 250)}
+
+\item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
