@@ -77,7 +77,8 @@ expression_prediction_function <- function(gene_id,
                                 enrichment_cutoff = 250,
                                 method = "combine",
                                 significance = 0.05,
-                                filter_pvals = FALSE) {
+                                filter_pvals = FALSE,
+                                ncluster = 1) {
   starty <- Sys.time()
   # prepare the data with some special operations/vars that are needed later
   old <- options(stringsAsFactors = FALSE, warn=-1)
@@ -109,7 +110,8 @@ expression_prediction_function <- function(gene_id,
     "ontology" = ontology,
     "enrichment_cutoff" = enrichment_cutoff,
     "significance" = significance,
-    "filter_pvals" = filter_pvals)
+    "filter_pvals" = filter_pvals,
+    "ncluster" = ncluster)
 
 
   # these functions calculate score between target expression of target gene
@@ -153,8 +155,6 @@ expression_prediction_function <- function(gene_id,
 #' @name ambiguous_functions
 NULL
 
-#' @importFrom future plan multiprocess
-#' @importFrom future.apply future_apply
 #' @rdname ambiguous_functions
 .ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
   # apply the score calculation function
@@ -257,20 +257,27 @@ NULL
 })
 
 #' @rdname ambiguous_functions
+#' @importFrom parallel makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @import foreach
 .predict_combined <- compiler::cmpfun(function(args) {
   # Run enrichment for each method
-  enrichment_pearson <- .predict_pearson(args)
-  enrichment_spearman <- .predict_spearman(args)
-  enrichment_kendall <- .predict_kendall(args)
-  enrichment_sobolev <- .predict_sobolev(args)
-  enrichment_fisher <- .predict_fisher(args)
+  predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, .predict_sobolev, .predict_fisher)
   
-  # bind all results by row
-  combined_enrichment <- rbind(enrichment_pearson,
-                               enrichment_spearman,
-                               enrichment_kendall,
-                               enrichment_sobolev,
-                               enrichment_fisher)
+  if(args$ncluster > 1) {
+    cl <- makeCluster(args$ncluster)
+    registerDoParallel(cl)
+  }
+  
+  combined_enrichment <<- foreach(method=predict_methods, .combine = 'rbind') %dopar% {
+    return(method(args))
+  }
+  
+  
+  if(args$ncluster > 1) {
+   stopCluster(cl)
+  }
+  
   if (length(combined_enrichment) == 0) {
     return(combined_enrichment)
   }

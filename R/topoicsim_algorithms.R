@@ -55,6 +55,7 @@
   on.exit(options(old), add = TRUE)
   common_ancestor <- .common_ancestor(go_id1, go_id2, ontology, organism,
                                      go_annotation, IC)
+  D_ti_tj_x <- NULL
   if (length(common_ancestor) != 0 && !is.na(common_ancestor)) {
     D_ti_tj_x <- lapply(common_ancestor, function(x) {
       # To identify all disjunctive common ancestors
@@ -158,6 +159,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                             gene2,
                                             ontology = "MF",
                                             organism = "yeast",
+                                            progress_bar = F,
                                             go_data = NULL,
                                             drop = NULL,
                                             translation_to_goids = NULL,
@@ -214,7 +216,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                           CC = GOCCANCESTOR)
 
   root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
-                 CC = "GO:0005575 ")
+                 CC = "GO:0005575")
   weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
   
   
@@ -231,12 +233,29 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   
   unique_pairs <<- .unique_combos(gos1, gos2)
   
+  selected_freq_go_pairs <- freq_go_pairs[[paste0(ontology, "_", organism)]]
+  
+  my_progress <- 0
+  if (progress_bar) {
+    pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
+  } 
   apply(unique_pairs, 1, function(pair) {
+    if (progress_bar) {
+      setTxtProgressBar(pb, my_progress)
+    }
+    my_progress <<- my_progress + 1
     go1 <- pair[1]
     go2 <- pair[2]
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
-    if (is.na(all_go_pairs[go1, go2])) {
+    if (!is.na(all_go_pairs[go1, go2])) {
+      # set already existing value.
+      scores <<- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
+    } else if(go1 %in% colnames(selected_freq_go_pairs) && 
+              go2 %in% colnames(selected_freq_go_pairs)) {
+      # set precalculated value.
+      scores <<- .set_values(go1, go2, scores, selected_freq_go_pairs[go1, go2])
+    } else {
       score <-
         .topo_ic_sim_titj(go1,
                           go2,
@@ -246,15 +265,17 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                           go_annotation,
                           root,
                           IC)
+      # garbage collection (topo term algorithm uses a lot of ram) only done
+      # every 500th item/at end of apply
+      if ((my_progress %% 500) == 0) {
+        gc()
+      }
       scores <<- .set_values(go1, go2, scores, score)
       all_go_pairs[go1, go2] <<- score
       all_go_pairs[go2, go1] <<- score
-    } else {
-      # set already existing value.
-      scores <<- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
     }
-    
   })
+  gc()
   if (!sum(!is.na(scores))) {
     return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
   }
@@ -319,14 +340,13 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
-#' @importFrom future plan multiprocess
-#' @importFrom future.apply future_apply
 #' @export
 topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                          gene_list2,
                                          ontology = "MF",
                                          organism = "human",
-                                         drop = NULL) {
+                                         drop = NULL,
+                                         progress_bar = T) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
@@ -350,7 +370,15 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
+    my_progress <- 0
+    if (progress_bar) {
+      pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
+    }
     apply(unique_pairs, 1, function(pair) {
+      if (progress_bar) {
+        setTxtProgressBar(pb, my_progress)
+      }
+      my_progress <<- my_progress + 1
       gene1 <- pair[1]
       gene2 <- pair[2]
       genepair_result <- topo_ic_sim_g1g2(gene1,

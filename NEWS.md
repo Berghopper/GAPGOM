@@ -16,15 +16,16 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - TopoICSim performance improvements
 - lncRNApred performance improvements
 - ~~parallelisation~~ **FAILED**
-- Rcpp performance tweaks*
+- ~~Rcpp performance tweaks~~ **UNNECESSARY**
 - some small extra options for similarity prediction
+- precalculated similarity scores between frequent GO terms.
+- data preperation file, describing methods used for generating package data.
+- progress bars for TopoICSim
 ### Changed
 - Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
-- All functions are now pre-compiled
+- All functions are now pre-compiled (except for data_gen.R)
 - Imports (per function)
-- Comments, a lot of em
-- Implementations of measure calculations -> changed to Rcpp versions.*
-- Implementation of DAG functions - performance improvements (not sure how yet)*
+- Comments, a lot of them
 - Implementation of entrez -> goid lookup. (some ids get looked up twice.) 
 - data.frame subsetting/ddply functions --> replaced with way faster data.table alternatives
 ### Removed
@@ -33,7 +34,8 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Performance bug in TopoICSim (#4)
 - Performance bug in entrez -> goid lookup (#5)
 - fdr bug (#7)
-- bug where id_select_vector was actually select for rather than filtered for. (#8)
+- bug where id_select_vector was actually selected for rather than filtered for. (#8)
+- topoicsim being a total memory hog, it left a lot of unused items in ram --> using `gc()` now
 
 
 ## [0.1.0 - Technically Tidied] - 2018-10-04

@@ -6,7 +6,7 @@
 \usage{
 expression_prediction_function(gene_id, expression_set, id_select_vector,
   organism, ontology, enrichment_cutoff = 250, method = "combine",
-  significance = 0.05, filter_pvals = FALSE)
+  significance = 0.05, filter_pvals = FALSE, ncluster = 1)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
