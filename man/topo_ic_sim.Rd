@@ -5,7 +5,8 @@
 \title{GAPGOM - topo_ic_sim()}
 \usage{
 topo_ic_sim(gene_list1, gene_list2, ontology = "MF",
-  organism = "human", drop = NULL)
+  organism = "human", drop = NULL, progress_bar = T,
+  garbage_collection = F)
 }
 \arguments{
 \item{gene_list1}{The first gene vector of gene IDs. Note; THIS IS NOT THE
@@ -29,6 +30,13 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "xenopus".}
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
+
+\item{progress_bar}{Whether to show the progress of the calculation 
+(default = TRUE)}
+
+\item{garbage_collection}{whether to do R garbage collection. This is
+useful for very large calculations/datasets, as it might decrease ram usage.
+This option might however increase calculation time.}
 }
 \value{
 List containing the following;

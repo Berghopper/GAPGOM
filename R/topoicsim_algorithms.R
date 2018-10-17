@@ -116,6 +116,11 @@
 #'
 #' @param gene1 Gene ID of the first Gene.
 #' @param gene2 Gene ID of the second Gene.
+#' @param progress_bar Whether to show the progress of the calculation 
+#' (default = FALSE)
+#' @param garbage_collection whether to do R garbage collection. This is
+#' useful for very large calculations/datasets, as it might decrease ram usage.
+#' This option might however increase calculation time.
 #' @param go_data correct GO data from specefic species.
 #' @param ontology desired ontology to use for similarity calculations.
 #' One of three;
@@ -160,6 +165,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                             ontology = "MF",
                                             organism = "yeast",
                                             progress_bar = F,
+                                            garbage_collection = F,
                                             go_data = NULL,
                                             drop = NULL,
                                             translation_to_goids = NULL,
@@ -265,19 +271,24 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                           go_annotation,
                           root,
                           IC)
-      # garbage collection (topo term algorithm uses a lot of ram) only done
-      # every 500th item/at end of apply
-      if ((my_progress %% 500) == 0) {
-        gc()
+      
+      if (garbage_collection) {
+        # garbage collection (topo term algorithm uses a lot of ram) only done
+        # every 500th item/at end of apply
+        if ((my_progress %% 500) == 0) {
+          gc()
+        }
       }
       scores <<- .set_values(go1, go2, scores, score)
       all_go_pairs[go1, go2] <<- score
       all_go_pairs[go2, go1] <<- score
     }
   })
-  gc()
+  if (garbage_collection) {
+    gc()
+  }
   if (!sum(!is.na(scores))) {
-    return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
+  return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
@@ -320,6 +331,12 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
 #' @param drop vector of GOID you want to exclude from the analysis.
+#' @param progress_bar Whether to show the progress of the calculation 
+#' (default = TRUE)
+#' @param garbage_collection whether to do R garbage collection. This is
+#' useful for very large calculations/datasets, as it might decrease ram usage.
+#' This option might however increase calculation time.
+#' 
 #' @return List containing the following;
 #' $GeneSim;
 #' similarity between genes taken from the mean of all term 
@@ -346,7 +363,8 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                          ontology = "MF",
                                          organism = "human",
                                          drop = NULL,
-                                         progress_bar = T) {
+                                         progress_bar = T,
+                                         garbage_collection = F) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
@@ -384,7 +402,9 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
       genepair_result <- topo_ic_sim_g1g2(gene1,
                                           gene2, 
                                           ontology,
-                                          organism, 
+                                          organism,
+                                          garbage_collection = 
+                                            garbage_collection,
                                           go_data = go_data, 
                                           drop = drop, 
                                           translation_to_goids = 

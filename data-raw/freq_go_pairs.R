@@ -14,7 +14,7 @@
   all_scores <<- list()
   for (onto in ontologies) {
     for (organism in organisms) {
-      .gen_single_semscore_topo_mat(organism=organism, onto=onto, all_scores=all_scores, amount=amount)
+      .gen_single_semscore_topo_mat(organism=organism, onto=onto, all_scores=all_scores, amount=amount, old_df=old_listy[[paste0(onto,"_",organism)]])
     }  
   }
   
@@ -35,21 +35,24 @@
   geneanno <- data.table(tmp_godat@geneAnno)
   counted <- geneanno[unique(geneanno[[1]]), .N, by=GO, on=.(ENTREZID)]
   top_100_gos <<- counted[rev(order(counted$N)),][1:amount,][[1]]
-  print(top_100_gos)
   scores <- GAPGOM:::.prepare_score_matrix_topoicsim(top_100_gos, top_100_gos)
   IC <-tmp_godat@IC
-  unique_pairs <- GAPGOM:::.unique_combos(top_100_gos, top_100_gos)
+  unique_pairs <<- GAPGOM:::.unique_combos(top_100_gos, top_100_gos)
   
+  #existing_pairs <- NULL
   if (!is.null(old_df)) {
-    existing_pairs <- GAPGOM:::.unique_combos(top_100_gos[top_100_gos %in% rownames(old_df)])
-    dplyr::anti_join(by=c("V1","V2"))
-    df1[!(df1$name %in% df2$name),]
+    old_df <<- old_df
+    incommon <- top_100_gos[top_100_gos %in% rownames(old_df)]
+    existing_pairs <- GAPGOM:::.unique_combos(incommon, incommon)
+    print(paste0("Detected old values! adding ", paste0(nrow(existing_pairs))," values..."))
+    unique_pairs <<- dplyr::anti_join(unique_pairs, existing_pairs , by=c("V1","V2"))
+    apply(existing_pairs, 1, function(pair) {
+      go1 <- pair[1]
+      go2 <- pair[2]
+      scores <<- GAPGOM:::.set_values(go1, go2, scores, old_df[go1, go2])
+    })
   }
-  # if (is.null(old_listy)) {
-  #   old_scores <- NA
-  # } else {
-  #   old_scores <- old_listy[[paste0(onto,"_",organism)]]
-  # }
+  print(paste0("Adding ", nrow(unique_pairs), " similarties."))
   print(Sys.time())
   pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
   proggy <- 0
@@ -83,9 +86,32 @@
     
   })
   print(Sys.time())
+  print(mem_used())
+  print("Clearing memory...")
   gc()
+  print(mem_used())
   all_scores[[paste0(onto,"_",organism)]] <<- scores
   save(all_scores, file = filename, compress = "xz", compression_level = 9)
 }
 
+# between each calculation, session is restarted to clear ram. R has a lot of
+# ram leaks for some reason...
 .gen_semscor_topo_mat(amount = 10)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=100, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=150, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=200, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=250, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=300, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=350, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=400, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=450, old_listy=all_scores_bckp)
+all_scores_bckp <- all_scores
+.gen_semscor_topo_mat(amount=500, old_listy=all_scores_bckp)

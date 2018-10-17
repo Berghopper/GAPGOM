@@ -1,0 +1,5 @@
+# this directory will save permutations of frequent go similarities for topoicsim, this is temporary and will not be pushed to git.
+*.rda
+*.RData
+*.Rdata
+*.rdata

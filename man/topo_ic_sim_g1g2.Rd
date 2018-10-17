@@ -5,8 +5,8 @@
 \title{GAPGOM - topo_ic_sim_g1g2()}
 \usage{
 topo_ic_sim_g1g2(gene1, gene2, ontology = "MF", organism = "yeast",
-  go_data = NULL, drop = NULL, translation_to_goids = NULL,
-  all_go_pairs = NULL)
+  progress_bar = F, garbage_collection = F, go_data = NULL,
+  drop = NULL, translation_to_goids = NULL, all_go_pairs = NULL)
 }
 \arguments{
 \item{gene1}{Gene ID of the first Gene.}
@@ -27,6 +27,13 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 "xenopus".}
+
+\item{progress_bar}{Whether to show the progress of the calculation 
+(default = FALSE)}
+
+\item{garbage_collection}{whether to do R garbage collection. This is
+useful for very large calculations/datasets, as it might decrease ram usage.
+This option might however increase calculation time.}
 
 \item{go_data}{correct GO data from specefic species.}
 
