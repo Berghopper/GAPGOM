@@ -31,7 +31,6 @@
 #' this on default unless you know what you are doing.
 #' @return list of score and all_go_pairs, the latter of which will be 
 #' reused.
-#' @examples
 #'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
@@ -159,6 +158,7 @@
 #' \strong{17}(1):296)
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export
 topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                             gene2,
@@ -230,9 +230,10 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   gos1 <- as.character(translation_to_goids[translation_to_goids$ID==gene1,]$GO)
   gos2 <- as.character(translation_to_goids[translation_to_goids$ID==gene2,]$GO)
 
+  # return if goids sums are both 0
   if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
     return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, 
-                AllGoPairs = all_go_pairs))
+                AllGoPairs = as.matrix(all_go_pairs)))
   }
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   IC <- go_data@IC
@@ -287,8 +288,10 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   if (garbage_collection) {
     gc()
   }
+  # if score is NA, return.
   if (!sum(!is.na(scores))) {
-  return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
+  return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = 
+                as.matrix(all_go_pairs)))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
@@ -299,7 +302,9 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
       max(scores[, x], na.rm = TRUE)
   }))/n)
   sim <- round(sim, digits = 3)
-  return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = all_go_pairs))
+  # return final score
+  return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = 
+                as.matrix(all_go_pairs)))
 })
 
 #' GAPGOM - topo_ic_sim()
@@ -357,6 +362,8 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
+#' 
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export
 topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                          gene_list2,
@@ -413,12 +420,12 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
       
       score_matrix <<- .set_values(gene1, gene2, score_matrix, 
                                   genepair_result$GeneSim)
-      all_go_pairs <<- genepair_result$AllGoPairs
+      all_go_pairs <<- Matrix(genepair_result$AllGoPairs)
     })
     print(Sys.time()-timestart)
     return(list(GeneSim=score_matrix, 
                 GeneList1 = gene_list1, 
                 GeneList2 = gene_list2,
-                AllGoPairs = all_go_pairs))
+                AllGoPairs = as.matrix(all_go_pairs)))
 })
 

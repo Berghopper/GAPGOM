@@ -8,6 +8,7 @@
   library(graph)
   library(igraph)
   library(GAPGOM)
+  library(pryr)
   options(digits=22)
   organisms <- c("mouse", "human")
   ontologies <- c("MF", "CC", "BP")

@@ -20,6 +20,8 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - precalculated similarity scores between frequent GO terms.
 - data preperation file, describing methods used for generating package data.
 - progress bars for TopoICSim.
+- basic tests (for main algorithms only)
+- Some small tests for the main algorithms
 ### Changed
 - Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
 - All functions are now pre-compiled (except for data_gen.R)
@@ -28,6 +30,8 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Implementation of entrez -> goid lookup. (some ids get looked up twice.) 
 - data.frame subsetting/ddply functions --> replaced with way faster data.table alternatives
 - Vectorisation of parts that aren't yet vectorized
+- Changed some loops back to for loops instead of apply --> some weren't a good use case for apply.*
+- some matrixes now use the Matrix library.
 ### Removed
 - Nothing.
 ### Fixed

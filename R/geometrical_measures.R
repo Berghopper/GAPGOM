@@ -32,6 +32,7 @@
 NULL
 
 #' @rdname geometrical_measures
+#' @importFrom stats fft
 sobolev_metric <- compiler::cmpfun(function(x, y) {
   x1 <- x^2/(sum(x^2))
   y1 <- y^2/(sum(y^2))

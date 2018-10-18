@@ -54,6 +54,7 @@
 #'
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
+#' @importFrom stats phyper p.adjust na.omit
 .enrichment_analysis <- compiler::cmpfun(function(
                                 ordered_score_df,
                                 expression_set,

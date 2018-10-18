@@ -76,6 +76,7 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
 #' verbose = T)
 #' expset <- fantom_to_expset(ft5, verbose = T)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
+#' @importFrom methods new
 #' @export
 fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
   fan <- fanraw$df
@@ -163,6 +164,7 @@ fantom_load_expressionset <- compiler::cmpfun(function(filepath,
 #' @examples
 #' fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
 #' @importFrom GEOquery gunzip
+#' @importFrom utils download.file
 #' @export
 fantom_download <- compiler::cmpfun(function(down_dir, organism="human", unpack = T, 
                             noprompt = F) {
@@ -209,7 +211,7 @@ fantom_download <- compiler::cmpfun(function(down_dir, organism="human", unpack 
   download.file(url, full_filename, "auto")
   if (unpack) {
     gunzip(full_filename, overwrite = T)
-    full_filename <- substr(full_filename, 1, len(full_filename)-3)
+    full_filename <- substr(full_filename, 1, length(full_filename)-3)
   }
   return(full_filename)
 })

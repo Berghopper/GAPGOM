@@ -96,8 +96,6 @@
 #' @return return the translation dataframe containing conversion from general 
 #' ids to entrez/ensembl ids and goids.
 #' 
-#' @importFrom future plan multiprocess
-#' @importFrom future.apply future_apply
 #' @import data.table
 .generate_translation_df <- compiler::cmpfun(function(expression_set, 
                                                       organism, 

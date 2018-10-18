@@ -157,26 +157,12 @@ NULL
 
 #' @rdname ambiguous_functions
 .ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
-  # if(args$ncluster > 1) {
-  #   cl <- makeCluster(args$ncluster)
-  #   registerDoParallel(cl)
-  # }
   # apply the score calculation function
   score <- apply(args$expression_data_sorted,
                        1, applyfunc)
-  # score <- foreach(i=seq_len(nrow(args$expression_data_sorted)), 
-  #                  .combine="rbind") %dopar% {
-  #                   row <- args$expression_data_sorted[i,]
-  #                   return(applyfunc(row))   
-  #                  }
-  # rownames(score) <- rownames(args$expression_data_sorted)
-  
   # prepare and format a datafrane to return
   score_df <- .prepare_score_df(args$expression_data_sorted_ids, score, 
                                 args$gene_id)
-  # if(args$ncluster > 1) {
-  #   stopCluster(cl)
-  # }
   return(score_df)
 })
 
@@ -221,6 +207,7 @@ NULL
 })
 
 #' @rdname ambiguous_functions
+#' @importFrom stats cor
 .predict_pearson <- compiler::cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data)))
@@ -231,6 +218,7 @@ NULL
 })
 
 #' @rdname ambiguous_functions
+#' @importFrom stats cor
 .predict_spearman <- compiler::cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "spearman")))
@@ -241,6 +229,7 @@ NULL
 })
 
 #' @rdname ambiguous_functions
+#' @importFrom stats cor
 .predict_kendall <- compiler::cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "kendall")))
@@ -278,16 +267,12 @@ NULL
   # Run enrichment for each method
   predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, 
                        .predict_sobolev, .predict_fisher)
-  
-  
   cl <- makeCluster(args$ncluster)
   registerDoParallel(cl)
   combined_enrichment <<- foreach(method=predict_methods, .combine = 'rbind', .export = "args") %dopar% {
     return(method(args))
   }
   stopCluster(cl)
-  
-  
   if (length(combined_enrichment) == 0) {
     return(combined_enrichment)
   }

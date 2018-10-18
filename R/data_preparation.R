@@ -64,8 +64,9 @@
 #' @param vec2 vector2 with arbitrary lookup names.
 #' 
 #' @return The score matrix with names and NA's.
+#' @importFrom Matrix Matrix
 .prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2) {
-  score_matrix <- matrix(nrow = length(vec1), 
+  score_matrix <- Matrix(nrow = length(vec1), 
          ncol = length(vec2), 
          dimnames = list(
            vec1, vec2))
@@ -137,6 +138,8 @@
 #' (gets filtered)
 #' 
 #' @return The score dataframe with ensmbl ID's
+#' 
+#' @importFrom stats na.omit
 .prepare_score_df <- compiler::cmpfun(function(original_ids, score, gene_id) {
   # score_df is the 'score' (correlation/metric) dataframe against target gene.
   # combine the dataframe if combine is selected, otherwise just add regular score.
