@@ -4,18 +4,12 @@
 \alias{.enrichment_analysis}
 \title{GAPGOM internal - enrichment_analysis()}
 \usage{
-.enrichment_analysis(ordered_score_df, expression_set, id_select_vector,
-  id_translation_df, organism, ontology, enrichment_cutoff, significance,
-  filter_pvals)
+.enrichment_analysis(ordered_score_df, id_select_vector, id_translation_df,
+  organism, ontology, enrichment_cutoff, significance, filter_pvals)
 }
 \arguments{
 \item{ordered_score_df}{the score dataframe see documentation on
 GAPGOM::example_score_dataframe for formatting.}
-
-\item{expression_set}{ExpressionSet class containing expression values and
-other useful information, see GAPGOM::f5_example_data
-documentation for further explanation of this type. If you want a custom
-ExpressionSet you have to define one yourself.}
 
 \item{id_select_vector}{gene rowname(s) that you want filtered out of the
 dataset. For example, let's say you need to only include protein coding

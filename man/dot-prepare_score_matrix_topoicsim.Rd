@@ -4,12 +4,14 @@
 \alias{.prepare_score_matrix_topoicsim}
 \title{GAPGOM internal - .prepare_score_matrix_topoicsim()}
 \usage{
-.prepare_score_matrix_topoicsim(vec1, vec2)
+.prepare_score_matrix_topoicsim(vec1, vec2, sparse = F)
 }
 \arguments{
 \item{vec1}{vector1 with arbitrary lookup names}
 
 \item{vec2}{vector2 with arbitrary lookup names.}
+
+\item{sparse}{whether to implement Matrix or matrix (default=F --> matrix)}
 }
 \value{
 The score matrix with names and NA's.

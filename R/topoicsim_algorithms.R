@@ -156,6 +156,7 @@
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
+#'
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
 #' @importFrom utils setTxtProgressBar txtProgressBar
@@ -233,35 +234,34 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   # return if goids sums are both 0
   if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
     return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, 
-                AllGoPairs = as.matrix(all_go_pairs)))
+                AllGoPairs = all_go_pairs))
   }
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   IC <- go_data@IC
   
-  unique_pairs <<- .unique_combos(gos1, gos2)
+  unique_pairs <- .unique_combos(gos1, gos2)
   
-  selected_freq_go_pairs <- freq_go_pairs[[paste0(ontology, "_", organism)]]
+  selected_freq_go_pairs <- freq_go_pairs[[paste0(ontology, "_", organism)]] # "ENTREZ_", ADD ID SUPPORT IN FUTURE VERSIONS
   
-  my_progress <- 0
   if (progress_bar) {
     pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
   } 
-  apply(unique_pairs, 1, function(pair) {
+  for (i in seq_len(nrow(unique_pairs))) {
+    pair <- unique_pairs[i,]
     if (progress_bar) {
-      setTxtProgressBar(pb, my_progress)
+      setTxtProgressBar(pb, i)
     }
-    my_progress <<- my_progress + 1
-    go1 <- pair[1]
-    go2 <- pair[2]
+    go1 <- pair[[1]]
+    go2 <- pair[[2]]
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
     if (!is.na(all_go_pairs[go1, go2])) {
       # set already existing value.
-      scores <<- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
+      scores <- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
     } else if(go1 %in% colnames(selected_freq_go_pairs) && 
               go2 %in% colnames(selected_freq_go_pairs)) {
       # set precalculated value.
-      scores <<- .set_values(go1, go2, scores, selected_freq_go_pairs[go1, go2])
+      scores <- .set_values(go1, go2, scores, selected_freq_go_pairs[go1, go2])
     } else {
       score <-
         .topo_ic_sim_titj(go1,
@@ -275,23 +275,23 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
       
       if (garbage_collection) {
         # garbage collection (topo term algorithm uses a lot of ram) only done
-        # every 500th item/at end of apply
-        if ((my_progress %% 500) == 0) {
+        # every 500th item/at end of loop
+        if ((i %% 500) == 0) {
           gc()
         }
       }
-      scores <<- .set_values(go1, go2, scores, score)
-      all_go_pairs[go1, go2] <<- score
-      all_go_pairs[go2, go1] <<- score
+      scores <- .set_values(go1, go2, scores, score)
+      all_go_pairs[go1, go2] <- score
+      all_go_pairs[go2, go1] <- score
     }
-  })
+  }
   if (garbage_collection) {
     gc()
   }
   # if score is NA, return.
   if (!sum(!is.na(scores))) {
   return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = 
-                as.matrix(all_go_pairs)))
+                all_go_pairs))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
@@ -304,7 +304,7 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   sim <- round(sim, digits = 3)
   # return final score
   return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = 
-                as.matrix(all_go_pairs)))
+                all_go_pairs))
 })
 
 #' GAPGOM - topo_ic_sim()
@@ -395,17 +395,17 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
-    my_progress <- 0
     if (progress_bar) {
       pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
     }
-    apply(unique_pairs, 1, function(pair) {
+    # apply(unique_pairs, 1, function(pair) {
+    for (i in seq_len(nrow(unique_pairs))) {
+      pair <- unique_pairs[i,]
       if (progress_bar) {
-        setTxtProgressBar(pb, my_progress)
+        setTxtProgressBar(pb, i)
       }
-      my_progress <<- my_progress + 1
-      gene1 <- pair[1]
-      gene2 <- pair[2]
+      gene1 <- pair[[1]]
+      gene2 <- pair[[2]]
       genepair_result <- topo_ic_sim_g1g2(gene1,
                                           gene2, 
                                           ontology,
@@ -418,14 +418,14 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
                                             translation_to_goids,
                                           all_go_pairs = all_go_pairs)
       
-      score_matrix <<- .set_values(gene1, gene2, score_matrix, 
+      score_matrix <- .set_values(gene1, gene2, score_matrix, 
                                   genepair_result$GeneSim)
-      all_go_pairs <<- Matrix(genepair_result$AllGoPairs)
-    })
+      all_go_pairs <- genepair_result$AllGoPairs
+    }
     print(Sys.time()-timestart)
     return(list(GeneSim=score_matrix, 
                 GeneList1 = gene_list1, 
                 GeneList2 = gene_list2,
-                AllGoPairs = as.matrix(all_go_pairs)))
+                AllGoPairs = all_go_pairs))
 })
 

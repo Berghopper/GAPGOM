@@ -62,14 +62,23 @@
 #'
 #' @param vec1 vector1 with arbitrary lookup names
 #' @param vec2 vector2 with arbitrary lookup names.
+#' @param sparse whether to implement Matrix or matrix (default=F --> matrix)
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
-.prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2) {
-  score_matrix <- Matrix(nrow = length(vec1), 
+.prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2, 
+                                                             sparse = F) {
+  if (sparse) {
+    score_matrix <- Matrix(nrow = length(vec1), 
          ncol = length(vec2), 
          dimnames = list(
            vec1, vec2))
+  } else {
+    score_matrix <- matrix(nrow = length(vec1), 
+                           ncol = length(vec2), 
+                           dimnames = list(
+                             vec1, vec2))
+    }
   score_matrix <- .set_identical_items(score_matrix)
   return(score_matrix)
 })
@@ -89,13 +98,10 @@
 .set_identical_items <- compiler::cmpfun(function(score_matrix) {
   # set all matching names of matrix to 1 (Same genes).
   matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
-  #print(matched_by_row)
-  #matched_by_row <- matched_by_row[!is.na(matched_by_row)]
-  lapply(which(!is.na(matched_by_row[seq_along(matched_by_row)])), function(i) {
-      row <- i
-      col <- matched_by_row[i]
-      score_matrix[row, col] <<- 1.0
-  })
+  for (row in which(!is.na(matched_by_row[seq_along(matched_by_row)]))) {
+      col <- matched_by_row[row]
+      score_matrix[row, col] <- 1.0
+  }
   return(score_matrix)
 })
 

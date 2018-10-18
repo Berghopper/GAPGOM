@@ -34,46 +34,39 @@
   weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
   tmp_godat <- GAPGOM:::.set_go_data(organism, onto, computeIC = T)
   geneanno <- data.table(tmp_godat@geneAnno)
-  counted <- geneanno[unique(geneanno[[1]]), .N, by=GO, on=.(ENTREZID)]
-  top_100_gos <<- counted[rev(order(counted$N)),][1:amount,][[1]]
-  scores <- GAPGOM:::.prepare_score_matrix_topoicsim(top_100_gos, top_100_gos)
+  counted <- geneanno[unique(geneanno[[1]]), .N, by=GO, on=.(ENTREZID)] # ENSEMBL --> ID SUPPORT IN LATER VERSIONS!!!
+  top_100_gos <- counted[rev(order(counted$N)),][1:amount,][[1]]
+  scores <- GAPGOM:::.prepare_score_matrix_topoicsim(top_100_gos, top_100_gos, sparse=T)
   IC <-tmp_godat@IC
-  unique_pairs <<- GAPGOM:::.unique_combos(top_100_gos, top_100_gos)
+  unique_pairs <- GAPGOM:::.unique_combos(top_100_gos, top_100_gos)
   
   #existing_pairs <- NULL
   if (!is.null(old_df)) {
-    old_df <<- old_df
     incommon <- top_100_gos[top_100_gos %in% rownames(old_df)]
     existing_pairs <- GAPGOM:::.unique_combos(incommon, incommon)
     print(paste0("Detected old values! adding ", paste0(nrow(existing_pairs))," values..."))
-    unique_pairs <<- dplyr::anti_join(unique_pairs, existing_pairs , by=c("V1","V2"))
-    apply(existing_pairs, 1, function(pair) {
-      go1 <- pair[1]
-      go2 <- pair[2]
-      scores <<- GAPGOM:::.set_values(go1, go2, scores, old_df[go1, go2])
-    })
+    unique_pairs <- dplyr::anti_join(unique_pairs, existing_pairs , by=c("V1","V2"))
+    pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
+    for (i in seq_len(nrow(existing_pairs))) {
+      setTxtProgressBar(pb, i)
+      pair <- existing_pairs[i,]
+      go1 <- pair[[1]]
+      go2 <- pair[[2]]
+      scores <- GAPGOM:::.set_values(go1, go2, scores, old_df[go1, go2])
+    }
   }
   print(paste0("Adding ", nrow(unique_pairs), " similarties."))
   print(Sys.time())
   pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
-  proggy <- 0
-  #print(nrow(unique_pairs))
-  apply(unique_pairs, 1, function(pair) {
-    setTxtProgressBar(pb, proggy)
-    proggy <<- proggy + 1
-    #print(proggy)
-    if ((proggy %% 500) == 0) {
-      #print("gc!")
+  for (i in seq_len(nrow(unique_pairs))) {
+    pair <- unique_pairs[i,]
+    setTxtProgressBar(pb, i)
+    if ((i %% 500) == 0) {
       gc()
     }
-    go1 <- pair[1]
-    go2 <- pair[2]
-    # if this is not the case (row is not present), then run topo_ic_sim 
-    # between 2 terms.
-    # if (go1 %in% rownames(old_scores) && go2 %in% rownames(old_scores)) {
-    # scores <<- .set_values(go1, go2, scores, old_scores[go1, go2])
-    # } else {
-    scores <<- GAPGOM:::.set_values(go1, go2, scores,
+    go1 <- pair[[1]]
+    go2 <- pair[[2]]
+    scores <- GAPGOM:::.set_values(go1, go2, scores,
                                     GAPGOM:::.topo_ic_sim_titj(go1,
                                                                go2,
                                                                onto,
@@ -82,10 +75,7 @@
                                                                go_annotation,
                                                                root,
                                                                IC))
-    #gc()
-    # }
-    
-  })
+  }
   print(Sys.time())
   print(mem_used())
   print("Clearing memory...")

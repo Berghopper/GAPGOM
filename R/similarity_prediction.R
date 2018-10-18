@@ -84,8 +84,8 @@ expression_prediction_function <- function(gene_id,
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   
-  expression_data_sorted <- expression_set@assayData$exprs[rownames(
-    expression_set@assayData$exprs)!=id_select_vector,]
+  expression_data_sorted <- expression_set@assayData$exprs[!(rownames(
+    expression_set@assayData$exprs) %in% id_select_vector),]
   #if(expression_data_sorted)
   expression_data_sorted_ids <- rownames(expression_data_sorted)
 
@@ -183,7 +183,6 @@ NULL
   # run the enrichment analysis function.
   enrichment_result <- .enrichment_analysis(
     ordered_score_df,
-    args$expression_set,
     args$id_select_vector,
     args$id_translation_df,
     args$organism,
@@ -269,7 +268,8 @@ NULL
                        .predict_sobolev, .predict_fisher)
   cl <- makeCluster(args$ncluster)
   registerDoParallel(cl)
-  combined_enrichment <<- foreach(method=predict_methods, .combine = 'rbind', .export = "args") %dopar% {
+  combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind'
+                                 ) %dopar% {
     return(method(args))
   }
   stopCluster(cl)

@@ -15,10 +15,6 @@
 #'
 #' @param ordered_score_df the score dataframe see documentation on
 #' GAPGOM::example_score_dataframe for formatting.
-#' @param expression_set ExpressionSet class containing expression values and
-#' other useful information, see GAPGOM::f5_example_data
-#' documentation for further explanation of this type. If you want a custom
-#' ExpressionSet you have to define one yourself.
 #' @param id_select_vector gene rowname(s) that you want filtered out of the
 #' dataset. For example, let's say you need to only include protein coding
 #' genes. You then select all other genes that aren't and put the ids in this
@@ -57,7 +53,6 @@
 #' @importFrom stats phyper p.adjust na.omit
 .enrichment_analysis <- compiler::cmpfun(function(
                                 ordered_score_df,
-                                expression_set,
                                 id_select_vector,
                                 id_translation_df,
                                 organism,
