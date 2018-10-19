@@ -39,6 +39,8 @@ This option might however increase calculation time.}
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 
+\item{translation_to_goids}{translational dataframe between ID and GOID.}
+
 \item{all_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. it is recommended to always keep
 this on default unless you know what you are doing.}

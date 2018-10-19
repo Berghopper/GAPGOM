@@ -135,6 +135,7 @@
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
 #' @param drop vector of GOID you want to exclude from the analysis.
+#' @param translation_to_goids translational dataframe between ID and GOID.
 #' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. it is recommended to always keep
 #' this on default unless you know what you are doing.

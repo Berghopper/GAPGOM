@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: novel Gene Annotation Prediction and other GO Metrics
-Version: 0.1.11
+Version: 0.1.12
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
@@ -9,10 +9,11 @@ Authors@R: c(
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Maintainer: <cp100u@hotmail.com>
 Description: Collection of various measures and tools for lncRNA annotation prediction put inside a redistributable R package.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
+  methods,
   Matrix,
   compiler,
   parallel,
@@ -52,5 +53,5 @@ Suggests:
   org.Xl.eg.db,
   testthat,
   pryr
-Depends: R (>= 3.5.1)
+Depends: R (>= 3.5.0)
 RoxygenNote: 6.1.0

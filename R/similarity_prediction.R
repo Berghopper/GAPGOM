@@ -39,6 +39,8 @@
 #' @param significance normalized p-values (fdr) that are below this number 
 #' will be kept. has to be a float/double between 0-1. Default is 0.05
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
+#' @param ncluster Amount of cores you want to run the combined method on. 
+#' Default=1. Does not work for other methods.
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be

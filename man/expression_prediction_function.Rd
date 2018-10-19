@@ -47,6 +47,9 @@ and "combine".}
 will be kept. has to be a float/double between 0-1. Default is 0.05}
 
 \item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
+
+\item{ncluster}{Amount of cores you want to run the combined method on. 
+Default=1. Does not work for other methods.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
