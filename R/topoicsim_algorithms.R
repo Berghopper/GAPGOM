@@ -152,7 +152,8 @@
 #' All possible GO combinations with their semantic distances (matrix)
 #' 
 #' @examples
-#' GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", drop=NULL)
+#' result <- GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", 
+#'                                    drop=NULL)
 #'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
@@ -242,7 +243,9 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
   
   unique_pairs <- .unique_combos(gos1, gos2)
   
-  selected_freq_go_pairs <- freq_go_pairs[[paste0(ontology, "_", organism)]] # "ENTREZ_", ADD ID SUPPORT IN FUTURE VERSIONS
+  selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", ontology, "_", 
+                                                  organism)]] # "ENTREZ_", 
+  # ADD ID SUPPORT IN FUTURE VERSIONS
   
   if (progress_bar) {
     pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
@@ -285,6 +288,9 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
       all_go_pairs[go1, go2] <- score
       all_go_pairs[go2, go1] <- score
     }
+  }
+  if (progress_bar) {
+    cat("\n")
   }
   if (garbage_collection) {
     gc()
@@ -358,7 +364,8 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' @examples
 #' list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 #' "222","8659","501","64577","223","217","4329","10840","7915")
-#' GAPGOM::topo_ic_sim(list1, list1, ont="MF", organism="human", drop=NULL)
+#' result <- GAPGOM::topo_ic_sim(list1, list1, ont="MF", organism="human", 
+#'                               drop=NULL)
 #' 
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
@@ -422,6 +429,9 @@ topo_ic_sim <- compiler::cmpfun(function(gene_list1,
       score_matrix <- .set_values(gene1, gene2, score_matrix, 
                                   genepair_result$GeneSim)
       all_go_pairs <- genepair_result$AllGoPairs
+    }
+    if (progress_bar) {
+      cat("\n")
     }
     print(Sys.time()-timestart)
     return(list(GeneSim=score_matrix, 

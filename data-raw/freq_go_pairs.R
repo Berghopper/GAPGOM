@@ -46,14 +46,9 @@
     existing_pairs <- GAPGOM:::.unique_combos(incommon, incommon)
     print(paste0("Detected old values! adding ", paste0(nrow(existing_pairs))," values..."))
     unique_pairs <- dplyr::anti_join(unique_pairs, existing_pairs , by=c("V1","V2"))
-    pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
-    for (i in seq_len(nrow(existing_pairs))) {
-      setTxtProgressBar(pb, i)
-      pair <- existing_pairs[i,]
-      go1 <- pair[[1]]
-      go2 <- pair[[2]]
-      scores <- GAPGOM:::.set_values(go1, go2, scores, old_df[go1, go2])
-    }
+    old_dim_rows <- dim(old_df)[1]
+    old_dim_cols <- dim(old_df)[2]
+    scores[1:old_dim_rows, 1:old_dim_cols] <- old_df
   }
   print(paste0("Adding ", nrow(unique_pairs), " similarties."))
   print(Sys.time())
@@ -87,22 +82,10 @@
 
 # between each calculation, session is restarted to clear ram. R has a lot of
 # ram leaks for some reason...
-.gen_semscor_topo_mat(amount = 10)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=100, old_listy=all_scores_bckp)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=150, old_listy=all_scores_bckp)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=200, old_listy=all_scores_bckp)
+.gen_semscor_topo_mat(amount=150)
 all_scores_bckp <- all_scores
 .gen_semscor_topo_mat(amount=250, old_listy=all_scores_bckp)
 all_scores_bckp <- all_scores
 .gen_semscor_topo_mat(amount=300, old_listy=all_scores_bckp)
 all_scores_bckp <- all_scores
 .gen_semscor_topo_mat(amount=350, old_listy=all_scores_bckp)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=400, old_listy=all_scores_bckp)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=450, old_listy=all_scores_bckp)
-all_scores_bckp <- all_scores
-.gen_semscor_topo_mat(amount=500, old_listy=all_scores_bckp)

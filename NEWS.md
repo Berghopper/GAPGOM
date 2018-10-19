@@ -10,13 +10,12 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
-## [0.2.0 - Unreleased]
-### Planned changes/features (subject to changes) *=not yet implemented
+## [0.2.0 - Polished Potato] - 2018-10-20
 ### Added
-- TopoICSim performance improvements
-- lncRNApred performance improvements
+- TopoICSim performance improvements.
+- lncRNApred performance improvements.
 - parallelisation for combined method
-- some small extra options for similarity prediction
+- some small extra options for similarity prediction.
 - precalculated similarity scores between frequent GO terms.
 - data preperation file, describing methods used for generating package data.
 - progress bars for TopoICSim.
@@ -36,12 +35,13 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 ### Removed
 - Nothing.
 ### Fixed
-- R depends version (3.4.4 --> 3.5.1)
-- Performance bug in TopoICSim (#4)
-- Performance bug in entrez -> goid lookup (#5)
-- fdr bug (#7)
-- bug where id_select_vector was actually selected for rather than filtered for. (#8)
+- R depends version (3.4.4 --> 3.5.1).
+- Performance bug in TopoICSim (#4).
+- Performance bug in entrez -> goid lookup (#5).
+- fdr bug (#7).
+- bug where id_select_vector was actually selected for rather than filtered for (#8).
 - topoicsim being a total memory hog, it left a lot of unused items in ram --> using `gc()` now as an optional argument.
+- newline loading bar bug (#9).
 
 
 ## [0.1.0 - Technically Tidied] - 2018-10-04

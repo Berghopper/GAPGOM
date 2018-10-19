@@ -66,7 +66,8 @@ given their GO terms in the GO DAG structure. The topological similarity is
 based on edge weights and information content (IC). [1]
 }
 \examples{
-GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", drop=NULL)
+result <- GAPGOM::topo_ic_sim_g1g2("218", "501", ont="MF", organism="human", 
+                                   drop=NULL)
 
 }
 \references{
