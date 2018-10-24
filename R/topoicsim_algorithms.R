@@ -25,7 +25,7 @@
 #' @param weighted_dag DAG with weighted nodes.
 #' @param go_annotation GO annotation of the correct root node.
 #' @param root root node of the GO tree (MF, BP or CC) in databse string form.
-#' @param IC Information content of the two terms
+#' @param IC Information content from the go_data.
 #' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. it is recommended to always keep
 #' this on default unless you know what you are doing.

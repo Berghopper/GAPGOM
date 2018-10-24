@@ -1,0 +1,167 @@
+---
+title: "Benchmarks"
+author: "Casper Peters"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Neccesary libraries:
+
+```{r load_libs, warning = F, message = F, include = T}
+## install ppipre seperately! (INtelliGO)
+# install.packages("https://cran.r-project.org/src/contrib/Archive/ppiPre/ppiPre_1.9.tar.gz", repos=NULL)
+## install csbl.go seperately (SimGIC)
+# install.packages("http://csbi.ltdk.helsinki.fi/csbl.go/csbl.go_1.4.1.tar.gz", repos=NULL)
+
+library(GAPGOM)
+library(profvis)
+library(GO.db)
+library(graph)
+```
+
+Benchmarks are an important part of getting to know how fast algorithms performs and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. Because this package will be mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
+
+```{r}
+# prepare the godata for mouse and some other calculations later needed in benchmarking
+organism <- "human"
+ontology <- "BP"
+go_data <- GAPGOM:::.set_go_data(organism, ontology)
+# Initial definitions and sets based on organism and ontology type
+xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
+                     BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
+
+go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
+                        CC = GOCCANCESTOR)
+
+root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
+               CC = "GO:0005575")
+weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
+IC <- go_data@IC
+```
+
+## lncRNApred (`expression_prediction_function`)
+
+## TopoICSim
+
+There's three algorithms in the GAPGOM package in regards to TopoICSim; One on term level (`.topo_ic_sim_titj`), one on gene level (`topo_ic_sim_g1g2`) and one on geneset level (`topo_ic_sim`).
+Because it is slightly difficult to determine which GOs are attributes of which genes, random genes will be sampled for testing some of the algorithms. The same goes for all GOs, as their path lookup might be different as well.
+
+### TopoICSim - Term level
+
+To get a good baseline of the underlying algorithm, multiple combinations of pairs will be tested against each other
+
+```{r topotitj}
+# grab 15 random GOs (for term algorithm)
+# sample(unique(go_data@geneAnno$GO), 15)
+random_gos <- c("GO:0030177", "GO:0001771", "GO:0045715", "GO:0044330", "GO:0098780", 
+"GO:1901006", "GO:0061143", "GO:0060025", "GO:0015695", "GO:0090074", 
+"GO:0035445", "GO:0008595", "GO:1903634", "GO:1903826", "GO:0048389"
+)
+# print them for reproducability
+dput(random_gos)
+# now compare all unique random GO pairs. (105 uniques)
+unique_pairs <- GAPGOM:::.unique_combos(random_gos, random_gos)
+
+times <- c()
+mem_usages <- c()
+for (i in seq_len(nrow(unique_pairs))) {
+  prof_toptitj <- profvis({
+    pair <- unique_pairs[i]
+    go1 <- pair[[1]]
+    go2 <- pair[[2]]
+    GAPGOM:::.topo_ic_sim_titj(go1, go2, ontology, organism, weighted_dag, go_annotation, root, IC)
+  })
+  time <- max(prof_toptitj$x$message$prof$time)*10
+  mem <- max(prof_toptitj$x$message$prof$memalloc)
+  mem_usages <- c(mem_usages, mem)
+  times <- c(times, time)
+  gc()
+}
+```
+
+```{r, fig.width=6, fig.height=3}
+barplot(times)
+```
+```{r, fig.width=3, fig.height=3}
+boxplot(times)
+```
+
+The term algorithm seems to largely complete within 500ms, with ~1500ms being the max.
+
+```{r, fig.width=3, fig.height=3}
+boxplot(mem_usages)
+```
+```{r, fig.width=6, fig.height=3}
+barplot(mem_usages)
+```
+
+Similar story for the memory, most of the GO's seem to take up about ~140mb, with the max being around ~220mb. It makes sense, that where the GO's take longer, it would take up more memory too. The reason for the heavier load, is that all GO-pairs have a certain amount of common ancestors to loop through, depending on how far the GOs are removed from each other. This differs on a case-to-case basis and is hard to predict.
+
+### TopoICSim - Gene level
+
+To measure how the gene level algorithm performs with random genes, we will sample 10 random gene-pairs to test on it.
+
+```{r}
+# sample(unique(go_data@geneAnno$ENTREZID), 5)
+random_genes <- c("3848", "2824", "65108", "3988", "10800")
+
+unique_pairs <- GAPGOM:::.unique_combos(random_genes, random_genes)
+
+times <- c()
+mem_usages <- c()
+for (i in seq_len(nrow(unique_pairs))) {
+  prof_topg1g2 <- profvis({
+    pair <- unique_pairs[i]
+    gene1 <- pair[[1]]
+    gene2 <- pair[[2]]
+    GAPGOM::topo_ic_sim_g1g2(gene1, gene2, ontology, organism)
+  })
+  time <- max(prof_topg1g2$x$message$prof$time)*10
+  mem <- max(prof_topg1g2$x$message$prof$memalloc)
+  mem_usages <- c(mem_usages, mem)
+  times <- c(times, time)
+  gc()
+}
+```
+
+As you can see from the plots, the results are pretty different. This is because every gene has different GOs, and each different GO-pair has a different relationship as well. All of this hugely affects calculation time, making it hard to predict how well an algorithm performs without knowing the specific implications of the selected underlying GOs.
+
+### TopoICSim - Geneset level (and scalability)
+
+To measure scalability on geneset-level, the pfam clan gene set is used. The reason we're not choosing random genes, is because this is not something representative in a practical use case scenario. Most of the time, you want to compare genes that belong within a certain pathway. Rather than looking at completely random genes that don't have a relationship.
+
+```{r}
+list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915")
+times <- c()
+mem_usages <- c()
+for (i in seq(length(list1)-1)) {
+  sampled_list <- list1[1:(i+1)]
+  p <- profvis({
+      GAPGOM::topo_ic_sim(sampled_list, sampled_list, ont=ontology, organism=organism, drop=NULL)
+    })
+  time <- max(p$x$message$prof$time)*10
+  mem <- max(p$x$message$prof$memalloc)
+  mem_usages <- c(mem_usages, mem)
+  times <- c(times, time)
+  gc()
+}
+```
+
+## Comparisons between algorithms
+
+For comparisons between other algorithms, `expression_prediction_function` will be left out as it is the only algorithm based on expression values. 
+
+## For code reviewers;
+
+Finally, for code reviewers, you can just call the result of each `profvis` to get a flame graph and other details of code speed.
