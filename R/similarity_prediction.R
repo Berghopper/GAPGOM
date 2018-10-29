@@ -102,7 +102,6 @@ expression_prediction_function <- function(gene_id,
   # make args list for ambiguous functions
   args <- list(
     "gene_id" = gene_id,
-    "expression_set" = expression_set,
     "expression_data_sorted" = expression_data_sorted,
     "expression_data_sorted_ids" = expression_data_sorted_ids,
     "id_select_vector" = id_select_vector,

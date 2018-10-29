@@ -1,0 +1,114 @@
+---
+title: "GAPGOM"
+author: "Casper Peters"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Citation
+
+When using GAPGOM, please cite the following;
+
+- Ehsani R, Drablos F: **TopoICSim: a new semantic similarity measure based on gene ontology.** *BMC Bioinformatics* 2016, **17**(1):296). DOI: [https://doi.org/10.1186/s12859-016-1160-0](https://doi.org/10.1186/s12859-016-1160-0)
+- Ehsani R, Drablos F: [UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
+
+## Introduction
+
+GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package containing various tools and algorithms for semantic distance/comparison calculations and various other measures. This package has been specifically made to predict annotation of gene functions of unkown gene(s). This is done by comparing them to other known genes (guilt by association), and basing analysis on correlated data.
+
+In GAPGOM, two main semantic measurement algorithms are available; TopoICSim and lncRNApred. TopoICSim is GO topology based, while lncRNApred is based on expression value distances.
+The main interface for expression data as of right now is the fantom5 data, using Bioconductors `ExpressionSet` class. All algorithms are dependent on the GO consortium and thus use GOSemSim for loading GO data.
+
+## Expression data interfaces
+
+### ID support
+
+As of v0.2.2, only EntrezIDs are supported.* Meaning that, if you want to use other ID types, you have to convert them manually. For this I recommend the `BiomaRt` package. Translating IDs to other types is lossy and don't always translate well. 
+
+*=Because of this, other IDs will be supported in the future, but for right now it's only Entrez. List of IDs that will be supported but are not yet;
+
+-"ACCNUM"
+-"ALIAS"
+-"ENSEMBL"
+-"ENSEMBLPROT"
+-"ENSEMBLTRANS"
+-"ENZYME"
+-"EVIDENCE"
+-"EVIDENCEALL"  
+-"GENENAME"
+-"GO"
+-"GOALL"
+-"IPI"
+-"MAP"
+-"OMIM"
+-"ONTOLOGY"
+-"ONTOLOGYALL"
+-"PATH"
+-"PFAM"
+-"PMID"
+-"PROSITE"
+-"REFSEQ"
+-"SYMBOL"
+-"UCSCKG"
+-"UNIGENE"
+-"UNIPROT"  
+
+### FANTOM5
+
+As of right now, the package only has 1 main dataset for expression data; The Fantom5 dataset. There are a few helper functions to make this data usable. The Fantom5 dataset is only available for the human and mouse genome.
+
+### Manually specifying `ExpressionSet`s
+
+Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. I will give an example with randomly generated expression values and IDs.
+
+Minimal requirement for an `ExpressionSet`;
+
+- expression values
+- Unique IDs of a certain type. See ID support.
+
+Random expression value generation;
+
+```{r, eval=F}
+# select 10000 random IDs
+go_data <- GAPGOM:::.set_go_data("human", "BP", computeIC = F)
+random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep uniques
+
+# make general dataframe. 
+expressions <- data.frame(random_ids, dimnames(list("ID",seq(length(random_ids)))))
+expressions$ID
+
+# n expression values depending on the amount of unique IDs that are present
+expressionvalues <- abs(rnorm(10000))*10000
+```
+
+Converting the expression dataframe to an ExpressionSet;
+
+```{r, eval=F}
+```
+
+## lncRNApred
+
+
+## TopoICSim
+
+
+## Parrallel processing and big data
+
+As of right now, parallel processing is only supported for the `"combined"` method of lncRNApred. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported for other algorithms as well. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work.
+
+## Other algorithms and performance
+
+While other algorithms exist, they are not neccesarily included in the package directly. The performance of this package is however well tested in the Benchmarks vignette, in which other algorithms are also touched upon/compared.
+
+## References

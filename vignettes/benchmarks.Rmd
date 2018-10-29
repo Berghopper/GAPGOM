@@ -28,11 +28,183 @@ library(GAPGOM)
 library(profvis)
 library(GO.db)
 library(graph)
+library(ggplot2)
+library(reshape2)
 ```
 
-Benchmarks are an important part of getting to know how fast algorithms performs and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. Because this package will be mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
+Benchmarks are an important part of getting to know how fast algorithms performs and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. 
 
-```{r}
+Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
+
+Besides this, results have been pre-calculated and come with the package, as otherwise calculations times wouldn't be reasonable nor accurate. For some reasons running a vignette build takes longer than evaluating normal R code... All code blocks used to generate the results are included however.
+
+The benchmarks have been run on two systems ; A laptop and a bigger server. Both with the following specs (obtained with `cat /proc/cpuinfo` & `cat /proc/meminfo`);
+
+- Laptop;
+
+CPU;
+```
+processor	: 3
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 78
+model name	: Intel(R) Core(TM) i7-6500U CPU @ 2.50GHz
+stepping	: 3
+microcode	: 0xc6
+cpu MHz		: 2800.039
+cache size	: 4096 KB
+physical id	: 0
+siblings	: 4
+core id		: 1
+cpu cores	: 2
+apicid		: 3
+initial apicid	: 3
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 22
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp flush_l1d
+bugs		: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf
+bogomips	: 5184.00
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 39 bits physical, 48 bits virtual
+power management:
+```
+Memory;
+```
+MemTotal:        8071404 kB
+MemFree:          978056 kB
+MemAvailable:    3087884 kB
+Buffers:          367592 kB
+Cached:          2616176 kB
+SwapCached:            0 kB
+Active:          4737256 kB
+Inactive:        1944028 kB
+Active(anon):    3699308 kB
+Inactive(anon):   760208 kB
+Active(file):    1037948 kB
+Inactive(file):  1183820 kB
+Unevictable:          48 kB
+Mlocked:              48 kB
+SwapTotal:       8000508 kB
+SwapFree:        8000508 kB
+Dirty:              5696 kB
+Writeback:             0 kB
+AnonPages:       3697580 kB
+Mapped:           630132 kB
+Shmem:            761956 kB
+Slab:             279024 kB
+SReclaimable:     198148 kB
+SUnreclaim:        80876 kB
+KernelStack:       11136 kB
+PageTables:        47776 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    12036208 kB
+Committed_AS:    9791644 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:           0 kB
+VmallocChunk:          0 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+CmaTotal:              0 kB
+CmaFree:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      166288 kB
+DirectMap2M:     7077888 kB
+DirectMap1G:     2097152 kB
+```
+
+- Server;
+
+CPU;
+```
+processor	: 31
+vendor_id	: GenuineIntel
+cpu family	: 6
+model		: 45
+model name	: Intel(R) Xeon(R) CPU E5-2680 0 @ 2.70GHz
+stepping	: 7
+microcode	: 0x713
+cpu MHz		: 2699.953
+cache size	: 20480 KB
+physical id	: 1
+siblings	: 16
+core id		: 7
+cpu cores	: 8
+apicid		: 47
+initial apicid	: 47
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid dca sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx lahf_lm ida arat xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+bogomips	: 5400.94
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 46 bits physical, 48 bits virtual
+power management:
+```
+Memory;
+```
+MemTotal:       264108916 kB
+MemFree:        66614704 kB
+Buffers:          262744 kB
+Cached:         65338616 kB
+SwapCached:        74732 kB
+Active:         62788360 kB
+Inactive:       44151044 kB
+Active(anon):   56367000 kB
+Inactive(anon): 23284424 kB
+Active(file):    6421360 kB
+Inactive(file): 20866620 kB
+Unevictable:        7556 kB
+Mlocked:            7556 kB
+SwapTotal:      268387324 kB
+SwapFree:       265225612 kB
+Dirty:                88 kB
+Writeback:             0 kB
+AnonPages:      41301344 kB
+Mapped:           212636 kB
+Shmem:          38309896 kB
+Slab:           21008548 kB
+SReclaimable:     630584 kB
+SUnreclaim:     20377964 kB
+KernelStack:       12368 kB
+PageTables:       125496 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    400441780 kB
+Committed_AS:   89205012 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:    68290760 kB
+VmallocChunk:   34093725116 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:  11550720 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:      191424 kB
+DirectMap2M:     5005312 kB
+DirectMap1G:    265289728 kB
+```
+
+All processes are singlecore. (Some functions might be mutli-threadable however)
+
+Prepare GO data for random data selection and topoICSim term calculation.
+
+```{r, eval=FALSE}
 # prepare the godata for mouse and some other calculations later needed in benchmarking
 organism <- "human"
 ontology <- "BP"
@@ -61,7 +233,7 @@ Because it is slightly difficult to determine which GOs are attributes of which 
 
 To get a good baseline of the underlying algorithm, multiple combinations of pairs will be tested against each other
 
-```{r topotitj}
+```{r topotitj, eval=FALSE}
 # grab 15 random GOs (for term algorithm)
 # sample(unique(go_data@geneAnno$GO), 15)
 random_gos <- c("GO:0030177", "GO:0001771", "GO:0045715", "GO:0044330", "GO:0098780", 
@@ -88,6 +260,10 @@ for (i in seq_len(nrow(unique_pairs))) {
   times <- c(times, time)
   gc()
 }
+times
+mem_usages
+times_top <- times
+mems_top <- mem_usages
 ```
 
 ```{r, fig.width=6, fig.height=3}
@@ -112,7 +288,7 @@ Similar story for the memory, most of the GO's seem to take up about ~140mb, wit
 
 To measure how the gene level algorithm performs with random genes, we will sample 10 random gene-pairs to test on it.
 
-```{r}
+```{r, eval=FALSE}
 # sample(unique(go_data@geneAnno$ENTREZID), 5)
 random_genes <- c("3848", "2824", "65108", "3988", "10800")
 
@@ -133,30 +309,63 @@ for (i in seq_len(nrow(unique_pairs))) {
   times <- c(times, time)
   gc()
 }
+times
+mem_usages
+times_gen <- times
+mems_gen <- mem_usages
 ```
 
+```{r, fig.width=6, fig.height=3}
+barplot(times)
+```
+```{r, fig.width=3, fig.height=3}
+boxplot(times)
+```
+```{r, fig.width=3, fig.height=3}
+boxplot(mem_usages)
+```
+```{r, fig.width=6, fig.height=3}
+barplot(mem_usages)
+```
 As you can see from the plots, the results are pretty different. This is because every gene has different GOs, and each different GO-pair has a different relationship as well. All of this hugely affects calculation time, making it hard to predict how well an algorithm performs without knowing the specific implications of the selected underlying GOs.
 
 ### TopoICSim - Geneset level (and scalability)
 
-To measure scalability on geneset-level, the pfam clan gene set is used. The reason we're not choosing random genes, is because this is not something representative in a practical use case scenario. Most of the time, you want to compare genes that belong within a certain pathway. Rather than looking at completely random genes that don't have a relationship.
+To measure scalability on geneset-level, [the pfam clan gene set is used](https://pfam.xfam.org/family/PF00171). The reason we're not choosing random genes, is because this is not something representative in a practical use case scenario. Most of the time, you want to compare genes that belong within a certain pathway. Rather than looking at completely random genes that don't have a relationship.
 
-```{r}
-list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915")
+```{r, eval=FALSE}
+list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915", "5832")
 times <- c()
 mem_usages <- c()
 for (i in seq(length(list1)-1)) {
   sampled_list <- list1[1:(i+1)]
+  print(sampled_list)
   p <- profvis({
-      GAPGOM::topo_ic_sim(sampled_list, sampled_list, ont=ontology, organism=organism, drop=NULL)
-    })
+     GAPGOM::topo_ic_sim(list1, list1, ont=ontology, organism=organism, drop=NULL)
+   })
   time <- max(p$x$message$prof$time)*10
   mem <- max(p$x$message$prof$memalloc)
   mem_usages <- c(mem_usages, mem)
   times <- c(times, time)
   gc()
 }
+times
+mem_usages
+times_genset <- times
+mems_genset <- mem_usages
 ```
+```{r, fig.width=6, fig.height=3}
+final_times <- data.frame(GAPGOM:::benchmarks$server_times_genset, GAPGOM:::benchmarks$laptop_times_genset, seq_along(GAPGOM:::benchmarks$laptop_times_genset))
+colnames(final_times) <- c("server", "laptop", "n")
+final_times_long <- melt(final_times, id="n")
+ggplot(data=final_times_long,
+       aes(x=n, y=value, colour=variable)) +
+    geom_point() + stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1)
+```
+
+
+As you can see, TopoICSim does not scale well 
+
 
 ## Comparisons between algorithms
 
