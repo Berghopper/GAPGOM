@@ -61,7 +61,7 @@
 #' function(row) {all(row==0)}),])
 #' # set an artbitrary gene you want to find similarities for. (5th row in this
 #' # case)
-#' gid <- rownames(ft5_example_data@assayData$exprs)[5]
+#' gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
 #' GAPGOM::expression_prediction_function(gid, 
 #'                                        GAPGOM::ft5_example_data, 
 #'                                        sort_list, 

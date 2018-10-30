@@ -1,5 +1,5 @@
 ---
-title: "GAPGOM"
+title: "Introduction to GAPGOM"
 author: "Casper Peters"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

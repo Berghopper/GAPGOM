@@ -1,5 +1,5 @@
 ---
-title: "Benchmarks"
+title: "Benchmarks and other GO similarity methods"
 author: "Casper Peters"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -20,9 +20,9 @@ Neccesary libraries:
 
 ```{r load_libs, warning = F, message = F, include = T}
 ## install ppipre seperately! (INtelliGO)
-# install.packages("https://cran.r-project.org/src/contrib/Archive/ppiPre/ppiPre_1.9.tar.gz", repos=NULL)
+#install.packages("https://cran.r-project.org/src/contrib/Archive/ppiPre/ppiPre_1.9.tar.gz", repos=NULL)
 ## install csbl.go seperately (SimGIC)
-# install.packages("http://csbi.ltdk.helsinki.fi/csbl.go/csbl.go_1.4.1.tar.gz", repos=NULL)
+#install.packages("http://csbi.ltdk.helsinki.fi/csbl.go/csbl.go_1.4.1.tar.gz", repos=NULL)
 
 library(GAPGOM)
 library(profvis)
@@ -202,7 +202,58 @@ DirectMap1G:    265289728 kB
 
 All processes are singlecore. (Some functions might be mutli-threadable however)
 
-Prepare GO data for random data selection and topoICSim term calculation.
+
+
+## lncRNApred (`expression_prediction_function`)
+
+Since lncRNApred is based on expression values, we'll use the standard example that is included with the pacakge to make life easier. This algorithm should be linear depending on how many expression values you add. This will however not be shown because the actual calculations on the expression data are actually very fast. The main thing that slows down this algorithm is querying the GO terms and attaching them to the correct ID for the results.
+
+```{r, eval=FALSE}
+# Example with default dataset, take a look at the data documentation
+# to fully grasp what's going on with making of the filter etc. (Biobase 
+# ExpressionSet)
+
+# make a filter of all the ids that contain a 0 in their expression row.
+sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
+ apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
+ function(row) {all(row==0)}),])
+# set an artbitrary gene you want to find similarities for. (5th row in this
+# case)
+gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
+
+p <- profvis::profvis({GAPGOM::expression_prediction_function(gid, 
+                                     GAPGOM::ft5_example_data, 
+                                     sort_list, 
+                                     "mouse", 
+                                     "BP"
+                                     )
+                     })
+time <- max(p$x$message$prof$time)*10
+mem <- max(p$x$message$prof$memalloc)
+```
+```{r}
+# laptop
+4710
+# time
+216.2178
+# mem
+# ---
+# server
+# time
+8820
+# mem
+145.3423
+```
+
+The laptop took about ~5 seconds to complete the calculations, while the server took ~9 seconds. The most time is wasted in finding GO calculations.
+
+## TopoICSim
+
+
+There's three algorithms in the GAPGOM package in regards to TopoICSim; One on term level (`.topo_ic_sim_titj`), one on gene level (`topo_ic_sim_g1g2`) and one on geneset level (`topo_ic_sim`).
+Because it is slightly difficult to determine which GOs are attributes of which genes, random genes will be sampled for testing some of the algorithms. The same goes for all GOs, as their path lookup might be different as well.
+
+Prepare GO data for random data selection, topoICSim term calculation and some other neccesary variables.
 
 ```{r, eval=FALSE}
 # prepare the godata for mouse and some other calculations later needed in benchmarking
@@ -222,16 +273,9 @@ weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
 IC <- go_data@IC
 ```
 
-## lncRNApred (`expression_prediction_function`)
-
-## TopoICSim
-
-There's three algorithms in the GAPGOM package in regards to TopoICSim; One on term level (`.topo_ic_sim_titj`), one on gene level (`topo_ic_sim_g1g2`) and one on geneset level (`topo_ic_sim`).
-Because it is slightly difficult to determine which GOs are attributes of which genes, random genes will be sampled for testing some of the algorithms. The same goes for all GOs, as their path lookup might be different as well.
-
 ### TopoICSim - Term level
 
-To get a good baseline of the underlying algorithm, multiple combinations of pairs will be tested against each other
+To get a good baseline of the underlying algorithm, multiple combinations of pairs will be tested against each other.
 
 ```{r topotitj, eval=FALSE}
 # grab 15 random GOs (for term algorithm)
@@ -260,29 +304,43 @@ for (i in seq_len(nrow(unique_pairs))) {
   times <- c(times, time)
   gc()
 }
-times
-mem_usages
-times_top <- times
-mems_top <- mem_usages
+times_term <- times
+mems_term <- mem_usages
 ```
-
-```{r, fig.width=6, fig.height=3}
-barplot(times)
-```
-```{r, fig.width=3, fig.height=3}
-boxplot(times)
-```
-
-The term algorithm seems to largely complete within 500ms, with ~1500ms being the max.
 
 ```{r, fig.width=3, fig.height=3}
-boxplot(mem_usages)
-```
-```{r, fig.width=6, fig.height=3}
-barplot(mem_usages)
+times_term_df <- data.frame(GAPGOM:::benchmarks$server_times_term, 
+                          GAPGOM:::benchmarks$laptop_times_term, 
+                          seq_len(105)
+                          )
+colnames(times_term_df) <- c("server", "laptop", "n")
+times_term_df_melted <- melt(times_term_df, id="n")
+colnames(times_term_df_melted) <- c("n", "machine", "milliseconds")
+ggplot(times_term_df_melted, aes(x=machine, y=milliseconds, colour=machine)) + 
+  geom_boxplot(notch=F) + 
+  scale_y_continuous(breaks=pretty(times_term_df_melted$milliseconds, n = 5)) + 
+  labs(title = paste(strwrap("Speed of term algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Similar story for the memory, most of the GO's seem to take up about ~140mb, with the max being around ~220mb. It makes sense, that where the GO's take longer, it would take up more memory too. The reason for the heavier load, is that all GO-pairs have a certain amount of common ancestors to loop through, depending on how far the GOs are removed from each other. This differs on a case-to-case basis and is hard to predict.
+The term algorithm seems to largely complete within 500ms, with ~1500ms being the max. The median is around ~100 ms, so most calculations last about that long, they also last at least 100ms it seems.
+
+```{r, fig.width=3, fig.height=3}
+mems_term_df <- data.frame(GAPGOM:::benchmarks$server_mems_term, 
+                          GAPGOM:::benchmarks$laptop_mems_term, 
+                          seq_len(105)
+                          )
+colnames(mems_term_df) <- c("server", "laptop", "n")
+mems_term_df_melted <- melt(times_term_df, id="n")
+colnames(mems_term_df_melted) <- c("n", "machine", "RAM")
+ggplot(mems_term_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
+  geom_boxplot(notch=F) + 
+  scale_y_continuous(breaks=pretty(mems_term_df_melted$RAM, n = 5)) + 
+  labs(title = paste(strwrap("RAM usage for gene algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+The RAM usage is a bit more peculiar, there's more outliers for the server and the baseline is also higher. The reason why the baseline is higher is because the servers' R session apperantly had more in memory. The reason for the outliers could be that the server randomly had more heavy calculations, making the RAM increase. It makes sense, that where the GO's take longer, it would take up more memory too. The reason for the heavier load, is that all GO-pairs have a certain amount of common ancestors to loop through, depending on how far the GOs are removed from each other. This differs on a case-to-case basis and is hard to predict. Otherwise, it seems that there's a rough spread of ~100mb for both machines for this algorithm.
 
 ### TopoICSim - Gene level
 
@@ -315,19 +373,40 @@ times_gen <- times
 mems_gen <- mem_usages
 ```
 
-```{r, fig.width=6, fig.height=3}
-barplot(times)
-```
 ```{r, fig.width=3, fig.height=3}
-boxplot(times)
+times_gene_df <- data.frame(GAPGOM:::benchmarks$server_times_gen, 
+                          GAPGOM:::benchmarks$laptop_times_gen, 
+                          seq_len(10)
+                          )
+colnames(times_gene_df) <- c("server", "laptop", "n")
+times_gene_df_melted <- melt(times_gene_df, id="n")
+times_gene_df_melted$value <- times_gene_df_melted$value/1000 
+colnames(times_gene_df_melted) <- c("n", "machine", "seconds")
+ggplot(times_gene_df_melted, aes(x=machine, y=seconds, colour=machine)) + 
+  geom_boxplot(notch=F) + 
+  scale_y_continuous(breaks=pretty(times_gene_df_melted$milliseconds, n = 5)) + 
+  labs(title = paste(strwrap("Speed of gene algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
 ```
+
+As you can see from the plots, the spread is pretty big. This is because every gene has different GOs, and each different GO-pair has a different relationship as well. All of this hugely affects calculation time, making it hard to predict how well an algorithm performs without knowing the specific implications of the selected underlying GOs. The spread seems pretty even between the two machines however, from ~25sec to ~30sec. This might indicate that there's groups of genes with certain n's of GOs.
+
 ```{r, fig.width=3, fig.height=3}
-boxplot(mem_usages)
+mems_gene_df <- data.frame(GAPGOM:::benchmarks$server_mems_gen, 
+                          GAPGOM:::benchmarks$laptop_mems_gen, 
+                          seq_len(10)
+                          )
+colnames(mems_gene_df) <- c("server", "laptop", "n")
+mems_gene_df_melted <- melt(mems_gene_df, id="n")
+colnames(mems_gene_df_melted) <- c("n", "machine", "RAM")
+ggplot(mems_gene_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
+  geom_boxplot(notch=F) + 
+  scale_y_continuous(breaks=pretty(mems_gene_df_melted$RAM, n = 5)) + 
+  labs(title = paste(strwrap("RAM usage for gene algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
 ```
-```{r, fig.width=6, fig.height=3}
-barplot(mem_usages)
-```
-As you can see from the plots, the results are pretty different. This is because every gene has different GOs, and each different GO-pair has a different relationship as well. All of this hugely affects calculation time, making it hard to predict how well an algorithm performs without knowing the specific implications of the selected underlying GOs.
+
+Funnily enough, the spread the gene algorithm takes up is less, and also very consistent. For the server most RAM usages are around ~230Mb, and for the laptop it's even more consistent; All 4 quartiles are on ~215Mb! With a few outliers specifically on 180Mb.
 
 ### TopoICSim - Geneset level (and scalability)
 
@@ -354,18 +433,55 @@ mem_usages
 times_genset <- times
 mems_genset <- mem_usages
 ```
+
 ```{r, fig.width=6, fig.height=3}
-final_times <- data.frame(GAPGOM:::benchmarks$server_times_genset, GAPGOM:::benchmarks$laptop_times_genset, seq_along(GAPGOM:::benchmarks$laptop_times_genset))
+final_times <- data.frame(GAPGOM:::benchmarks$server_times_genset, 
+                          GAPGOM:::benchmarks$laptop_times_genset, 
+                          seq_along(GAPGOM:::benchmarks$laptop_times_genset)
+                          )
 colnames(final_times) <- c("server", "laptop", "n")
-final_times_long <- melt(final_times, id="n")
-ggplot(data=final_times_long,
-       aes(x=n, y=value, colour=variable)) +
-    geom_point() + stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1)
+final_times_melted <- melt(final_times, id="n")
+final_times_melted$value <- final_times_melted$value/1000/60
+colnames(final_times_melted) <- c("Genes in geneset", "Machine", "Minutes")
+p <- ggplot(data=final_times_melted, aes(x=`Genes in geneset`, y=Minutes, colour=Machine)) + 
+  geom_point() + 
+  labs(title = paste(strwrap("Speed of TopoICSim geneset algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
+p
+p + stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1)
 ```
 
+As you can see, TopoICSim does not scale well and fits an exponential curve. It is however also visible that there's a certain "stepping" occuring. This is probably because genes share similar GO terms, which are stored temporarily as to prevent unnecesary calculations. However this prevention method loses it's grip the more genes you keep adding, especially unrelated/less related genes. This shows that the underlying curve is exponential. This is logical because the amount of calculations done is completely dependent on the list-lengths. The confidence interval between the two machines are shared in the beginning of the curve mostly, the curve is a bit more steep on the server because of lower single-core performance.
 
-As you can see, TopoICSim does not scale well 
+```{r, fig.width=3, fig.height=3}
+mems_geneset_df <- data.frame(GAPGOM:::benchmarks$server_mems_genset, 
+                          GAPGOM:::benchmarks$laptop_mems_genset, 
+                          seq_len(18)
+                          )
+colnames(mems_geneset_df) <- c("server", "laptop", "n")
+mems_geneset_df_melted <- melt(mems_geneset_df, id="n")
+colnames(mems_geneset_df_melted) <- c("n", "machine", "RAM")
+ggplot(mems_geneset_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
+  geom_boxplot(notch=F) + 
+  scale_y_continuous(breaks=pretty(mems_geneset_df_melted$RAM, n = 5)) + 
+  labs(title = paste(strwrap("RAM usage for geneset algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
 
+```{r, fig.width=6, fig.height=3}
+ggplot(mems_geneset_df_melted, aes(x=n, y=RAM, colour=machine)) + 
+  geom_point()  + 
+  scale_y_continuous(breaks=pretty(mems_geneset_df_melted$RAM, n = 5)) + 
+  labs(title = paste(strwrap("RAM usage for geneset algorithm", width = 20), collapse = "\n")) + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+The RAM is quite similar to the calculation times, but has however, got one flaw; The last memory-point of the laptop was calculated in a seperate R version, where thus the memory was reset. This shouldn't matter if we think of the algorithm in term of the iterations performed, but it does. The laptop's memory usage is way less than the ones before it, meaning there is a lot of RAM leaks left in memory after the algorithm is done. This is also why it is advised to restart your R session every now and then. The RAM leaks seem to be attributed to used of `apply` and are hard to prevent.
+
+### Overall thoughts
+
+Although the speed can be reasonably determined for the algorithms, RAM is a bit more tricky because of a lot of variables. This can be caused by differences in R session, memory leaks and other semi-random events/structuring of the code. Thus the only real thing that we can conclude is that there is quite a lot of RAM leaks, especially in the case of the geneset algorithm because of its iterative nature.
 
 ## Comparisons between algorithms
 

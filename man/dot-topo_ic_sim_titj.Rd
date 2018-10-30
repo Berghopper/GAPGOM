@@ -33,7 +33,7 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 
 \item{root}{root node of the GO tree (MF, BP or CC) in databse string form.}
 
-\item{IC}{Information content of the two terms}
+\item{IC}{Information content from the go_data.}
 
 \item{all_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. it is recommended to always keep
