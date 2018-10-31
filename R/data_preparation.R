@@ -67,7 +67,8 @@
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
 .prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2, 
-                                                             sparse = F) {
+                                                             sparse = F,
+                                                             old_scores = F) {
   if (sparse) {
     score_matrix <- Matrix(nrow = length(vec1), 
          ncol = length(vec2), 
@@ -80,6 +81,14 @@
                              vec1, vec2))
     }
   score_matrix <- .set_identical_items(score_matrix)
+  # View(score_matrix)
+  if (old_scores) {
+    for (row in rownames(old_scores)) {
+      for (col in colnames(old_scores)) {
+        score_matrix <- .set_values(row, col, score_matrix, old_scores[row, col]) 
+      }
+    }
+  }
   return(score_matrix)
 })
 

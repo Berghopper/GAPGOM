@@ -16,7 +16,7 @@ NULL
 
 #' Common Ancestor for two GOIDs
 #' @rdname dag_funcs
-.common_ancestor <- compiler::cmpfun(function(go_id1, go_id2, ontology, 
+.common_ancestors <- compiler::cmpfun(function(go_id1, go_id2, ontology, 
                                              organism, go_annotation, 
                                              information_content) {
   root_count <- max(information_content[information_content != Inf])

@@ -12,7 +12,7 @@
                    "BMC Bioinformatics 2016, 17(1):296\n",
                    "[2] Ehsani R, Drabl\u00f8s F: [UNPUBLISHED] Measures of 
                    co-expression for improved function prediction of long 
-                   non-cofing RNAs, 2018."
+                   non-coding RNAs, 2018."
                    )
 
     packageStartupMessage(paste0(msg, citation))

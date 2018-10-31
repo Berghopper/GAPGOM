@@ -44,48 +44,44 @@
 #' @importFrom RBGL sp.between
 .topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
                                                go_id2,
-                                               ontology,
-                                               organism,
-                                               weighted_dag,
-                                               go_annotation,
-                                               root,
-                                               IC) {
+                                               topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
-  common_ancestor <- .common_ancestor(go_id1, go_id2, ontology, organism,
-                                     go_annotation, IC)
+  common_ancestors <- .common_ancestors(go_id1, go_id2, topoargs$ontology, 
+                                                        topoargs$organism,
+                                        topoargs$go_annotation, topoargs$IC)
   D_ti_tj_x <- NULL
-  if (length(common_ancestor) != 0 && !is.na(common_ancestor)) {
-    D_ti_tj_x <- lapply(common_ancestor, function(x) {
+  if (length(common_ancestors) != 0 && !is.na(common_ancestors)) {
+    D_ti_tj_x <- lapply(common_ancestors, function(x) {
       # To identify all disjunctive common ancestors
-      immediate_children_x <- switch(ontology,
+      immediate_children_x <- switch(topoargs$ontology,
                                      MF = GOMFCHILDREN[[x]],
                                      BP = GOBPCHILDREN[[x]],
                                      CC = GOCCCHILDREN[[x]])
       
-      if (x != "all" & x != root & !is.na(x) &
-        length(intersect(immediate_children_x, common_ancestor)) == 0) {
+      if (x != "all" & x != topoargs$root & !is.na(x) &
+        length(intersect(immediate_children_x, common_ancestors)) == 0) {
         # Subgraph from two GO terms go_id1 and go_id2
-        sg1 <- subGraph(c(get(go_id1, go_annotation), go_id1),
-                        weighted_dag)
-        sg2 <- subGraph(c(get(go_id2, go_annotation), go_id2),
-                        weighted_dag)
+        sg1 <- subGraph(c(get(go_id1, topoargs$go_annotation), go_id1),
+                        topoargs$weighted_dag)
+        sg2 <- subGraph(c(get(go_id2, topoargs$go_annotation), go_id2),
+                        topoargs$weighted_dag)
         # Subgraph from a disjunctive common ancestor to root
-        sglca <- subGraph(c(get(x, go_annotation), x), weighted_dag)
-        sglca <- .set_edge_weight(sglca, IC)
-        wLP_x_root <- .longest_path(sglca, x, root, IC)
-        sg1 <- .set_edge_weight(sg1, IC)
+        sglca <- subGraph(c(get(x, topoargs$go_annotation), x), topoargs$weighted_dag)
+        sglca <- .set_edge_weight(sglca, topoargs$IC)
+        wLP_x_root <- .longest_path(sglca, x, topoargs$root, topoargs$IC)
+        sg1 <- .set_edge_weight(sg1, topoargs$IC)
         sg1 <- igraph.to.graphNEL(sg1)
         sp1 <- sp.between(sg1, go_id1, x)
         ic_sp1 <- sp1[[1]]$length
         length_sp1 <- length(sp1[[1]]$path_detail)
-        sg2 <- .set_edge_weight(sg2, IC)
+        sg2 <- .set_edge_weight(sg2, topoargs$IC)
         sg2 <- igraph.to.graphNEL(sg2)
         sp2 <- sp.between(sg2, go_id2, x)
         ic_sp2 <- sp2[[1]]$length
         length_sp2 <- length(sp2[[1]]$path_detail)
-        IC_GOID_1 <- IC[go_id1][[1]]
-        IC_GOID_2 <- IC[go_id2][[1]]
+        IC_GOID_1 <- topoargs$IC[go_id1][[1]]
+        IC_GOID_2 <- topoargs$IC[go_id2][[1]]
         if (!is.na(IC_GOID_1) & IC_GOID_1 != 0)
           ic_sp1 <- ic_sp1 + (1/(2 * IC_GOID_1))
         if (!is.na(IC_GOID_2) & IC_GOID_2 != 0)
@@ -163,121 +159,53 @@
 #' @importFrom graph ftM2graphNEL
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export
-topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
-                                            gene2,
-                                            ontology = "MF",
-                                            organism = "yeast",
-                                            progress_bar = F,
-                                            garbage_collection = F,
-                                            go_data = NULL,
-                                            drop = NULL,
-                                            translation_to_goids = NULL,
-                                            all_go_pairs = NULL
-                                            ) {
+.topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
+                                               gene2,
+                                               topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
-  # set ontology and organism
-  ontology <- match.arg(ontology, c("MF", "BP", "CC"))
-  organism <- match.arg(organism, c("human",
-                                    "fly",
-                                    "mouse",
-                                    "rat",
-                                    "yeast",
-                                    "zebrafish",
-                                    "worm",
-                                    "arabidopsis",
-                                    "ecolik12",
-                                    "bovine",
-                                    "canine",
-                                    "anopheles",
-                                    "ecsakai",
-                                    "chicken",
-                                    "chimp",
-                                    "malaria",
-                                    "rhesus",
-                                    "pig",
-                                    "xenopus"))
-  # arg checking and queries
-  # check if go data is present.
-  if (is.null(go_data)) {
-    go_data <- .set_go_data(organism = organism, ontology = ontology) 
-  }
-  # check if translation table is present.
-  if (is.null(translation_to_goids)) {
-    # lookup goids of all gene ids
-    translation_to_goids <- .go_ids_lookup(c(gene1, gene2), 
-                                           go_data, 
-                                           drop = drop)
-  }
-  
-  # check if all_go pairs matrix is present (for optimization)
-  if (is.null(all_go_pairs)) {
-    go_unique_list <- unique(translation_to_goids$GO)
-    all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                         go_unique_list)
-  }
-  
-  # Initial definitions and sets based on organism and ontology type
-  xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
-                       BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
-
-  go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
-                          CC = GOCCANCESTOR)
-
-  root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
-                 CC = "GO:0005575")
-  weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
-  
   
   # get goids for both genes
-  gos1 <- as.character(translation_to_goids[translation_to_goids$ID==gene1,]$GO)
-  gos2 <- as.character(translation_to_goids[translation_to_goids$ID==gene2,]$GO)
+  gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
+  gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
 
-  # return if goids sums are both 0
+  # return NA if goids sums are both 0 (no goids available to measure)
   if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
     return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, 
-                AllGoPairs = all_go_pairs))
+                AllGoPairs = topoargs$all_go_pairs))
   }
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
-  IC <- go_data@IC
   
   unique_pairs <- .unique_combos(gos1, gos2)
   
-  selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", ontology, "_", 
-                                                  organism)]] # "ENTREZ_", 
-  # ADD ID SUPPORT IN FUTURE VERSIONS
-  
-  if (progress_bar) {
+  if (topoargs$progress_bar) {
     pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
   } 
   for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i,]
-    if (progress_bar) {
+    if (topoargs$progress_bar) {
       setTxtProgressBar(pb, i)
     }
     go1 <- pair[[1]]
     go2 <- pair[[2]]
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
-    if (!is.na(all_go_pairs[go1, go2])) {
+    #print(dput(topoargs$all_go_pairs))
+    if (!is.na(topoargs$all_go_pairs[go1, go2])) {
       # set already existing value.
-      scores <- .set_values(go1, go2, scores, all_go_pairs[go1, go2])
-    } else if(go1 %in% colnames(selected_freq_go_pairs) && 
-              go2 %in% colnames(selected_freq_go_pairs)) {
+      scores <- .set_values(go1, go2, scores, topoargs$all_go_pairs[go1, go2])
+    } else if(go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
+              go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
       # set precalculated value.
-      scores <- .set_values(go1, go2, scores, selected_freq_go_pairs[go1, go2])
+      scores <- .set_values(go1, go2, scores, topoargs$selected_freq_go_pairs[go1, go2])
+      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, topoargs$selected_freq_go_pairs[go1, go2])
     } else {
       score <-
         .topo_ic_sim_titj(go1,
                           go2,
-                          ontology,
-                          organism,
-                          weighted_dag,
-                          go_annotation,
-                          root,
-                          IC)
+                          topoargs)
       
-      if (garbage_collection) {
+      if (topoargs$garbage_collection) {
         # garbage collection (topo term algorithm uses a lot of ram) only done
         # every 500th item/at end of loop
         if ((i %% 500) == 0) {
@@ -285,33 +213,34 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
         }
       }
       scores <- .set_values(go1, go2, scores, score)
-      all_go_pairs[go1, go2] <- score
-      all_go_pairs[go2, go1] <- score
+      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, score)
     }
   }
-  if (progress_bar) {
+  if (topoargs$progress_bar) {
     cat("\n")
   }
-  if (garbage_collection) {
+  if (topoargs$garbage_collection) {
     gc()
   }
   # if score is NA, return.
   if (!sum(!is.na(scores))) {
   return(list(GeneSim = NA, GO1 = gos1, GO2 = gos2, AllGoPairs = 
-                all_go_pairs))
+                topoargs$all_go_pairs))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
   n <- length(gos2)
-  sim <- max(sum(sapply(1:m, function(x) {
+  sim <- max(
+    sum(sapply(seq_len(m), function(x) {
       max(scores[x, ], na.rm = TRUE)
-  }))/m, sum(sapply(1:n, function(x) {
+  }))/m, 
+    sum(sapply(seq_len(n), function(x) {
       max(scores[, x], na.rm = TRUE)
   }))/n)
   sim <- round(sim, digits = 3)
   # return final score
   return(list(GeneSim = sim, GO1 = gos1, GO2 = gos2, AllGoPairs = 
-                all_go_pairs))
+                topoargs$all_go_pairs))
 })
 
 #' GAPGOM - topo_ic_sim()
@@ -373,70 +302,107 @@ topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
 #' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @export
-topo_ic_sim <- compiler::cmpfun(function(gene_list1,
+.topo_ic_sim_geneset <- compiler::cmpfun(function(gene_list1,
                                          gene_list2,
-                                         ontology = "MF",
-                                         organism = "human",
-                                         drop = NULL,
-                                         progress_bar = T,
-                                         garbage_collection = F) {
+                                         topoargs) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
     timestart <- Sys.time()
     print(timestart)
     
-    go_data <- .set_go_data(organism = organism, ontology = ontology)
-    # lookup goids of all gene ids
-    translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, gene_list2)), 
-                                           go_data, 
-                                           drop = drop)
-    
     # set up score matrix in advance
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
-    
-    go_unique_list <- unique(translation_to_goids$GO)
-    all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                         go_unique_list)
-    
     
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
-    if (progress_bar) {
+    if (topoargs$progress_bar) {
       pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
     }
+    
+    # make a copy of topo arguments to turn off progressbar for genelevel
+    topoargs_gen <- topoargs
+    topoargs_gen$progress_bar <- F
     # apply(unique_pairs, 1, function(pair) {
     for (i in seq_len(nrow(unique_pairs))) {
       pair <- unique_pairs[i,]
-      if (progress_bar) {
+      if (topoargs$progress_bar) {
         setTxtProgressBar(pb, i)
       }
       gene1 <- pair[[1]]
       gene2 <- pair[[2]]
-      genepair_result <- topo_ic_sim_g1g2(gene1,
+      genepair_result <- .topo_ic_sim_g1g2(gene1,
                                           gene2, 
-                                          ontology,
-                                          organism,
-                                          garbage_collection = 
-                                            garbage_collection,
-                                          go_data = go_data, 
-                                          drop = drop, 
-                                          translation_to_goids = 
-                                            translation_to_goids,
-                                          all_go_pairs = all_go_pairs)
-      
+                                          topoargs_gen)
       score_matrix <- .set_values(gene1, gene2, score_matrix, 
                                   genepair_result$GeneSim)
-      all_go_pairs <- genepair_result$AllGoPairs
+      topoargs_gen$all_go_pairs <- genepair_result$AllGoPairs
     }
-    if (progress_bar) {
+    topoargs$all_go_pairs <- topoargs_gen$all_go_pairs
+    if (topoargs$progress_bar) {
       cat("\n")
     }
     print(Sys.time()-timestart)
     return(list(GeneSim=score_matrix, 
                 GeneList1 = gene_list1, 
                 GeneList2 = gene_list2,
-                AllGoPairs = all_go_pairs))
+                AllGoPairs = topoargs$all_go_pairs))
 })
 
+topo_ic_sim_argcheck_genes <- function(ontology, organism, genes1, genes2) {
+  # set ontology and organism
+  ontology <- match.arg(ontology, c("MF", "BP", "CC"))
+  organism <- match.arg(organism, c("human",
+                                    "fly",
+                                    "mouse",
+                                    "rat",
+                                    "yeast",
+                                    "zebrafish",
+                                    "worm",
+                                    "arabidopsis",
+                                    "ecolik12",
+                                    "bovine",
+                                    "canine",
+                                    "anopheles",
+                                    "ecsakai",
+                                    "chicken",
+                                    "chimp",
+                                    "malaria",
+                                    "rhesus",
+                                    "pig",
+                                    "xenopus"))
+  if (length(genes1) < 1 || length(genes2) < 1) {
+    stop("Not enough genes specified!")
+  }
+}
+
+topo_ic_sim_genes <- function(ontology,
+                              organism,
+                              genes1, 
+                              genes2, 
+                              drop = NULL,
+                              progress_bar = T,
+                              garbage_collection = F,
+                              all_go_pairs = NULL) {
+  old <- options(stringsAsFactors = FALSE, warn = -1)
+  on.exit(options(old), add = TRUE)
+  topo_ic_sim_argcheck_genes(ontology, organism, genes1, genes2)
+  # if everything is ok, start preparing...
+  topoargs <<- .prepare_variables_topoicsim(organism, ontology, genes1, genes2, 
+                                           drop, progress_bar, garbage_collection, all_go_pairs)
+  if (length(genes1) == 1 && length(genes2) == 1) {
+    # single gene topo
+    return(.topo_ic_sim_g1g2(genes1, genes2, topoargs))
+  } else {
+    # multi gene topo
+    return(.topo_ic_sim_geneset(genes1, genes2, topoargs))
+  }
+}
+# 
+# topo_ic_sim_term <- function(ontology,
+#                              organism,
+#                              go1, go2) {
+#   topoargs <<- .prepare_variables_topoicsim(organism, ontology, genes1, genes2, 
+#                                             drop, progress_bar, garbage_collection, all_go_pairs, )
+# }
