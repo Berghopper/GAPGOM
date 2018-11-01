@@ -4,7 +4,7 @@
 \alias{.prepare_score_matrix_topoicsim}
 \title{GAPGOM internal - .prepare_score_matrix_topoicsim()}
 \usage{
-.prepare_score_matrix_topoicsim(vec1, vec2, sparse = F)
+.prepare_score_matrix_topoicsim(vec1, vec2, sparse = F, old_scores = F)
 }
 \arguments{
 \item{vec1}{vector1 with arbitrary lookup names}

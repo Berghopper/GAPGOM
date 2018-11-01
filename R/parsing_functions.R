@@ -1,5 +1,9 @@
 ###TOPOICSIM FUNCTIONS
 
+#' @importFrom GO.db GOMFCHILDREN GOBPCHILDREN GOCCCHILDREN GOMFPARENTS
+#' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
+#' @importFrom AnnotationDbi toTable
+#' @importFrom graph ftM2graphNEL
 .prepare_variables_topoicsim <- function(organism, 
                                          ontology, 
                                          gene_list1 = NULL, 
@@ -9,47 +13,15 @@
                                          garbage_collection = NULL,
                                          all_go_pairs = NULL,
                                          topoargs=list(),
-                                         genes=TRUE) {
-  
-  # gene_list1,
-  # gene_list2,
-  # ontology = "MF",
-  # organism = "human",
-  # drop = NULL,
-  # progress_bar = T,
-  # garbage_collection = F
-  
-  ###
-  # minimal requirements;
-  # -organism
-  # -ontology
-  # -gene_list1+gene_list2 or; topoargs$translations_to_goids --> F
-  # -drop
-  
+                                         term_only=FALSE) {
+  # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology
-  topoargs$drop <- drop
-  topoargs$progress_bar <- progress_bar
-  topoargs$garbage_collection <- garbage_collection
   
   # go_data --> IC
   if (is.null(topoargs$IC)) {
     go_data <- .set_go_data(organism = organism, ontology = ontology)
     topoargs$IC <- go_data@IC
-  }
-  # translation_to_goids
-  if (is.null(topoargs$translation_to_goids)) {
-    if (is.null(go_data)) {
-      go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F)
-    }
-    if (is.null(gene_list1) || is.null(gene_list2)) {
-      topoargs$translation_to_goids <- NULL
-    } else {
-      topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
-                                                      gene_list2)), 
-                                             go_data, 
-                                             drop = drop) 
-    }
   }
   # xx_parents --> weighted dag
   if (is.null(topoargs$weighted_dag)) {
@@ -67,35 +39,48 @@
     topoargs$root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
                    CC = "GO:0005575")
   }
-  if (is.null(topoargs$selected_freq_go_pairs)) {
-    topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", 
-                                                             ontology, "_", 
-                                                             organism)]]
-    # ADD ID SUPPORT IN FUTURE VERSIONS
-  }
-  if (is.null(all_go_pairs)) {
-    if (is.null(topoargs$all_go_pairs)) {
-      go_unique_list <- unique(topoargs$translation_to_goids$GO)
-      topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                               go_unique_list) 
+  
+  # get gene arguments (if neccesary)
+  if (!term_only) {
+    topoargs$drop <- drop
+    topoargs$progress_bar <- progress_bar
+    topoargs$garbage_collection <- garbage_collection
+    
+    if (is.null(topoargs$selected_freq_go_pairs)) {
+      topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", 
+                                                               ontology, "_", 
+                                                               organism)]]
+      # ADD ID SUPPORT IN FUTURE VERSIONS
     }
-  } else {
-    go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
-                               colnames(topoargs$all_go_pairs), 
-                               topoargs$translation_to_goids$GO))
-    topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
-                                                             go_unique_list,
-                                                             old_scores = all_go_pairs)
+    # translation_to_goids
+    if (is.null(topoargs$translation_to_goids)) {
+      if (is.null(go_data)) {
+        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F)
+      }
+      if (is.null(gene_list1) || is.null(gene_list2)) {
+        topoargs$translation_to_goids <- NULL
+      } else {
+        topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
+                                                                 gene_list2)), 
+                                                        go_data, 
+                                                        drop = drop) 
+      }
+    }
+    if (is.null(all_go_pairs)) {
+      if (is.null(topoargs$all_go_pairs)) {
+        go_unique_list <- unique(topoargs$translation_to_goids$GO)
+        topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
+                                                                 go_unique_list) 
+      }
+    } else {
+      go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
+                                 colnames(topoargs$all_go_pairs), 
+                                 topoargs$translation_to_goids$GO))
+      topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
+                                                               go_unique_list,
+                                                               old_scores = all_go_pairs)
+    }
   }
-  
-  
-  # if (!is.null(topoargs$all_go_pairs)) {}
-  
-  
-  # all_go_pairs
-  # progress_bar
-  # garbage_collection
-  # drop
   
   return(topoargs)
 }

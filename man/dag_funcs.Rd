@@ -2,13 +2,13 @@
 % Please edit documentation in R/dag_functions.R
 \name{dag_funcs}
 \alias{dag_funcs}
-\alias{.common_ancestor}
+\alias{.common_ancestors}
 \alias{.set_edge_weight}
 \alias{.longest_path}
 \title{GAPGOM internal - Directed acyclic graph (DAG) mathematical functions/DAG 
 navigation functions.}
 \usage{
-.common_ancestor(go_id1, go_id2, ontology, organism, go_annotation,
+.common_ancestors(go_id1, go_id2, ontology, organism, go_annotation,
   information_content)
 
 .set_edge_weight(sub_graph, information_content)

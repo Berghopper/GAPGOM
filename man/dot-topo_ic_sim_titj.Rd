@@ -2,46 +2,21 @@
 % Please edit documentation in R/topoicsim_algorithms.R
 \name{.topo_ic_sim_titj}
 \alias{.topo_ic_sim_titj}
-\title{GAPGOM internal - topo_ic_sim_titj()}
+\title{GAPGOM internal - .topo_ic_sim_titj()}
 \usage{
-.topo_ic_sim_titj(go_id1, go_id2, ontology, organism, weighted_dag,
-  go_annotation, root, IC)
+.topo_ic_sim_titj(go_id1, go_id2, topoargs)
 }
 \arguments{
 \item{go_id1}{GO term of first term.}
 
 \item{go_id2}{GO term of second term.}
 
-\item{ontology}{desired ontology to use for similarity calculations.
-One of three;
-"BP" (Biological process),
-"MF" (Molecular function) or
-"CC" (Cellular Component).}
-
-\item{organism}{where to be scanned genes reside in, this option
-is neccesary to select the correct GO DAG. Options are based on the org.db
-bioconductor package;
-http://www.bioconductor.org/packages/release/BiocViews.html#___OrgDb
-Following options are available: "fly", "mouse", "rat", "yeast",
-"zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
-"anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
-"xenopus".}
-
-\item{weighted_dag}{DAG with weighted nodes.}
-
-\item{go_annotation}{GO annotation of the correct root node.}
-
-\item{root}{root node of the GO tree (MF, BP or CC) in databse string form.}
-
-\item{IC}{Information content from the go_data.}
-
-\item{all_go_pairs}{dataframe of GO Term pairs with a column
-representing similarity between the two. it is recommended to always keep
-this on default unless you know what you are doing.}
+\item{topoargs}{list containing all the neccesary paramters/arguments for
+the topoicsim algorithm, details can be view in the 
+".prepare_variables_topoicsim" function.}
 }
 \value{
-list of score and all_go_pairs, the latter of which will be 
-reused.
+semantic topological similarity between the two given go terms.
 }
 \description{
 This function is an internal function and should not be called by the user.
