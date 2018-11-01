@@ -12,6 +12,9 @@
 \item{vec2}{vector2 with arbitrary lookup names.}
 
 \item{sparse}{whether to implement Matrix or matrix (default=F --> matrix)}
+
+\item{old_scores}{old score matrix that has overlapping values with 
+currently generated score matrix.}
 }
 \value{
 The score matrix with names and NA's.

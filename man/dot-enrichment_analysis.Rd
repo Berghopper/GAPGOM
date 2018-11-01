@@ -37,6 +37,9 @@ standard data and will thus yield no results.}
 \item{enrichment_cutoff}{cutoff number for the amount of genes to be
 enriched in the enrichment analysis. (default is 250)}
 
+\item{significance}{normalized p-values (fdr) that are below this number 
+will be kept. has to be a float/double between 0-1. Default is 0.05}
+
 \item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
 }
 \value{

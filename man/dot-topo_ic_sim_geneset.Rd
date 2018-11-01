@@ -39,6 +39,11 @@ Intraset similarity can be calculated by comparing the same gene vector to
 itself and using mean() on the output. The same can be done for Interset
 similarity, but between two \strong{different} gene lists. [1]
 }
+\section{Notes}{
+
+Internal function used in (topo_ic_sim_genes()).
+}
+
 \references{
 [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,

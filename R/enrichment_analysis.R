@@ -36,6 +36,8 @@
 #' standard data and will thus yield no results.
 #' @param enrichment_cutoff cutoff number for the amount of genes to be
 #' enriched in the enrichment analysis. (default is 250)
+#' @param significance normalized p-values (fdr) that are below this number 
+#' will be kept. has to be a float/double between 0-1. Default is 0.05
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.

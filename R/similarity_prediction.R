@@ -41,6 +41,7 @@
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
 #' @param ncluster Amount of cores you want to run the combined method on. 
 #' Default=1. Does not work for other methods.
+#' @param verbose set to true for more informative/elaborate output.
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -62,7 +63,7 @@
 #' # set an artbitrary gene you want to find similarities for. (5th row in this
 #' # case)
 #' gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
-#' GAPGOM::expression_prediction_function(gid, 
+#' result <- GAPGOM::expression_prediction_function(gid, 
 #'                                        GAPGOM::ft5_example_data, 
 #'                                        sort_list, 
 #'                                        "mouse", 
@@ -80,8 +81,9 @@ expression_prediction_function <- function(gene_id,
                                 method = "combine",
                                 significance = 0.05,
                                 filter_pvals = FALSE,
-                                ncluster = 1) {
-  starty <- Sys.time()
+                                ncluster = 1,
+                                verbose = F) {
+  starttime <- Sys.time()
   # prepare the data with some special operations/vars that are needed later
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
@@ -95,9 +97,14 @@ expression_prediction_function <- function(gene_id,
   target_expression_data <- expression_set@assayData$exprs[gene_id,]
   
   # Generate the translation df using gosemsim.
-  print("Looking up GO terms...")
-  id_translation_df <- .generate_translation_df(expression_set, organism, 
-                                                ontology)
+  if (verbose) {
+    message("Looking up GO terms...")
+  }
+  id_translation_df <- .generate_translation_df(
+    expression_set, 
+    organism, 
+    ontology,
+    verbose)
   
   # make args list for ambiguous functions
   args <- list(
@@ -136,10 +143,13 @@ expression_prediction_function <- function(gene_id,
   if (length(enrichment_result) > 0 && nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(1:nrow(enrichment_result))
-    print(Sys.time()-starty)
+    if (verbose) {
+      message("Calculation time (seconds):")
+      message(Sys.time()-starttime)
+      }
     return(enrichment_result)
   } else {
-    print("Could not find any similar genes!")
+    message("Could not find any similar genes!")
   }
 }
 

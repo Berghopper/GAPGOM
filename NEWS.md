@@ -10,6 +10,21 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
+## [0.3.0 - Unreleased]
+### Planned changes/features (subject to changes) *=not yet implemented/finished
+### Added
+- Re-added data which lncRNApred's paper is based on.*
+- Support for all AnnotationDbi Key types
+- Vignette for GAPGOM.*
+- Vignette for benchmarks/performance measuring.*
+- term algorithm as exported function.
+### Changed
+- topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
+- argument parsing for topoicsim
+- some tests (topoicsim)
+### Removed
+### Fixed
+
 ## [0.2.0 - Polished Potato] - 2018-10-20
 ### Added
 - TopoICSim performance improvements.

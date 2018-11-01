@@ -37,6 +37,10 @@ This function is made for calculating topological similarity of two GO
 terms in the GO DAG structure. The topological similarity is based on
 edge weights and information content (IC). [1]
 }
+\examples{
+result <- topo_ic_sim_term("MF", "human", "GO:0018478", "GO:0047105")
+
+}
 \references{
 [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,

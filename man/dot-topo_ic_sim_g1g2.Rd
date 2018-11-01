@@ -32,6 +32,11 @@ This function is made for calculating topological similarity of two Genes
 given their GO terms in the GO DAG structure. The topological similarity is
 based on edge weights and information content (IC). [1]
 }
+\section{Notes}{
+
+Internal function used in (topo_ic_sim_genes()).
+}
+
 \references{
 [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,

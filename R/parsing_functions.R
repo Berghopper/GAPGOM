@@ -1,91 +1,5 @@
 ###TOPOICSIM FUNCTIONS
 
-#' @importFrom GO.db GOMFCHILDREN GOBPCHILDREN GOCCCHILDREN GOMFPARENTS
-#' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
-#' @importFrom AnnotationDbi toTable
-#' @importFrom graph ftM2graphNEL
-.prepare_variables_topoicsim <- function(organism, 
-                                         ontology, 
-                                         gene_list1 = NULL, 
-                                         gene_list2 = NULL,
-                                         drop = NULL,
-                                         progress_bar = NULL, 
-                                         garbage_collection = NULL,
-                                         all_go_pairs = NULL,
-                                         topoargs=list(),
-                                         term_only=FALSE) {
-  # first get term arguments
-  topoargs$organism <- organism
-  topoargs$ontology <- ontology
-  
-  # go_data --> IC
-  if (is.null(topoargs$IC)) {
-    go_data <- .set_go_data(organism = organism, ontology = ontology)
-    topoargs$IC <- go_data@IC
-  }
-  # xx_parents --> weighted dag
-  if (is.null(topoargs$weighted_dag)) {
-    xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
-                         BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
-    topoargs$weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
-  }
-  # go_annotation
-  if (is.null(topoargs$go_annotation)) {
-    topoargs$go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
-                            CC = GOCCANCESTOR)
-  }
-  # root
-  if (is.null(topoargs$root)) {
-    topoargs$root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
-                   CC = "GO:0005575")
-  }
-  
-  # get gene arguments (if neccesary)
-  if (!term_only) {
-    topoargs$drop <- drop
-    topoargs$progress_bar <- progress_bar
-    topoargs$garbage_collection <- garbage_collection
-    
-    if (is.null(topoargs$selected_freq_go_pairs)) {
-      topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", 
-                                                               ontology, "_", 
-                                                               organism)]]
-      # ADD ID SUPPORT IN FUTURE VERSIONS
-    }
-    # translation_to_goids
-    if (is.null(topoargs$translation_to_goids)) {
-      if (is.null(go_data)) {
-        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F)
-      }
-      if (is.null(gene_list1) || is.null(gene_list2)) {
-        topoargs$translation_to_goids <- NULL
-      } else {
-        topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
-                                                                 gene_list2)), 
-                                                        go_data, 
-                                                        drop = drop) 
-      }
-    }
-    if (is.null(all_go_pairs)) {
-      if (is.null(topoargs$all_go_pairs)) {
-        go_unique_list <- unique(topoargs$translation_to_goids$GO)
-        topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                                 go_unique_list) 
-      }
-    } else {
-      go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
-                                 colnames(topoargs$all_go_pairs), 
-                                 topoargs$translation_to_goids$GO))
-      topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
-                                                               go_unique_list,
-                                                               old_scores = all_go_pairs)
-    }
-  }
-  
-  return(topoargs)
-}
-
-
 #' GAPGOM internal - .go_ids_lookup()
 #'
 #' This function is an internal function and should not be called by the user.
@@ -176,6 +90,7 @@
 #' "BP" (Biological process), "MF" (Molecular function) or "CC"
 #' (Cellular Component). Cellular Component is not included with the package's
 #' standard data and will thus yield no results. 
+#' @param verbose set to true for more informative/elaborate output.
 #' 
 #' @return return the translation dataframe containing conversion from general 
 #' ids to entrez/ensembl ids and goids.
@@ -183,9 +98,14 @@
 #' @import data.table
 .generate_translation_df <- compiler::cmpfun(function(expression_set, 
                                                       organism, 
-                                                      ontology) {
+                                                      ontology,
+                                                      verbose = F) {
   entrezid_col <- .resolve_entrezid_col(expression_set) # add keys support
-  go_data <- .set_go_data(organism, ontology, computeIC = F)
+  if (verbose) {
+    go_data <- .set_go_data(organism, ontology, computeIC = F)
+  } else {
+    go_data <- suppressMessages(.set_go_data(organism, ontology, computeIC = F))
+  }
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
   rm(go_data)
   

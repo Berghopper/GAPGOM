@@ -4,8 +4,9 @@
 \alias{topo_ic_sim_genes}
 \title{GAPGOM - topo_ic_sim_genes()}
 \usage{
-topo_ic_sim_genes(ontology, organism, genes1, genes2, progress_bar = T,
-  garbage_collection = F, drop = NULL, all_go_pairs = NULL)
+topo_ic_sim_genes(ontology, organism, genes1, genes2, verbose = F,
+  progress_bar = T, garbage_collection = F, drop = NULL,
+  all_go_pairs = NULL)
 }
 \arguments{
 \item{ontology}{desired ontology to use for similarity calculations.
@@ -27,12 +28,14 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 
 \item{genes2}{Gene ID(s) of the second Gene (vector).}
 
+\item{verbose}{set to true for more informative/elaborate output.}
+
 \item{progress_bar}{Whether to show the progress of the calculation 
 (default = FALSE)}
 
 \item{garbage_collection}{whether to do R garbage collection. This is
 useful for very large calculations/datasets, as it might decrease ram usage.
-This option might however increase calculation time.}
+This option might however increase calculation time slightly.}
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 
@@ -50,7 +53,6 @@ similarity between genes taken from the mean of all term similarities
 be calculated by comparing the same gene vector to itself and using mean() 
 on the output. The same can be done for Interset similarity, but between 
 two \strong{different} gene vectors (gene vector). ;
-
 $AllGoPairs;
 All possible GO combinations with their semantic distances (matrix). NAs 
 might be present in the matrix, these are GO pairs that didn't occur.

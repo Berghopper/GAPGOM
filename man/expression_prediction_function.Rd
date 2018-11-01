@@ -6,7 +6,8 @@
 \usage{
 expression_prediction_function(gene_id, expression_set, id_select_vector,
   organism, ontology, enrichment_cutoff = 250, method = "combine",
-  significance = 0.05, filter_pvals = FALSE, ncluster = 1)
+  significance = 0.05, filter_pvals = FALSE, ncluster = 1,
+  verbose = F)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -50,6 +51,8 @@ will be kept. has to be a float/double between 0-1. Default is 0.05}
 
 \item{ncluster}{Amount of cores you want to run the combined method on. 
 Default=1. Does not work for other methods.}
+
+\item{verbose}{set to true for more informative/elaborate output.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
@@ -84,7 +87,7 @@ function(row) {all(row==0)}),])
 # set an artbitrary gene you want to find similarities for. (5th row in this
 # case)
 gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
-GAPGOM::expression_prediction_function(gid, 
+result <- GAPGOM::expression_prediction_function(gid, 
                                        GAPGOM::ft5_example_data, 
                                        sort_list, 
                                        "mouse", 

@@ -1,3 +1,154 @@
+### TOPOICSIM FUNCTIONS
+
+#' GAPGOM internal - .prepare_variables_topoicsim()
+#'
+#' This function is an internal function and should not be called by the user.
+#'
+#' Prepares a list of intermediary arguments/parameters needed by topocisim.
+#'
+#' @section Notes:
+#' Internal function used in (topo_ic_sim_genes).
+#'
+#' @param ontology desired ontology to use for similarity calculations.
+#' One of three;
+#' "BP" (Biological process),
+#' "MF" (Molecular function) or
+#' "CC" (Cellular Component).
+#' @param organism where to be scanned genes reside in, this option
+#' is neccesary to select the correct GO DAG. Options are based on the org.db
+#' bioconductor package;
+#' http://www.bioconductor.org/packages/release/BiocViews.html#___OrgDb
+#' Following options are available: "fly", "mouse", "rat", "yeast",
+#' "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
+#' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
+#' "xenopus".
+#' @param gene_list1 The first gene vector of gene IDs. Note; THIS IS NOT THE
+#' ENSEMBLID. Instead use the gene ID adopted by NCBI.
+#' @param gene_list2 Same type as gene_list1, will be compared to gene_list1.
+#' @param drop vector of GOID you want to exclude from the analysis.
+#' @param verbose set to true for more informative/elaborate output.
+#' @param progress_bar Whether to show the progress of the calculation 
+#' (default = FALSE)
+#' @param garbage_collection whether to do R garbage collection. This is
+#' useful for very large calculations/datasets, as it might decrease ram usage.
+#' This option might however increase calculation time.
+#' @param all_go_pairs dataframe of GO Term pairs with a column
+#' representing similarity between the two. You can add the dataframe from
+#' previous runs to improve performance (only works if the last result has
+#' at least part of the genes of the current run). You can also use it for 
+#' pre-calculation and getting the results back in a fast manner.
+#' @param topoargs topoargs list that needs correction, default is a brand new
+#' list
+#' @param term_only specify if you only want arguments/params for TERM level.
+#' 
+#' @return list with all topoicsim arguments (can differ depending on 
+#' algorithm level gene/geneset/term); organism, ontology, verbose, IC 
+#' (Information Content from the go_data/go consortium), weighted_dag (DAG 
+#' with weighted nodes), go_annotation (GO annotation of the correct root 
+#' node), root (root node of the GO tree (MF, BP or CC) in 
+#' annotationdbi-database string form), drop, progress_bar, garbage_collection, 
+#' all_go_pairs, selected_freq_go_pairs (precalculated common GO_pairs that 
+#' might increase performance), translation_to_goids (translation dataframe 
+#' between ID and GOID.)
+#' 
+#' @importFrom GO.db GOMFCHILDREN GOBPCHILDREN GOCCCHILDREN GOMFPARENTS
+#' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
+#' @importFrom AnnotationDbi toTable
+#' @importFrom graph ftM2graphNEL
+.prepare_variables_topoicsim <- function(organism, 
+                                         ontology, 
+                                         gene_list1 = NULL, 
+                                         gene_list2 = NULL,
+                                         drop = NULL,
+                                         verbose = F,
+                                         progress_bar = NULL, 
+                                         garbage_collection = NULL,
+                                         all_go_pairs = NULL,
+                                         topoargs=list(),
+                                         term_only=FALSE) {
+  # first get term arguments
+  topoargs$organism <- organism
+  topoargs$ontology <- ontology
+  topoargs$verbose <- verbose
+  
+  if (verbose) {
+    message("Preparing topoICSim data...")
+    message("Preparing term data.")
+  }
+  # go_data --> IC
+  if (is.null(topoargs$IC)) {
+    if (verbose) {
+      go_data <- .set_go_data(organism = organism, ontology = ontology)
+    } else {
+      go_data <- suppressMessages(.set_go_data(organism = organism, ontology = ontology))  
+    }
+    topoargs$IC <- go_data@IC
+  }
+  # xx_parents --> weighted dag
+  if (is.null(topoargs$weighted_dag)) {
+    xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
+                         BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
+    topoargs$weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
+  }
+  # go_annotation
+  if (is.null(topoargs$go_annotation)) {
+    topoargs$go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
+                                     CC = GOCCANCESTOR)
+  }
+  # root
+  if (is.null(topoargs$root)) {
+    topoargs$root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
+                            CC = "GO:0005575")
+  }
+  if (verbose) {
+    message("Preparing gene/geneset data...")
+  }
+  # get gene arguments (if neccesary)
+  if (!term_only) {
+    topoargs$drop <- drop
+    topoargs$progress_bar <- progress_bar
+    topoargs$garbage_collection <- garbage_collection
+    
+    if (is.null(topoargs$selected_freq_go_pairs)) {
+      topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", 
+                                                               ontology, "_", 
+                                                               organism)]]
+      # ADD ID SUPPORT IN FUTURE VERSIONS
+    }
+    # translation_to_goids
+    if (is.null(topoargs$translation_to_goids)) {
+      if (is.null(go_data)) {
+        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F)
+      }
+      if (is.null(gene_list1) || is.null(gene_list2)) {
+        topoargs$translation_to_goids <- NULL
+      } else {
+        topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
+                                                                 gene_list2)), 
+                                                        go_data, 
+                                                        drop = drop) 
+      }
+    }
+    if (is.null(all_go_pairs)) {
+      if (is.null(topoargs$all_go_pairs)) {
+        go_unique_list <- unique(topoargs$translation_to_goids$GO)
+        topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
+                                                                 go_unique_list) 
+      }
+    } else {
+      go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
+                                 colnames(topoargs$all_go_pairs), 
+                                 topoargs$translation_to_goids$GO))
+      topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
+                                                               go_unique_list,
+                                                               old_scores = all_go_pairs)
+    }
+  }
+  
+  return(topoargs)
+}
+
+
 #' GAPGOM internal - set_go_data()
 #' 
 #' This function is an internal function and should not be called by the user.
@@ -21,7 +172,7 @@
 #' "BP" (Biological process), "MF" (Molecular function) or "CC"
 #' (Cellular Component). Cellular Component is not included with the package's
 #' standard data and will thus yield no results.
-#' @param copmuteIC whether to compute Information Content.
+#' @param computeIC whether to compute Information Content.
 #' 
 #' @return return godata as from GoSemSim
 #' 
@@ -63,6 +214,8 @@
 #' @param vec1 vector1 with arbitrary lookup names
 #' @param vec2 vector2 with arbitrary lookup names.
 #' @param sparse whether to implement Matrix or matrix (default=F --> matrix)
+#' @param old_scores old score matrix that has overlapping values with 
+#' currently generated score matrix.
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix

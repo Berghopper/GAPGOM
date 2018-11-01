@@ -7,6 +7,9 @@
 #' terms in the GO DAG structure. The topological similarity is based on
 #' edge weights and information content (IC). [1]
 #'
+#' @section Notes:
+#' Internal function used in (topo_ic_sim_term()).
+#'
 #' @param go_id1 GO term of first term.
 #' @param go_id2 GO term of second term.
 #' @param topoargs list containing all the neccesary paramters/arguments for
@@ -94,6 +97,9 @@
 #' given their GO terms in the GO DAG structure. The topological similarity is
 #' based on edge weights and information content (IC). [1]
 #'
+#' @section Notes:
+#' Internal function used in (topo_ic_sim_genes()).
+#'
 #' @param gene1 Gene ID of the first Gene.
 #' @param gene2 Gene ID of the second Gene.
 #' @param topoargs list containing all the neccesary paramters/arguments for
@@ -116,7 +122,9 @@
                                                topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
-  
+  if (topoargs$verbose) {
+    message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))
+  }
   # get goids for both genes
   gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
   gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
@@ -140,6 +148,9 @@
     }
     go1 <- pair[[1]]
     go2 <- pair[[2]]
+    if (topoargs$verbose) {
+      message(paste0("Working on gopair; ", go1, ", ", go2))
+    }
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
     if (!is.na(topoargs$all_go_pairs[go1, go2])) {
@@ -207,6 +218,9 @@
 #' itself and using mean() on the output. The same can be done for Interset
 #' similarity, but between two \strong{different} gene lists. [1]
 #'
+#' @section Notes:
+#' Internal function used in (topo_ic_sim_genes()).
+#'
 #' @param gene_list1 The first gene vector of gene IDs. Note; THIS IS NOT THE
 #' ENSEMBLID. Instead use the gene ID adopted by NCBI.
 #' @param gene_list2 Same type as gene_list1, will be compared to gene_list1.
@@ -234,9 +248,6 @@
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
-    timestart <- Sys.time()
-    print(timestart)
-    
     # set up score matrix in advance
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
     
@@ -250,7 +261,7 @@
     # make a copy of topo arguments to turn off progressbar for genelevel
     topoargs_gen <- topoargs
     topoargs_gen$progress_bar <- F
-    # apply(unique_pairs, 1, function(pair) {
+    
     for (i in seq_len(nrow(unique_pairs))) {
       pair <- unique_pairs[i,]
       if (topoargs$progress_bar) {
@@ -269,7 +280,6 @@
     if (topoargs$progress_bar) {
       cat("\n")
     }
-    print(Sys.time()-timestart)
     return(list(GeneSim=score_matrix, 
                 AllGoPairs = topoargs$all_go_pairs))
 })
@@ -302,11 +312,12 @@
 #' "xenopus".
 #' @param genes1 Gene ID(s) of the first Gene (vector).
 #' @param genes2 Gene ID(s) of the second Gene (vector).
+#' @param verbose set to true for more informative/elaborate output.
 #' @param progress_bar Whether to show the progress of the calculation 
 #' (default = FALSE)
 #' @param garbage_collection whether to do R garbage collection. This is
 #' useful for very large calculations/datasets, as it might decrease ram usage.
-#' This option might however increase calculation time.
+#' This option might however increase calculation time slightly.
 #' @param drop vector of GOID you want to exclude from the analysis.
 #' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. You can add the dataframe from
@@ -321,7 +332,6 @@
 #' be calculated by comparing the same gene vector to itself and using mean() 
 #' on the output. The same can be done for Interset similarity, but between 
 #' two \strong{different} gene vectors (gene vector). ;
-#' 
 #' $AllGoPairs;
 #' All possible GO combinations with their semantic distances (matrix). NAs 
 #' might be present in the matrix, these are GO pairs that didn't occur.
@@ -346,6 +356,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               organism,
                               genes1, 
                               genes2, 
+                              verbose = F,
                               progress_bar = T,
                               garbage_collection = F,
                               drop = NULL,
@@ -353,17 +364,35 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
+  starttime <- Sys.time()
   .topo_ic_sim_argcheck_genes(ontology, organism, genes1, genes2)
   # if everything is ok, start preparing...
-  topoargs <- .prepare_variables_topoicsim(organism, ontology, genes1, genes2, 
-                                           drop, progress_bar, garbage_collection, all_go_pairs)
+  topoargs <- .prepare_variables_topoicsim(organism, 
+                                           ontology, 
+                                           genes1, 
+                                           genes2, 
+                                           drop,
+                                           verbose,
+                                           progress_bar, 
+                                           garbage_collection, 
+                                           all_go_pairs)
   if (length(genes1) == 1 && length(genes2) == 1) {
     # single gene topo
-    return(.topo_ic_sim_g1g2(genes1, genes2, topoargs))
+    if (verbose) {
+      result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)
+    } else {
+      result <- suppressMessages(.topo_ic_sim_g1g2(genes1, genes2, topoargs))    
+    }
   } else {
     # multi gene topo
-    return(.topo_ic_sim_geneset(genes1, genes2, topoargs))
+    if (verbose) {
+      result <- .topo_ic_sim_geneset(genes1, genes2, topoargs)
+    } else {
+      result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))    
+    }
   }
+  if (verbose) {message(Sys.time-starttime)}
+  return(result)
 })
 
 #' GAPGOM - topo_ic_sim_term()
@@ -391,6 +420,9 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' @param go2 GO term of second term.
 #' @return TopoICSim score between the two terms.
 #'
+#' @examples 
+#' result <- topo_ic_sim_term("MF", "human", "GO:0018478", "GO:0047105")
+#'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
@@ -408,11 +440,8 @@ topo_ic_sim_term <- compiler::cmpfun(function(ontology,
                              go2) {
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
-                                           genes1, 
-                                           genes2,
-                                           drop, progress_bar, 
-                                           garbage_collection, 
-                                           all_go_pairs, 
+                                           go1, 
+                                           go2, 
                                            term_only=T)
   return(.topo_ic_sim_titj(go1, go2, topoargs))
 })

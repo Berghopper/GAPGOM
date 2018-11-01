@@ -22,7 +22,7 @@ on the dataset.}
 (Cellular Component). Cellular Component is not included with the package's
 standard data and will thus yield no results.}
 
-\item{copmuteIC}{whether to compute Information Content.}
+\item{computeIC}{whether to compute Information Content.}
 }
 \value{
 return godata as from GoSemSim

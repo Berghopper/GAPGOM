@@ -4,7 +4,7 @@
 \alias{.generate_translation_df}
 \title{GAPGOM internal - .generate_translation_df()}
 \usage{
-.generate_translation_df(expression_set, organism, ontology)
+.generate_translation_df(expression_set, organism, ontology, verbose = F)
 }
 \arguments{
 \item{expression_set}{ExpressionSet object --> see Biobase package.}
@@ -23,6 +23,8 @@ on the dataset.}
 "BP" (Biological process), "MF" (Molecular function) or "CC"
 (Cellular Component). Cellular Component is not included with the package's
 standard data and will thus yield no results.}
+
+\item{verbose}{set to true for more informative/elaborate output.}
 }
 \value{
 return the translation dataframe containing conversion from general 

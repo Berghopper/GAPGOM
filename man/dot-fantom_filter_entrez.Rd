@@ -6,8 +6,12 @@
 \usage{
 .fantom_filter_entrez(fan)
 }
+\arguments{
+\item{fan}{fantom5 data.table/data.frame object}
+}
 \description{
-filter on entrez id with raw fantom5 matrix.
+filter on entrez id with raw fantom5 matrix and only keep rows with entrez 
+ids.
 }
 \section{Notes}{
 

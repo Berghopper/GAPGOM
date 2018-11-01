@@ -100,7 +100,10 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
 
 #' GAPGOM internal - .fantom_filter_entrez()
 #'
-#' filter on entrez id with raw fantom5 matrix.
+#' filter on entrez id with raw fantom5 matrix and only keep rows with entrez 
+#' ids.
+#' 
+#' @param fan fantom5 data.table/data.frame object
 #' 
 #' @section Notes:
 #' This function is an internal function and should not be called by the user.
