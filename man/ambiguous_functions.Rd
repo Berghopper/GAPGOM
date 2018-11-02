@@ -48,3 +48,4 @@ function clauses.
 These functions are internal functions and should not be called by the user.
 }
 
+\keyword{internal}

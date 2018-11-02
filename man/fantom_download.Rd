@@ -30,5 +30,7 @@ This function downloads the whole fantom5 dataset and unpacks it. automatic
 unpacking can be turned off
 }
 \examples{
+\dontrun{
 fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
+}
 }

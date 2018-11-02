@@ -30,3 +30,4 @@ ancestor in the GO DAG given two GO ids.
 Internal functions all used in topo_ic_sim_titj().
 }
 
+\keyword{internal}

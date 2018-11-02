@@ -40,6 +40,7 @@
 #' @param topoargs topoargs list that needs correction, default is a brand new
 #' list
 #' @param term_only specify if you only want arguments/params for TERM level.
+#' @param keytype keytype used in querying of godata
 #' 
 #' @return list with all topoicsim arguments (can differ depending on 
 #' algorithm level gene/geneset/term); organism, ontology, verbose, IC 
@@ -55,6 +56,7 @@
 #' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
+#' @keywords internal
 .prepare_variables_topoicsim <- function(organism, 
                                          ontology, 
                                          gene_list1 = NULL, 
@@ -65,7 +67,8 @@
                                          garbage_collection = NULL,
                                          all_go_pairs = NULL,
                                          topoargs=list(),
-                                         term_only=FALSE) {
+                                         term_only=FALSE,
+                                         keytype="ENTREZID") {
   # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology
@@ -78,9 +81,9 @@
   # go_data --> IC
   if (is.null(topoargs$IC)) {
     if (verbose) {
-      go_data <- .set_go_data(organism = organism, ontology = ontology)
+      go_data <- .set_go_data(organism = organism, ontology = ontology, keytype = keytype)
     } else {
-      go_data <- suppressMessages(.set_go_data(organism = organism, ontology = ontology))  
+      go_data <- suppressMessages(.set_go_data(organism = organism, ontology = ontology, keytype = keytype))  
     }
     topoargs$IC <- go_data@IC
   }
@@ -110,15 +113,19 @@
     topoargs$garbage_collection <- garbage_collection
     
     if (is.null(topoargs$selected_freq_go_pairs)) {
-      topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0("ENTREZ_", 
+      if (keytype == "ENTREZID") {
+        tmpkeytype <- "ENTREZ"
+      } else {
+        tmpkeytype <- keytype
+      }
+      topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0(tmpkeytype, "_", 
                                                                ontology, "_", 
                                                                organism)]]
-      # ADD ID SUPPORT IN FUTURE VERSIONS
     }
     # translation_to_goids
     if (is.null(topoargs$translation_to_goids)) {
       if (is.null(go_data)) {
-        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F)
+        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F, keytype = keytype)
       }
       if (is.null(gene_list1) || is.null(gene_list2)) {
         topoargs$translation_to_goids <- NULL
@@ -141,7 +148,8 @@
                                  topoargs$translation_to_goids$GO))
       topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
                                                                go_unique_list,
-                                                               old_scores = all_go_pairs)
+                                                               old_scores = 
+                                                                 all_go_pairs)
     }
   }
   
@@ -173,11 +181,14 @@
 #' (Cellular Component). Cellular Component is not included with the package's
 #' standard data and will thus yield no results.
 #' @param computeIC whether to compute Information Content.
+#' @param keytype keytype used in querying of godata
 #' 
 #' @return return godata as from GoSemSim
 #' 
 #' @importFrom GOSemSim godata
-.set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T) {
+#' @importFrom AnnotationDbi keytypes
+#' @keywords internal
+.set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keytype="ENTREZID") {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
                     mouse = "org.Mm.eg.db",
@@ -197,7 +208,15 @@
                     rhesus = "org.Mmu.eg.db",
                     pig = "org.Ss.eg.db",
                     xenopus = "org.Xl.eg.db")
-  return(godata(species, ont = ontology, computeIC = computeIC)) #KEYS SUPPORT!
+  # load correct library for GO data to check/show keytypes
+  eval(parse(text=paste0("library(\"",species,"\")")))
+  if (!(keytype %in% keytypes(eval(parse(text=species))))) {
+    stop(paste0("FATAL; SPECIFIED KEYTYPE; \"",
+                keytype,
+                "\" IS NOT AVAILABLE. AVAILABLE KEYTYPES;\n"), 
+         paste0(keytypes(eval(parse(text=species))), collapse = ", "))
+  }
+  return(godata(species, ont = ontology, computeIC = computeIC, keytype = keytype))
 })
 
 ###TOPOICSIM FUNCTIONS
@@ -219,6 +238,7 @@
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
+#' @keywords internal
 .prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2, 
                                                              sparse = F,
                                                              old_scores = F) {
@@ -257,6 +277,7 @@
 #' @param score_matrix score matrix for topoclsim
 #' 
 #' @return Same matrix with correct sets set to 1.
+#' @keywords internal
 .set_identical_items <- compiler::cmpfun(function(score_matrix) {
   # set all matching names of matrix to 1 (Same genes).
   matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
@@ -284,6 +305,7 @@
 #' 
 #' @import data.table
 #' @importFrom plyr .
+#' @keywords internal
 .unique_combos <- compiler::cmpfun(function(v1, v2) {
   intermediate <- unique(CJ(v1, v2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
   return(intermediate[V1 != V2])
@@ -308,6 +330,7 @@
 #' @return The score dataframe with ensmbl ID's
 #' 
 #' @importFrom stats na.omit
+#' @keywords internal
 .prepare_score_df <- compiler::cmpfun(function(original_ids, score, gene_id) {
   # score_df is the 'score' (correlation/metric) dataframe against target gene.
   # combine the dataframe if combine is selected, otherwise just add regular score.

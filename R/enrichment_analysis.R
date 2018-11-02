@@ -53,6 +53,7 @@
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
 #' @importFrom stats phyper p.adjust na.omit
+#' @keywords internal
 .enrichment_analysis <- compiler::cmpfun(function(
                                 ordered_score_df,
                                 id_select_vector,
@@ -152,11 +153,11 @@
 
   term <- Term(qterm_id_to_ext_id[, 1])
   # Create a dataframe containing all results in a neat format.
-  enrichment_dataframe <- data.frame(GOID = go_id, 
-                                     Ontology = ontology,
+  enrichment_dataframe <- data.frame(GOID = as.character(go_id), 
+                                     Ontology = as.character(ontology),
                                      Pvalue = pvalues,
                                      FDR = fdr,
-                                     Term = term)
+                                     Term = as.character(term))
 
   # Omit NA's
   enrichment_dataframe <- na.omit(enrichment_dataframe)
@@ -174,9 +175,3 @@
   
   return(enrichment_dataframe)
 })
-
-
-
-
-
-

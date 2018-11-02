@@ -7,7 +7,7 @@
 .prepare_variables_topoicsim(organism, ontology, gene_list1 = NULL,
   gene_list2 = NULL, drop = NULL, verbose = F, progress_bar = NULL,
   garbage_collection = NULL, all_go_pairs = NULL, topoargs = list(),
-  term_only = FALSE)
+  term_only = FALSE, keytype = "ENTREZID")
 }
 \arguments{
 \item{organism}{where to be scanned genes reside in, this option
@@ -51,6 +51,8 @@ pre-calculation and getting the results back in a fast manner.}
 list}
 
 \item{term_only}{specify if you only want arguments/params for TERM level.}
+
+\item{keytype}{keytype used in querying of godata}
 }
 \value{
 list with all topoicsim arguments (can differ depending on 
@@ -74,3 +76,4 @@ Prepares a list of intermediary arguments/parameters needed by topocisim.
 Internal function used in (topo_ic_sim_genes).
 }
 
+\keyword{internal}

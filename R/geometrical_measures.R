@@ -29,6 +29,7 @@
 #' \emph{Proceedings of the Nineteenth conference on Uncertainty in Artificial
 #' Intelligence; Acapulco Mexico.} Morgan Kaufmann Publishers Inc. 2003: 362-369
 #' @name geometrical_measures
+#' @keywords internal
 NULL
 
 #' @rdname geometrical_measures

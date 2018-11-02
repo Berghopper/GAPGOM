@@ -4,7 +4,8 @@
 \alias{.generate_translation_df}
 \title{GAPGOM internal - .generate_translation_df()}
 \usage{
-.generate_translation_df(expression_set, organism, ontology, verbose = F)
+.generate_translation_df(expression_set, organism, ontology, keytype,
+  verbose = F)
 }
 \arguments{
 \item{expression_set}{ExpressionSet object --> see Biobase package.}
@@ -24,11 +25,13 @@ on the dataset.}
 (Cellular Component). Cellular Component is not included with the package's
 standard data and will thus yield no results.}
 
+\item{keytype}{keytype used in querying of godata/columnnames}
+
 \item{verbose}{set to true for more informative/elaborate output.}
 }
 \value{
 return the translation dataframe containing conversion from general 
-ids to entrez/ensembl ids and goids.
+ids to entrez/ensembl ids (and others) and goids.
 }
 \description{
 This function is an internal function and should not be called by the user.
@@ -42,3 +45,4 @@ for looking up ids and their respective GOIDS.
 Internal function used in expression_prediction_function().
 }
 
+\keyword{internal}

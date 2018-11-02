@@ -25,3 +25,4 @@ Quantifies amount of extracted go terms within the list select top genes.
 Internal function used in enrichment_analysis().
 }
 
+\keyword{internal}

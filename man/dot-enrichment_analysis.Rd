@@ -70,3 +70,4 @@ annotation to calculate similarity scores between GO terms,
 Internal function used in expression_prediction_function().
 }
 
+\keyword{internal}

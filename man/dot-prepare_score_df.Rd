@@ -28,3 +28,4 @@ Prepared score dataframe for the enrichment analysis.
 Internal function used in prediction_function().
 }
 
+\keyword{internal}

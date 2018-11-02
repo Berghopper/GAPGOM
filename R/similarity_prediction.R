@@ -41,6 +41,8 @@
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
 #' @param ncluster Amount of cores you want to run the combined method on. 
 #' Default=1. Does not work for other methods.
+#' @param idtype idtype of the expression_data. If not correctly specified, 
+#' error will specify available IDs. default="ENTREZID"
 #' @param verbose set to true for more informative/elaborate output.
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
@@ -82,11 +84,12 @@ expression_prediction_function <- function(gene_id,
                                 significance = 0.05,
                                 filter_pvals = FALSE,
                                 ncluster = 1,
+                                idtype = "ENTREZID",
                                 verbose = F) {
-  starttime <- Sys.time()
   # prepare the data with some special operations/vars that are needed later
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
+  starttime <- Sys.time()
   
   expression_data_sorted <- expression_set@assayData$exprs[!(rownames(
     expression_set@assayData$exprs) %in% id_select_vector),]
@@ -104,6 +107,7 @@ expression_prediction_function <- function(gene_id,
     expression_set, 
     organism, 
     ontology,
+    idtype,
     verbose)
   
   # make args list for ambiguous functions
@@ -143,10 +147,13 @@ expression_prediction_function <- function(gene_id,
   if (length(enrichment_result) > 0 && nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(1:nrow(enrichment_result))
+    # set all factors to strings.
+    factor_index <- sapply(enrichment_result, is.factor)
+    enrichment_result[factor_index] <- lapply(enrichment_result[factor_index], as.character)
     if (verbose) {
       message("Calculation time (seconds):")
       message(Sys.time()-starttime)
-      }
+    }
     return(enrichment_result)
   } else {
     message("Could not find any similar genes!")
@@ -164,6 +171,7 @@ expression_prediction_function <- function(gene_id,
 #' These functions are internal functions and should not be called by the user.
 #'
 #' @name ambiguous_functions
+#' @keywords internal
 NULL
 
 #' @rdname ambiguous_functions

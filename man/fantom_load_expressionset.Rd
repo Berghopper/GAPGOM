@@ -33,7 +33,9 @@ fantom_to_expset(). The standard annotation columns always need to be kept!
 column(s). This function only accepts the RLE normalized data!
 }
 \examples{
+\dontrun{
 fantom_file <- "./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt"
 expset <- fantom_load_expression_set(fantom_file)
-View(expset)
+View(expset[,1:20])
+}
 }

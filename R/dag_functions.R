@@ -12,6 +12,7 @@
 #' Internal functions all used in topo_ic_sim_titj().
 #'
 #' @name dag_funcs
+#' @keywords internal
 NULL
 
 #' Common Ancestor for two GOIDs

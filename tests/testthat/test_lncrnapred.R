@@ -22,5 +22,6 @@ lncrnapred_test <- function() {
 }
 
 test_that("expression_prediction_function is working", {
+  options(stringsAsFactors = F)
   expect_equal(lncrnapred_test(), lncrnapred_baseresult)
 })

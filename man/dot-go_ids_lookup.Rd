@@ -28,3 +28,4 @@ Looks up goids per id (entrez/ensembl).
 Internal function used in ().
 }
 
+\keyword{internal}

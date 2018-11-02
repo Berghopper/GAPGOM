@@ -7,7 +7,7 @@
 expression_prediction_function(gene_id, expression_set, id_select_vector,
   organism, ontology, enrichment_cutoff = 250, method = "combine",
   significance = 0.05, filter_pvals = FALSE, ncluster = 1,
-  verbose = F)
+  idtype = "ENTREZID", verbose = F)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -51,6 +51,9 @@ will be kept. has to be a float/double between 0-1. Default is 0.05}
 
 \item{ncluster}{Amount of cores you want to run the combined method on. 
 Default=1. Does not work for other methods.}
+
+\item{idtype}{idtype of the expression_data. If not correctly specified, 
+error will specify available IDs. default="ENTREZID"}
 
 \item{verbose}{set to true for more informative/elaborate output.}
 }

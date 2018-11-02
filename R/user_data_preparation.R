@@ -12,8 +12,10 @@
 #' time very large!)
 #' 
 #' @examples 
+#' \dontrun{
 #' ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
 #' verbose=T)
+#' }
 #' @importFrom data.table fread
 #' @export
 fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
@@ -72,9 +74,11 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
 #' ExpressionSet@featureData@data
 #' 
 #' @examples 
+#' \dontrun{
 #' ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
 #' verbose = T)
 #' expset <- fantom_to_expset(ft5, verbose = T)
+#' }
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new
 #' @export
@@ -107,6 +111,7 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
 #' 
 #' @section Notes:
 #' This function is an internal function and should not be called by the user.
+#' @keywords internal
 .fantom_filter_entrez <- compiler::cmpfun(function(fan) {
   return(fan[!(
     is.na(fan$`entrezgene (genes) id associated with the transcript`) | 
@@ -136,9 +141,11 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
 #'  ExpressionSet@featureData@data
 #' 
 #' @examples
+#' \dontrun{
 #' fantom_file <- "./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt"
 #' expset <- fantom_load_expression_set(fantom_file)
-#' View(expset)
+#' View(expset[,1:20])
+#' }
 #' @export
 fantom_load_expressionset <- compiler::cmpfun(function(filepath, 
                                                        filter = T, 
@@ -165,7 +172,9 @@ fantom_load_expressionset <- compiler::cmpfun(function(filepath,
 #' @return The resulting filename/location of the file or NULL if cancelled.
 #' 
 #' @examples
+#' \dontrun{
 #' fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
+#' }
 #' @importFrom GEOquery gunzip
 #' @importFrom utils download.file
 #' @export

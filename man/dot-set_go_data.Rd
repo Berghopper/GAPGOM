@@ -4,7 +4,7 @@
 \alias{.set_go_data}
 \title{GAPGOM internal - set_go_data()}
 \usage{
-.set_go_data(organism, ontology, computeIC = T)
+.set_go_data(organism, ontology, computeIC = T, keytype = "ENTREZID")
 }
 \arguments{
 \item{organism}{where to be scanned genes reside in, this option
@@ -23,6 +23,8 @@ on the dataset.}
 standard data and will thus yield no results.}
 
 \item{computeIC}{whether to compute Information Content.}
+
+\item{keytype}{keytype used in querying of godata}
 }
 \value{
 return godata as from GoSemSim
@@ -39,3 +41,4 @@ little easier)
 Internal function used in multiple functions of topoICSim.
 }
 
+\keyword{internal}

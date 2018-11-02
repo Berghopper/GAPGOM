@@ -27,6 +27,7 @@
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
+#' @keywords internal
 .topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
                                                go_id2,
                                                topoargs) {
@@ -39,36 +40,40 @@
                                         topoargs$go_annotation, topoargs$IC)
   D_ti_tj_x <- NULL
   if (length(common_ancestors) != 0 && !is.na(common_ancestors)) {
+    # prepare subgraphs from two GO terms go_id1 and go_id2
+    sg1 <- subGraph(c(get(go_id1, topoargs$go_annotation), go_id1),
+                    topoargs$weighted_dag)
+    sg1 <- .set_edge_weight(sg1, topoargs$IC)
+    sg1 <- igraph.to.graphNEL(sg1)
+    sg2 <- subGraph(c(get(go_id2, topoargs$go_annotation), go_id2),
+                    topoargs$weighted_dag)
+    sg2 <- .set_edge_weight(sg2, topoargs$IC)
+    sg2 <- igraph.to.graphNEL(sg2)
+    # also prepare goid ics
+    IC_GOID_1 <- topoargs$IC[go_id1][[1]]
+    IC_GOID_2 <- topoargs$IC[go_id2][[1]] 
+    
     D_ti_tj_x <- lapply(common_ancestors, function(x) {
       # To identify all disjunctive common ancestors
       immediate_children_x <- switch(topoargs$ontology,
                                      MF = GOMFCHILDREN[[x]],
                                      BP = GOBPCHILDREN[[x]],
                                      CC = GOCCCHILDREN[[x]])
-      
       if (x != "all" & x != topoargs$root & !is.na(x) &
         length(intersect(immediate_children_x, common_ancestors)) == 0) {
-        # Subgraph from two GO terms go_id1 and go_id2
-        sg1 <- subGraph(c(get(go_id1, topoargs$go_annotation), go_id1),
-                        topoargs$weighted_dag)
-        sg2 <- subGraph(c(get(go_id2, topoargs$go_annotation), go_id2),
-                        topoargs$weighted_dag)
         # Subgraph from a disjunctive common ancestor to root
         sglca <- subGraph(c(get(x, topoargs$go_annotation), x), topoargs$weighted_dag)
         sglca <- .set_edge_weight(sglca, topoargs$IC)
+        
         wLP_x_root <- .longest_path(sglca, x, topoargs$root, topoargs$IC)
-        sg1 <- .set_edge_weight(sg1, topoargs$IC)
-        sg1 <- igraph.to.graphNEL(sg1)
+        
         sp1 <- sp.between(sg1, go_id1, x)
         ic_sp1 <- sp1[[1]]$length
         length_sp1 <- length(sp1[[1]]$path_detail)
-        sg2 <- .set_edge_weight(sg2, topoargs$IC)
-        sg2 <- igraph.to.graphNEL(sg2)
         sp2 <- sp.between(sg2, go_id2, x)
         ic_sp2 <- sp2[[1]]$length
         length_sp2 <- length(sp2[[1]]$path_detail)
-        IC_GOID_1 <- topoargs$IC[go_id1][[1]]
-        IC_GOID_2 <- topoargs$IC[go_id2][[1]]
+        
         if (!is.na(IC_GOID_1) & IC_GOID_1 != 0)
           ic_sp1 <- ic_sp1 + (1/(2 * IC_GOID_1))
         if (!is.na(IC_GOID_2) & IC_GOID_2 != 0)
@@ -117,6 +122,7 @@
 #' \strong{17}(1):296)
 #'
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @keywords internal
 .topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                                gene2,
                                                topoargs) {
@@ -242,6 +248,7 @@
 #' \strong{17}(1):296)
 #' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @keywords internal
 .topo_ic_sim_geneset <- compiler::cmpfun(function(gene_list1,
                                          gene_list2,
                                          topoargs) {
@@ -324,6 +331,7 @@
 #' previous runs to improve performance (only works if the last result has
 #' at least part of the genes of the current run). You can also use it for 
 #' pre-calculation and getting the results back in a fast manner.
+#' @param idtype id type of the genes you specified. default="ENTREZID"
 #'
 #' @return List containing the following;
 #' $GeneSim;
@@ -360,7 +368,8 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               progress_bar = T,
                               garbage_collection = F,
                               drop = NULL,
-                              all_go_pairs = NULL
+                              all_go_pairs = NULL,
+                              idtype="ENTREZID"
                               ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
@@ -375,7 +384,8 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            verbose,
                                            progress_bar, 
                                            garbage_collection, 
-                                           all_go_pairs)
+                                           all_go_pairs, 
+                                           keytype=idtype)
   if (length(genes1) == 1 && length(genes2) == 1) {
     # single gene topo
     if (verbose) {
@@ -391,7 +401,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
       result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))    
     }
   }
-  if (verbose) {message(Sys.time-starttime)}
+  if (verbose) {message(Sys.time()-starttime)}
   return(result)
 })
 

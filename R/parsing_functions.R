@@ -16,11 +16,12 @@
 #' @return return the translation dataframe containing conversion from id to 
 #' goids.
 #' @import data.table
+#' @keywords internal
 .go_ids_lookup <- compiler::cmpfun(function(ids, go_data, drop=NULL) {
   go_gene_anno <- data.table(go_data@geneAnno)
   go_gene_anno <- go_gene_anno[!go_gene_anno$EVIDENCE %in% drop, 1:2]
   
-  go_gene_anno <- unique(go_gene_anno[go_gene_anno$ENTREZID %in% ids,])
+  go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% ids,])
   
   passed_ids <- list()
   go_dfs <- lapply(ids, function(id) {
@@ -53,6 +54,7 @@
 #' @param value value to be set
 #' 
 #' @return return the matrix with newly set items.
+#' @keywords internal
 .set_values <- compiler::cmpfun(function(item1, item2, the_matrix, value) {
   # set opposite pair to the same value if it exists
   if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
@@ -86,6 +88,7 @@
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus". Fantom5 data only has "human" and "mouse" available depending
 #' on the dataset.
+#' @param keytype keytype used in querying of godata/columnnames 
 #' @param ontology desired ontology to use for prediction. One of three;
 #' "BP" (Biological process), "MF" (Molecular function) or "CC"
 #' (Cellular Component). Cellular Component is not included with the package's
@@ -93,84 +96,92 @@
 #' @param verbose set to true for more informative/elaborate output.
 #' 
 #' @return return the translation dataframe containing conversion from general 
-#' ids to entrez/ensembl ids and goids.
+#' ids to entrez/ensembl ids (and others) and goids.
 #' 
 #' @import data.table
+#' @keywords internal
 .generate_translation_df <- compiler::cmpfun(function(expression_set, 
                                                       organism, 
                                                       ontology,
+                                                      keytype,
                                                       verbose = F) {
-  entrezid_col <- .resolve_entrezid_col(expression_set) # add keys support
+  keys_col <- .resolve_keys_col(expression_set, keytype)
   if (verbose) {
-    go_data <- .set_go_data(organism, ontology, computeIC = F)
+    go_data <- .set_go_data(organism, ontology, computeIC = F, keytype = keytype)
   } else {
     go_data <- suppressMessages(.set_go_data(organism, ontology, computeIC = F))
   }
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
-  rm(go_data)
   
   # convert entrez_ids and grab subset of godata (quicker)
-  all_entrezzes <- lapply(expression_set@featureData@data[,entrezid_col], 
-                          function(entrezrawid) {
-                            entrez_split <- unlist(strsplit(entrezrawid, 
+  all_keys <- lapply(expression_set@featureData@data[, keys_col], 
+                          function(rawid) {
+                            ids_split <- unlist(strsplit(rawid, 
                                                             ",|:"), F, F)
-                            entrez_ids <- entrez_split[seq(2, 
-                                                           length(entrez_split), 2)]
-                            return(entrez_ids)
+                            ids <- ids_split[seq(2, length(ids_split), 2)]
+                            return(ids)
                           })
-  all_entrezzes <- unique(unlist(all_entrezzes, F, F))
+  all_keys <- unique(unlist(all_keys, F, F))
   # grab correct go data
-  go_gene_anno <- unique(go_gene_anno[go_gene_anno$ENTREZID %in% 
-                                        all_entrezzes,])
+  go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% 
+                                        all_keys,])
   
   # keep track of row to properly bind main ID
   rowtracker <- 0
   passed_ids <- list()
   
-  entrez_go_dfs <- lapply(expression_set@featureData@data[,entrezid_col], 
-                          function(entrezrawid) {
+  id_go_dfs <- lapply(expression_set@featureData@data[,keys_col], 
+                          function(rawid) {
                             rowtracker <<- rowtracker + 1
-                            entrez_split <- unlist(strsplit(entrezrawid, ",|:"))
-                            entrez_ids <- entrez_split[seq(2, 
-                                                           length(entrez_split), 
-                                                           2)]
+                            ids_split <- unlist(strsplit(rawid, ",|:"))
+                            ids <- ids_split[seq(2, length(ids_split), 2)]
                             
                             # test if id has already occured earlier
-                            goids <- passed_ids[[entrezrawid]]
+                            goids <- passed_ids[[rawid]]
                             if (is.null(goids)) {
-                              goids <- go_gene_anno[go_gene_anno$ENTREZID %in% 
-                                                      entrez_ids,]$GO
+                              goids <- go_gene_anno[go_gene_anno[[1]] %in% 
+                                                      ids,]$GO
                               non_duplicated_goids <- goids[!duplicated(goids)]
-                              passed_ids[[entrezrawid]] <<- 
+                              passed_ids[[rawid]] <<- 
                                 c(non_duplicated_goids)
                             }
                             # check if an output exists, if so return.
                             if (length(goids) != 0){
                               return(CJ(ORIGID=rownames(
                                 expression_set@assayData$exprs)[rowtracker], 
-                                        ENTREZID=entrezrawid, GO=goids))
+                                        ID=rawid, GO=goids))
                             }
                           })
   # bind the results, filter uniques and return.
-  entrez_go_df <- unique(as.data.frame(data.table::rbindlist(entrez_go_dfs)))
-  return(entrez_go_df)
+  id_go_df <- unique(as.data.frame(data.table::rbindlist(id_go_dfs)))
+  return(id_go_df)
 })
 
-#' GAPGOM internal - .resolve_entrez_col() 
+#' GAPGOM internal - .resolve_keys_col() 
 #'
 #' This function is an internal function and should not be called by the user.
 #'
-#' resolves columnname for entrez ids within an expressoin_set
+#' resolves columnname for arbitrary ids within an expression_set
 #' 
 #' @section Notes:
 #' Internal function used in .generate_translation_df().
 #'
 #' @param expression_set ExpressionSet object --> see Biobase package.
+#' @param keytype keytype used in querying of godata
 #' 
-#' @return column name of entrez id
-.resolve_entrezid_col <- compiler::cmpfun(function(expression_set) {
+#' @return column name of id
+#' @keywords internal
+.resolve_keys_col <- compiler::cmpfun(function(expression_set, keytype) {
   colnames_vector <- colnames(expression_set@featureData@data)
-  exp <- regexec(".*entrez.*", colnames_vector)
+  if (keytype == "ENTREZID") {
+    keytype <- "entrez"
+  }
+  # create regex
+  regex_str <- vapply(strsplit(keytype, split="")[[1]], function(x) {
+    return(paste0("[", toupper(x), tolower(x), "]"))}, character(1))
+  regex_str <- paste0(".*", paste0(regex_str, collapse=""), ".*")
+  exp <- regexec(regex_str, colnames_vector)
+  # get result
   regex_result <- unlist(regmatches(colnames_vector, exp), F, F)
   if (length(regex_result) < 1) {
     return(NULL)
@@ -194,6 +205,7 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
+#' @keywords internal
 .ext_id_to_term_id <- compiler::cmpfun(function(data, list_top_genes) {
   # add 1 for each go that is in list top genes.
   dtdata <- as.data.table(data)
@@ -217,8 +229,8 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
+#' @keywords internal
 .term_id_to_ext_id <- compiler::cmpfun(function(data) {
   dtdata <- as.data.table(data)
   return(as.data.frame(dtdata[, .N, by=GO]))
 })
-

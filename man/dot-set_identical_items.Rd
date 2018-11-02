@@ -23,3 +23,4 @@ Sets identical items within a score matrix, the similarity will always be 1.
 Internal function used in various topoclsim algorithms.
 }
 
+\keyword{internal}

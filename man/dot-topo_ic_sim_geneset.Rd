@@ -49,3 +49,4 @@ Internal function used in (topo_ic_sim_genes()).
 similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 \strong{17}(1):296)
 }
+\keyword{internal}

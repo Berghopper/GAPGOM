@@ -6,7 +6,7 @@
 \usage{
 topo_ic_sim_genes(ontology, organism, genes1, genes2, verbose = F,
   progress_bar = T, garbage_collection = F, drop = NULL,
-  all_go_pairs = NULL)
+  all_go_pairs = NULL, idtype = "ENTREZID")
 }
 \arguments{
 \item{ontology}{desired ontology to use for similarity calculations.
@@ -44,6 +44,8 @@ representing similarity between the two. You can add the dataframe from
 previous runs to improve performance (only works if the last result has
 at least part of the genes of the current run). You can also use it for 
 pre-calculation and getting the results back in a fast manner.}
+
+\item{idtype}{id type of the genes you specified. default="ENTREZID"}
 }
 \value{
 List containing the following;

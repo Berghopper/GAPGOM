@@ -23,3 +23,4 @@ Quantifies amount of total extracted go terms
 Internal function used in enrichment_analysis().
 }
 
+\keyword{internal}

@@ -26,3 +26,4 @@ Generates unique combinations of two vectors
 Internal function used in various topoclsim algorithms.
 }
 
+\keyword{internal}

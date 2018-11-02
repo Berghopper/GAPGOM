@@ -30,3 +30,4 @@ Prepared score dataframe for the semantic measures
 Internal function used in multiple functions of topoICSim.
 }
 
+\keyword{internal}

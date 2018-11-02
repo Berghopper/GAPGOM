@@ -17,13 +17,17 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Support for all AnnotationDbi Key types
 - Vignette for GAPGOM.*
 - Vignette for benchmarks/performance measuring.*
-- term algorithm as exported function.
+- Term algorithm as exported function.
 ### Changed
 - topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
+- Documentation and comments (again)
 - argument parsing for topoicsim
 - some tests (topoicsim)
 ### Removed
 ### Fixed
+- documentation of internal functions is now hidden.
+- `data-raw` missing in `.Rbuildignore`.
+- `R CMD check` failing because of different lncRNApred results in factor indices. Fixed by converting unnecesary factors to chars.
 
 ## [0.2.0 - Polished Potato] - 2018-10-20
 ### Added
