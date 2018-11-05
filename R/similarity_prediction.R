@@ -287,11 +287,18 @@ NULL
                        .predict_sobolev, .predict_fisher)
   cl <- makeCluster(args$ncluster)
   registerDoParallel(cl)
-  combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind'
-                                 ) %dopar% {
+  combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind') %dopar% {
     return(method(args))
   }
   stopCluster(cl)
+  
+  # apply for non-parallel testing purposes
+  # combined_enrichment <<-
+  #   lapply(predict_methods, function(method) {
+  #   return(method(args))
+  #     })
+  # combined_enrichment <- do.call("rbind", combined_enrichment)
+
   if (length(combined_enrichment) == 0) {
     return(combined_enrichment)
   }

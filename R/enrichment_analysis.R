@@ -68,7 +68,6 @@
   # expression data rows. 
   extracted_genes <- id_translation_df[!(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
-
   # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
   # List of gene ontologies given the Extracted genes that are in the top
@@ -79,7 +78,11 @@
                                     list_top_genes), 3]
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
-
+  
+  if (dim(extracted_genes)[1] == 0 || dim(extracted_genes)[2] == 0) {
+    return(data.frame()) # return empty dataframe if there's no extracted genes.
+  } 
+  
   # Count the amount of genes with the same GO ID and quantify them.
   term_id_to_ext_id <- .term_id_to_ext_id(extracted_genes)
   # set the column name to Freq Anno. (This was broken before.)

@@ -34,35 +34,7 @@ The main interface for expression data as of right now is the fantom5 data, usin
 
 ### ID support
 
-As of v0.2.2, only EntrezIDs are supported.* Meaning that, if you want to use other ID types, you have to convert them manually. For this I recommend the `BiomaRt` package. Translating IDs to other types is lossy and don't always translate well. 
-
-*=Because of this, other IDs will be supported in the future, but for right now it's only Entrez. List of IDs that will be supported but are not yet;
-
--"ACCNUM"
--"ALIAS"
--"ENSEMBL"
--"ENSEMBLPROT"
--"ENSEMBLTRANS"
--"ENZYME"
--"EVIDENCE"
--"EVIDENCEALL"  
--"GENENAME"
--"GO"
--"GOALL"
--"IPI"
--"MAP"
--"OMIM"
--"ONTOLOGY"
--"ONTOLOGYALL"
--"PATH"
--"PFAM"
--"PMID"
--"PROSITE"
--"REFSEQ"
--"SYMBOL"
--"UCSCKG"
--"UNIGENE"
--"UNIPROT"  
+As of v0.2.7 and up, all [AnnotationDbi]() IDs should be supported. However, we recommend usage of `EntrezID`s because this is the most widely supported ID in this and other packages. If you find issues in regards to ID support, please notify this issue on the package repository. If you have/want to convert IDs manually, the `BiomaRt` package is recommended. However, translating IDs to other types is lossy and doesn't always translate well.
 
 ### FANTOM5
 
@@ -75,7 +47,9 @@ Because loading expression data right now is a bit limited, this paragraph will 
 Minimal requirement for an `ExpressionSet`;
 
 - expression values
-- Unique IDs of a certain type. See ID support.
+- Unique IDs of a certain type. AnnotationDbi keys are the only IDs that are supported right now.
+
+Each row of expression values should have corresponding IDs, with the ID-type as its columnname.
 
 Random expression value generation;
 
@@ -85,16 +59,31 @@ go_data <- GAPGOM:::.set_go_data("human", "BP", computeIC = F)
 random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep uniques
 
 # make general dataframe. 
-expressions <- data.frame(random_ids, dimnames(list("ID",seq(length(random_ids)))))
+expressions <- data.frame(random_ids)
+colnames(expressions) <- "ENTREZID"
 expressions$ID
 
 # n expression values depending on the amount of unique IDs that are present
-expressionvalues <- abs(rnorm(10000))*10000
+expressionvalues <- abs(rnorm(length(random_ids)*6))*10000
+expressions[,2:7] <- expressionvalues
+View(expressions)
 ```
 
 Converting the expression dataframe to an ExpressionSet;
 
 ```{r, eval=F}
+expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
+rownames(expression_matrix) <- expressions$ENTREZID
+featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
+rownames(featuredat) <- expressions$ENTREZID # because they will be the rownames anyway.
+expset <- ExpressionSet(expression_matrix, 
+                        featureData = new("AnnotatedDataFrame", 
+                        data=featuredat))
+
+# To see how it is structured;
+View(expset)
+View(expset@assayData$exprs) # where expressionvalues are stored.
+View(expset@featureData@data) # where other information is stored.
 ```
 
 ## lncRNApred

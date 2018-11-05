@@ -115,12 +115,7 @@
   
   # convert entrez_ids and grab subset of godata (quicker)
   all_keys <- lapply(expression_set@featureData@data[, keys_col], 
-                          function(rawid) {
-                            ids_split <- unlist(strsplit(rawid, 
-                                                            ",|:"), F, F)
-                            ids <- ids_split[seq(2, length(ids_split), 2)]
-                            return(ids)
-                          })
+                     .entrezraw_to_entrez)
   all_keys <- unique(unlist(all_keys, F, F))
   # grab correct go data
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% 
@@ -133,10 +128,9 @@
   id_go_dfs <- lapply(expression_set@featureData@data[,keys_col], 
                           function(rawid) {
                             rowtracker <<- rowtracker + 1
-                            ids_split <- unlist(strsplit(rawid, ",|:"))
-                            ids <- ids_split[seq(2, length(ids_split), 2)]
-                            
-                            # test if id has already occured earlier
+                            rawid <- as.character(rawid)
+                            ids <- .entrezraw_to_entrez(rawid)
+                            # test if id has already occurred earlier
                             goids <- passed_ids[[rawid]]
                             if (is.null(goids)) {
                               goids <- go_gene_anno[go_gene_anno[[1]] %in% 
@@ -233,4 +227,39 @@
 .term_id_to_ext_id <- compiler::cmpfun(function(data) {
   dtdata <- as.data.table(data)
   return(as.data.frame(dtdata[, .N, by=GO]))
+})
+
+#' GAPGOM internal - .entrezraw_to_entrez()
+#'
+#' This function is an internal function and should not be called by the user.
+#'
+#' Converts a raw ID from fantom data to a normal ID.
+#'
+#' @section Notes:
+#' Internal function used in enrichment_analysis().
+#'
+#' @param rawid Raw entrez id. E.G.; entrez:23456
+#' 
+#' @return return the normal ID
+#' 
+#' @keywords internal
+.entrezraw_to_entrez <- compiler::cmpfun(function(rawid) {
+  rawid <- as.character(rawid)
+  
+  # first check if the id is raw at all.
+  regex_str <- "[Ee][Nn][Tt][Rr][Ee][Zz][Gg][Ee][Nn][Ee]:\\d*,?"
+  exp <- regexec(regex_str, rawid)
+  # get result
+  regex_result <- unlist(regmatches(rawid, exp), F, F)
+  # check if raw id
+  if (length(regex_result) > 0) {
+    # regex match!
+    ids_split <- unlist(strsplit(rawid, 
+                                 ",|:"), F, F)
+    ids <- ids_split[seq(2, length(ids_split), 2)] 
+  } else {
+    # in any other case, or where the id is not entrez, return the input.
+    ids <- rawid
+  }
+  return(ids)
 })
