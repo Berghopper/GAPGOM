@@ -88,7 +88,7 @@ View(expset@featureData@data) # where other information is stored.
 
 ## lncRNApred
 
-The lncRNApred of `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
+The lncRNApred (long non-coding RNA prediction) or `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
 
 ### Sobolev metric
 
@@ -124,6 +124,38 @@ $\mid\mid f\mid\mid_{2,k,1}^S = \sqrt{\sum_{j=1}^{N-1}(1+\omega_j)^k\mid \hat{f}
 In this work metric (5) with norm (7) and $k=1$ was used.
 
 ### Fisher metric
+
+In this section we use definitions and notations such as in [3]. To define Fisher information metric we first introduce the n-simplex $P_n$ defined by
+
+</br>
+$P_n=\{x\in R^{n+1}:\forall i, x_n \ge0,\sum_{i=1}^{n+1}xi=1\}$        (8)
+
+</br>
+The coordinates $\{x_i\}$ describe the probability of observing different outcomes in a single experiment (or expressino value of a gene in $i$th cell type). The Fisher information metric on $P_n$ can be defined by
+
+</br>
+$Jij = \sum_{k=1}^{n+1}\frac{1}{x_k}\frac{\partial x_k}{\partial x_i}\frac{\partial x_k}{\partial x_j}$        (9)
+
+</br>
+We now define a well-known representation of the Fisher information as a pull-back metric from the positive n-sphere $S_n^+$
+
+</br>
+$S_n^+=\{x\in R^n;\forall i,x_n\ge0,\sum_{i=1}^{n+1}x^2=1\}$        (10)
+
+</br>
+The transformation $T: P_n\to S_n^+$ defined by
+
+</br>
+$T(x)=(\sqrt{x_1}, \dots, \sqrt{x_n+1})$         (11)
+
+</br>
+pulls back the Euclidean metric on the surface of the sphere to the Fisher information on the multinomial simplex. Actually, the geodesic distance for $x,y \in P_n$ under the Fisher information metric may be defined by measuring the length og the great circle on $S_n^+$ between $T(x)$ and $T(y)$
+
+</br>
+$d(x,y) = acos(\sum_{i=1}^{n+1}\sqrt{x_iy_i})$        (12)
+
+</br>
+The lncRNApred method can also be used on other novel genes besides lncRNAs.
 
 ## TopoICSim
 
