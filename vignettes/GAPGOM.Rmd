@@ -40,7 +40,7 @@ As of v0.2.7 and up, all [AnnotationDbi]() IDs should be supported. However, we 
 
 As of right now, the package only has 1 main dataset for expression data; The Fantom5 dataset. There are a few helper functions to make this data usable. The Fantom5 dataset is only available for the human and mouse genome.
 
-### Manually specifying `ExpressionSet`s
+### Manually specifying an `ExpressionSet`
 
 Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. I will give an example with randomly generated expression values and IDs.
 
@@ -88,13 +88,49 @@ View(expset@featureData@data) # where other information is stored.
 
 ## lncRNApred
 
+The lncRNApred of `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
+
+### Sobolev metric
+
+In this section, we use definitions and notations as in [2]. We start with the usual p-inner product. Let $f$, $g$ be real-valued functions (in this case $f$ and $g$ values are the expression vectors of two genes $f$ and $g$):
+
+</br>
+$\langle f,g\rangle_{p} = (\sum_{k=1}^{n}\mid f_k.g_k\mid^p)^\frac{1}{p}$        (2)
+
+</br>
+By this notation, Sobolev inner product, norm and meter of degree $k$ respectively can be defined by:
+
+
+$\langle f,g\rangle_{p,a}^{S} = \langle f,g\rangle_p+\alpha\langle D^kf,D^kg\rangle_p$        (3)
+
+</br>
+$\mid\mid f\mid\mid_{p,k,\alpha}^S = \sqrt{\langle f,f\rangle_{p,\alpha}^S}$        (4)
+
+</br>
+$d_{p,k,\alpha}^S(f,g) = \mid\mid f-g\mid\mid_{p,k,\alpha}^S$        (5)
+
+</br>
+where $D^k$ is the $k$th differential operator. For the special case $p=2$ and $\alpha=1$ an interesting connection to the Fourier-transform of analysis can be made; let $\hat{f}$ be the Fourier-transform $f$
+
+</br>
+$\hat{f}(\omega_k) = \sum_{j=1}^{N-1}g_jexp(-i\frac{2\pi kj}{N})$        (6)
+
+</br>
+Where $\omega_k=\frac{2\pi k}{N}$ and $i=\sqrt{-1}$. Finally the norm can be written as
+
+</br>
+$\mid\mid f\mid\mid_{2,k,1}^S = \sqrt{\sum_{j=1}^{N-1}(1+\omega_j)^k\mid \hat{f}(\omega_j)\mid^2}$        (7) 
+
+In this work metric (5) with norm (7) and $k=1$ was used.
+
+### Fisher metric
 
 ## TopoICSim
 
 
 ## Parrallel processing and big data
 
-As of right now, parallel processing is only supported for the `"combined"` method of lncRNApred. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported for other algorithms as well. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work.
+As of right now, parallel processing is only supported for the `combined` method of lncRNApred. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported for other algorithms as well. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work.
 
 ## Other algorithms and performance
 

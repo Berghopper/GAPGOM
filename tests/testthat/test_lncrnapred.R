@@ -13,7 +13,7 @@ lncrnapred_test <- function() {
   # set an artbitrary gene you want to find similarities for. (5th row in this
   # case)
   gid <- rownames(ft5_example_data@assayData$exprs)[5]
-  return(GAPGOM::expression_prediction_function(gid, 
+  return(GAPGOM::expression_prediction(gid, 
                                          GAPGOM::ft5_example_data, 
                                          sort_list, 
                                          "mouse", 

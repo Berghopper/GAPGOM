@@ -1,4 +1,4 @@
-#' GAPGOM - expression_prediction_function()
+#' GAPGOM - expression_prediction()
 #'
 #' Predicts annotation of un-annotated genes based on existing
 #' Gene Ontology annotation data and correlated expression patterns.
@@ -65,7 +65,7 @@
 #' # set an artbitrary gene you want to find similarities for. (5th row in this
 #' # case)
 #' gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
-#' result <- GAPGOM::expression_prediction_function(gid, 
+#' result <- GAPGOM::expression_prediction(gid, 
 #'                                        GAPGOM::ft5_example_data, 
 #'                                        sort_list, 
 #'                                        "mouse", 
@@ -74,7 +74,7 @@
 #' @importFrom plyr ddply .
 #' @import Biobase
 #' @export
-expression_prediction_function <- function(gene_id,
+expression_prediction <- function(gene_id,
                                 expression_set,
                                 id_select_vector,
                                 organism,
@@ -91,6 +91,7 @@ expression_prediction_function <- function(gene_id,
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
+  gene_id <- as.character(gene_id)
   expression_data_sorted <- expression_set@assayData$exprs[!(rownames(
     expression_set@assayData$exprs) %in% id_select_vector),]
   #if(expression_data_sorted)
