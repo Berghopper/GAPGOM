@@ -109,7 +109,7 @@
   if (verbose) {
     go_data <- .set_go_data(organism, ontology, computeIC = F, keytype = keytype)
   } else {
-    go_data <- suppressMessages(.set_go_data(organism, ontology, computeIC = F))
+    go_data <- suppressMessages(.set_go_data(organism, ontology, computeIC = F, keytype = keytype))
   }
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
   
