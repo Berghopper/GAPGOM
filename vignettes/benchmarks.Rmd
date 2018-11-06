@@ -4,7 +4,7 @@ author: "Casper Peters"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Benchmarks and other GO similarity methods}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -308,7 +308,7 @@ times_term <- times
 mems_term <- mem_usages
 ```
 
-```{r, fig.width=3, fig.height=3}
+```{r, fig.width=3, fig.height=3, eval=FALSE}
 times_term_df <- data.frame(GAPGOM:::benchmarks$server_times_term, 
                           GAPGOM:::benchmarks$laptop_times_term, 
                           seq_len(105)
@@ -325,7 +325,7 @@ ggplot(times_term_df_melted, aes(x=machine, y=milliseconds, colour=machine)) +
 
 The term algorithm seems to largely complete within 500ms, with ~1500ms being the max. The median is around ~100 ms, so most calculations last about that long, they also last at least 100ms it seems.
 
-```{r, fig.width=3, fig.height=3}
+```{r, fig.width=3, fig.height=3, eval=FALSE}
 mems_term_df <- data.frame(GAPGOM:::benchmarks$server_mems_term, 
                           GAPGOM:::benchmarks$laptop_mems_term, 
                           seq_len(105)
@@ -346,7 +346,7 @@ The RAM usage is a bit more peculiar, there's more outliers for the server and t
 
 To measure how the gene level algorithm performs with random genes, we will sample 10 random gene-pairs to test on it.
 
-```{r, eval=FALSE}
+```{r, eval=FALSE, eval=FALSE}
 # sample(unique(go_data@geneAnno$ENTREZID), 5)
 random_genes <- c("3848", "2824", "65108", "3988", "10800")
 
