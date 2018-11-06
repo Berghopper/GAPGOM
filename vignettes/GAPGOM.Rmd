@@ -25,9 +25,9 @@ When using GAPGOM, please cite the following;
 
 ## Introduction
 
-GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package containing various tools and algorithms for semantic distance/comparison calculations and various other measures. This package has been specifically made to predict annotation of gene functions of unkown gene(s). This is done by comparing them to other known genes (guilt by association), and basing analysis on correlated data.
+GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package containing various tools and algorithms for semantic distance/comparison calculations and various other measures. This package has been specifically made to predict annotation of gene functions of unkown gene(s). This is done by comparing them to other known genes (guilt by association), and basing analysis on correlated data. As well as making use of the GO (Gene Ontology) consortium via the `GOSemSim` package. GO consists of three main Ontologies; molecular function (MF), biological process (BP) and celllar component (CC).
 
-In GAPGOM, two main semantic measurement algorithms are available; TopoICSim and lncRNApred. TopoICSim is GO topology based, while lncRNApred is based on expression value distances.
+In GAPGOM, two main semantic measurement algorithms are available; TopoICSim and lncRNApred. TopoICSim is GO (Gene Ontology) topology based, while lncRNApred is based on expression value semantic distances.
 The main interface for expression data as of right now is the fantom5 data, using Bioconductors `ExpressionSet` class. All algorithms are dependent on the GO consortium and thus use GOSemSim for loading GO data.
 
 ## Expression data interfaces
@@ -56,7 +56,8 @@ Random expression value generation;
 ```{r, eval=F}
 # select 10000 random IDs
 go_data <- GAPGOM:::.set_go_data("human", "BP", computeIC = F)
-random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep uniques
+random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep 
+# uniques
 
 # make general dataframe. 
 expressions <- data.frame(random_ids)
@@ -74,8 +75,11 @@ Converting the expression dataframe to an ExpressionSet;
 ```{r, eval=F}
 expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
 rownames(expression_matrix) <- expressions$ENTREZID
-featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
-rownames(featuredat) <- expressions$ENTREZID # because they will be the rownames anyway.
+featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides 
+# expressionvalues (preferably you don't even need to include the IDs themselves 
+# here!)
+rownames(featuredat) <- expressions$ENTREZID # because they will be the rownames
+# anyway.
 expset <- ExpressionSet(expression_matrix, 
                         featureData = new("AnnotatedDataFrame", 
                         data=featuredat))
@@ -95,32 +99,33 @@ The lncRNApred (long non-coding RNA prediction) or `expression_prediction()` use
 In this section, we use definitions and notations as in [2]. We start with the usual p-inner product. Let $f$, $g$ be real-valued functions (in this case $f$ and $g$ values are the expression vectors of two genes $f$ and $g$):
 
 </br>
-$\langle f,g\rangle_{p} = (\sum_{k=1}^{n}\mid f_k.g_k\mid^p)^\frac{1}{p}$        (2)
+<p style="margin:0;display:inline;float:left">$\langle f,g\rangle_{p} = (\sum_{k=1}^{n}\mid f_k.g_k\mid^p)^\frac{1}{p}$</p> <p style="margin:0;display:inline;float:right">(2)</p>
 
-</br>
+</br></br>
 By this notation, Sobolev inner product, norm and meter of degree $k$ respectively can be defined by:
 
 
-$\langle f,g\rangle_{p,a}^{S} = \langle f,g\rangle_p+\alpha\langle D^kf,D^kg\rangle_p$        (3)
+<p style="margin:0;display:inline;float:left">$\langle f,g\rangle_{p,a}^{S} = \langle f,g\rangle_p+\alpha\langle D^kf,D^kg\rangle_p$</p> <p style="margin:0;display:inline;float:right">(3)</p>
 
-</br>
-$\mid\mid f\mid\mid_{p,k,\alpha}^S = \sqrt{\langle f,f\rangle_{p,\alpha}^S}$        (4)
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$\mid\mid f\mid\mid_{p,k,\alpha}^S = \sqrt{\langle f,f\rangle_{p,\alpha}^S}$</p> <p style="margin:0;display:inline;float:right">(4)</p>
 
-</br>
-$d_{p,k,\alpha}^S(f,g) = \mid\mid f-g\mid\mid_{p,k,\alpha}^S$        (5)
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$d_{p,k,\alpha}^S(f,g) = \mid\mid f-g\mid\mid_{p,k,\alpha}^S$</p> <p style="margin:0;display:inline;float:right">(5)</p>
 
-</br>
+</br></br>
 where $D^k$ is the $k$th differential operator. For the special case $p=2$ and $\alpha=1$ an interesting connection to the Fourier-transform of analysis can be made; let $\hat{f}$ be the Fourier-transform $f$
 
 </br>
-$\hat{f}(\omega_k) = \sum_{j=1}^{N-1}g_jexp(-i\frac{2\pi kj}{N})$        (6)
+<p style="margin:0;display:inline;float:left">$\hat{f}(\omega_k) = \sum_{j=1}^{N-1}g_jexp(-i\frac{2\pi kj}{N})$</p> <p style="margin:0;display:inline;float:right">(6)</p>
 
-</br>
+</br></br>
 Where $\omega_k=\frac{2\pi k}{N}$ and $i=\sqrt{-1}$. Finally the norm can be written as
 
 </br>
-$\mid\mid f\mid\mid_{2,k,1}^S = \sqrt{\sum_{j=1}^{N-1}(1+\omega_j)^k\mid \hat{f}(\omega_j)\mid^2}$        (7) 
+<p style="margin:0;display:inline;float:left">$\mid\mid f\mid\mid_{2,k,1}^S = \sqrt{\sum_{j=1}^{N-1}(1+\omega_j)^k\mid \hat{f}(\omega_j)\mid^2}$</p> <p style="margin:0;display:inline;float:right">(7)</p>
 
+</br></br>
 In this work metric (5) with norm (7) and $k=1$ was used.
 
 ### Fisher metric
@@ -128,36 +133,135 @@ In this work metric (5) with norm (7) and $k=1$ was used.
 In this section we use definitions and notations such as in [3]. To define Fisher information metric we first introduce the n-simplex $P_n$ defined by
 
 </br>
-$P_n=\{x\in R^{n+1}:\forall i, x_n \ge0,\sum_{i=1}^{n+1}xi=1\}$        (8)
+<p style="margin:0;display:inline;float:left">$P_n=\{x\in R^{n+1}:\forall i, x_n \ge0,\sum_{i=1}^{n+1}xi=1\}$</p> <p style="margin:0;display:inline;float:right">(8)</p>
 
-</br>
+</br></br>
 The coordinates $\{x_i\}$ describe the probability of observing different outcomes in a single experiment (or expressino value of a gene in $i$th cell type). The Fisher information metric on $P_n$ can be defined by
 
 </br>
-$Jij = \sum_{k=1}^{n+1}\frac{1}{x_k}\frac{\partial x_k}{\partial x_i}\frac{\partial x_k}{\partial x_j}$        (9)
+<p style="margin:0;display:inline;float:left">$Jij = \sum_{k=1}^{n+1}\frac{1}{x_k}\frac{\partial x_k}{\partial x_i}\frac{\partial x_k}{\partial x_j}$</p> <p style="margin:0;display:inline;float:right">(9)</p>
 
-</br>
+</br></br>
 We now define a well-known representation of the Fisher information as a pull-back metric from the positive n-sphere $S_n^+$
 
 </br>
-$S_n^+=\{x\in R^n;\forall i,x_n\ge0,\sum_{i=1}^{n+1}x^2=1\}$        (10)
+<p style="margin:0;display:inline;float:left">$S_n^+=\{x\in R^n;\forall i,x_n\ge0,\sum_{i=1}^{n+1}x^2=1\}$</p> <p style="margin:0;display:inline;float:right">(10)</p>
 
-</br>
+</br></br>
 The transformation $T: P_n\to S_n^+$ defined by
 
 </br>
-$T(x)=(\sqrt{x_1}, \dots, \sqrt{x_n+1})$         (11)
+<p style="margin:0;display:inline;float:left">$T(x)=(\sqrt{x_1}, \dots, \sqrt{x_n+1})$</p> <p style="margin:0;display:inline;float:right">(11)</p>
 
-</br>
+</br></br>
 pulls back the Euclidean metric on the surface of the sphere to the Fisher information on the multinomial simplex. Actually, the geodesic distance for $x,y \in P_n$ under the Fisher information metric may be defined by measuring the length og the great circle on $S_n^+$ between $T(x)$ and $T(y)$
 
 </br>
-$d(x,y) = acos(\sum_{i=1}^{n+1}\sqrt{x_iy_i})$        (12)
+<p style="margin:0;display:inline;float:left">$d(x,y) = acos(\sum_{i=1}^{n+1}\sqrt{x_iy_i})$</p> <p style="margin:0;display:inline;float:right">(12)</p>
 
-</br>
+</br></br>
 The lncRNApred method can also be used on other novel genes besides lncRNAs.
 
 ## TopoICSim
+
+TopoICSim or Topological Information Content Similarity, is a method to measure the similarity between two GO terms given the information content and topology of the GO DAG tree. Unlike other similar measures, it considers both the shortest **and** longest DAG paths between two terms. Not just the longest or shortest path(s). The paths along the GO DAG tree get weighted with the information content between two terms.
+
+For the information content the following forumla is used;
+
+<p style="margin:0;display:inline;float:left">$IC(t) = -logp(t)$
+
+</br></br>
+Where $t$ is the (GO) term. The IC is calculated by GOSemSim.
+
+</br>
+A GO tree can be described as a triplet $\Lambda=(G,\Sigma,R)$, where $G$ is the set of GO terms, $\Sigma$ is the set of hierarchical relations between GO terms (mostly defined as *is_a* or *part_of*) [4], and $R$ is a triplet $(t_i, t_j, \xi)$, where $t_i,t_j\in G$ and $\xi\in R$ and $t_i\xi t_j$. The $\xi$ relationship is an oriented child-parent relation. Top level node of the GO rDAG is the Root, which is a direct parent of the MF, BP and CC nodes. These nodes are called aspect-specific roots and we refer to them as root in the following. 
+A path $P$ of length $n$ between two terms $t_i,t_j$ can be defined as in (23).
+
+</br>
+<p style="margin:0;display:inline;float:left">$P:G\times G\to G\times G\dots\times G=G^{n+1};\\P(t_i,t_j) = (t_i,t_j+1,\dots,t_j)$</p> <p style="margin:0;display:inline;float:right">(23)</p>
+
+</br></br></br></br>
+Here $\forall$ $s$, $i\le s<j$, $\exists\xi_s\in \Sigma$, $\exists\tau_s\in R$, $r_s=(t_s,t_{s+1}, \xi_s)$. Because $G$ is an rDAG, there might be multiple paths between two terms, so we represent all paths between two terms $t_i,t_j$ according to (24).
+
+</br>
+<p style="margin:0;display:inline;float:left">$\mathcal{A}(t_i,t_j)=\underset{P}{\cup}P(t_i,t_j)$</p> <p style="margin:0;display:inline;float:right">(24)</p>
+
+</br></br>
+We use Inverse Information Content (IIC) values to define shortest and longest paths for two given terms $t_i,t_j$ as show in (25-27).
+
+</br>
+<p style="margin:0;display:inline;float:left">$SP(t_i,t_j) = \underset{P\in (t_i,t_j)}{argminIIC(P)}$</p> <p style="margin:0;display:inline;float:right">(25)</p>
+
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$LP(t_i,t_j) = \underset{P\in A(t_i,t_j)}{argmaxIIC(P)}$</p> <p style="margin:0;display:inline;float:right">(26)</p>
+
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$IIC(P) = \sum_{t\in P}\frac{1}{IC(t)}$</p> <p style="margin:0;display:inline;float:right">(27)</p>
+
+</br></br>
+The standard definition was used to calculate $IC(t)$ as shown in (28)
+
+</br>
+<p style="margin:0;display:inline;float:left">$IC(t) = -log\frac{G_t}{G_\mathrm{Tot}}$</p> <p style="margin:0;display:inline;float:right">(28)</p>
+
+</br></br>
+Here $G_t$ is the number of genes annotated by the term $t$ and $G_\mathrm{Tot}$ is the total number of genes. The distribution of *IC* is not uniform in the *rDAG*, so it is possible to have two paths with different lengths but with same *IIC*s. To overcome this problem we weight paths by their lengths, so the definitions in (25) and (26) can be updated according to (29) and (30).
+
+</br>
+<p style="margin:0;display:inline;float:left">$wSP(t_i,t_j)=SP(t_i,t_j)\times len(P)$</p> <p style="margin:0;display:inline;float:right">(29)</p>
+
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$wLP(t_i,t_j)=LP(t_i,t_j)\times len(P)$</p> <p style="margin:0;display:inline;float:right">(30)</p>
+
+</br></br>
+Now let $ComAnc(t_i,t_j)$ be the set of all common ancestors for two given terms $(t_i,t_j)$. First we define the disjuntive common ancestors as a subset of $ComAnc(t_i,t_j)$ as in (31).
+
+</br>
+<p style="margin:0;display:inline;float:left">$DisComAnc(t_i,t_j) = \{x\in ComAnc(t_i,t_j)\mid P(x, root)\cap C(x)=\varnothing\}$</p> <p style="margin:0;display:inline;float:right">(31)</p>
+
+</br></br>
+Here $P(x,root)$ is the path between $x$ and $root$ and $C(x)$ is set of all immediate children for $x$. For each disjuntive common ancestor $x$ in $DisComAnc(t_i,t_j)$, we define the distance between $t_i,t_j$ as the ratio of the weighted shortest path between $t_i,t_j$ which passes from $x$ to the weighted longest path between $x$ and $root$, as in (32-33).
+
+</br>
+<p style="margin:0;display:inline;float:left">$D(t_i,t_j,x) = \frac{wSP(t_i,t_j,x)}{wLP(x,root)}$</p> <p style="margin:0;display:inline;float:right">(32)</p>
+
+</br></br></br>
+
+<p style="margin:0;display:inline;float:left">$wSP(t_i,t_j,x) = wSP(t_i,x)+wSP(t_j,x)$</p> <p style="margin:0;display:inline;float:right">(33)</p>
+
+</br></br>
+Now the distance for two terms $t_i,t_j$ can be defined according to (34).
+
+</br>
+<p style="margin:0;display:inline;float:left">$D(t_i,t_j)=\underset{x\in DisComAnc(t_i,t_j)}{min}D(t_i,t_j,x)$</p> <p style="margin:0;display:inline;float:right">(34)</p>
+
+</br></br>
+We convert distance values by the $\frac{Arctan(.)}{\pi/2}$ function, and the  measure for two GO terms $t_i$ and $t_j$ can be defined as in (35). 
+
+</br>
+<p style="margin:0;display:inline;float:left">$S(t_i,t_j) = 1-\frac{Arcatan(D(t_i,t_j))}{\pi/2}$</p> <p style="margin:0;display:inline;float:right">(35)</p>
+
+</br></br>
+Note that $root$ refers to one of three first levels in the rDAG. So if $DisComAnc(t_i,t_j)=\{root\}$ then $D(t_i,t_j)=\infty$ and $S(t_i,t_j)=0$. Also if $t_i = t_j$ then $D(t_i,t_j)=0$ and $S(t_i,t_j)=1$. Finally let $S=[s_{ij}]_{n\times m}$ be a similarity matrix for two given fenes or gene products $g1, g2$ with GO terms $t_{11},t_{12},\dots,t_{1n}$ and $t_{21},t_{12},\dots,t_{2m}$ where $s_{ij}$ is the similarity between the GO terms $t_{1i}$ and $t_{2j}$. We used a *rcmax* method to calculate similarity between $g1, g2$, as defined in (36).
+
+</br>
+<p style="margin:0;display:inline;float:left">$\begin{aligned}TopoICSim(g_1,g_2)&=rcmax(S)\\&=rcmax(\frac{\sum_{i=1}^n\underset{j}{maxs_{ij}}}{n},\frac{\sum_{i=1}^m\underset{i}{maxs_{ij}}}{m})\end{aligned}$</p> <p style="margin:0;display:inline;float:right">(36)</p>
+
+</br></br></br></br></br>
+
+We also tested other methods on the similarity matrix, in particular average and BMA, but in general $rcmax$ gave the best performance for TopoICSim (data not shown).
+
+
+Besides all this, there's also an algorithm for the geneset level, you can calculate interset/intraset similarities of these with (13) and (14). Or simply use R's `sum` on the resulting matrix.
+
+</br>
+<p style="margin:0;display:inline;float:left">$IntraSetSim(S_k)=\frac{\sum_{i=1}^n\sum_{j=1}^mSim(g_{ki},g_{kj})}{n^2}$</p> <p style="margin:0;display:inline;float:right">(13)</p>
+
+</br></br></br>
+<p style="margin:0;display:inline;float:left">$InterSetSim(S_k)=\frac{\sum_{i=1}^n\sum_{j=1}^mSim(g_{ki},g_{kj})}{n\times m}$</p> <p style="margin:0;display:inline;float:right">(14)</p>
+
+</br></br></br>
+(13) is equal to (14) in the specific case of comparing the geneset to itself.
 
 
 ## Parrallel processing and big data
