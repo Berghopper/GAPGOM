@@ -3,6 +3,7 @@ title: "An Introduction to GAPGOM"
 author: "Finn Drabløs, Rezvan Ehsani and Casper Peters"
 date: "`r Sys.Date()`"
 output: 
+  # rmarkdown::html_vignette:
   prettydoc::html_pretty:
     theme: cayman
     toc: true
@@ -10,11 +11,10 @@ output:
     highlight: vignette
     copmressed_css: true
     code_folding: none
-  # rmarkdown::html_vignette:
 vignette: >
   %\VignetteIndexEntry{An Introduction to GAPGOM}
   %\VignetteEncoding{UTF-8}
-  %\VignetteEngine{prettydoc::html_pretty}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r setup, include = FALSE}

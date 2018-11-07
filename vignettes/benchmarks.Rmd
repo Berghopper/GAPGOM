@@ -13,7 +13,7 @@ output:
     code_folding: none
 vignette: >
   %\VignetteIndexEntry{Benchmarks and other GO similarity methods}
-  %\VignetteEngine{prettydoc::html_pretty}
+  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -24,7 +24,9 @@ knitr::opts_chunk$set(
 )
 ```
 
-Neccesary libraries:
+## Introduction
+
+### Neccesary libraries
 
 ```{r load_libs, warning = F, message = F, include = T}
 ## install ppipre seperately! (INtelliGO)
@@ -40,17 +42,19 @@ library(ggplot2)
 library(reshape2)
 ```
 
-Benchmarks are an important part of getting to know how fast algorithms performs and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. 
+### Background
 
-Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Molecular Function or MF ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
+Benchmarks are an important part of getting to know how fast algorithms perform and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. 
+
+Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
 
 Besides this, results have been pre-calculated and come with the package, as otherwise calculations times wouldn't be reasonable nor accurate. For some reasons running a vignette build takes longer than evaluating normal R code... All code blocks used to generate the results are included however.
 
-The benchmarks have been run on two systems ; A laptop and a bigger server. Both with the following specs (obtained with `cat /proc/cpuinfo` & `cat /proc/meminfo`);
+The benchmarks have been run on two systems; A laptop and a bigger server. Both with the following specs (obtained with `cat /proc/cpuinfo` & `cat /proc/meminfo`):
 
-- Laptop;
+- **Laptop**
 
-CPU;
+CPU:
 ```
 processor	: 3
 vendor_id	: GenuineIntel
@@ -79,7 +83,7 @@ cache_alignment	: 64
 address sizes	: 39 bits physical, 48 bits virtual
 power management:
 ```
-Memory;
+Memory:
 ```
 MemTotal:        8071404 kB
 MemFree:          978056 kB
@@ -131,9 +135,9 @@ DirectMap2M:     7077888 kB
 DirectMap1G:     2097152 kB
 ```
 
-- Server;
+- **Server**
 
-CPU;
+CPU:
 ```
 processor	: 31
 vendor_id	: GenuineIntel
@@ -161,7 +165,7 @@ cache_alignment	: 64
 address sizes	: 46 bits physical, 48 bits virtual
 power management:
 ```
-Memory;
+Memory:
 ```
 MemTotal:       264108916 kB
 MemFree:        66614704 kB
@@ -208,9 +212,9 @@ DirectMap2M:     5005312 kB
 DirectMap1G:    265289728 kB
 ```
 
-All processes are singlecore. (Some functions might be mutli-threadable however)
+**All processes are singlecore.** (Some functions might be mutli-threadable however)
 
-## lncRNApred (`expression_prediction_function`)
+## lncRNApred `expression_prediction`
 
 Since lncRNApred is based on expression values, we'll use the standard example that is included with the pacakge to make life easier. This algorithm should be linear depending on how many expression values you add. This will however not be shown because the actual calculations on the expression data are actually very fast. The main thing that slows down this algorithm is querying the GO terms and attaching them to the correct ID for the results.
 
@@ -252,6 +256,8 @@ mem <- max(p$x$message$prof$memalloc)
 ```
 
 The laptop took about ~5 seconds to complete the calculations, while the server took ~9 seconds. The most time is wasted in finding GO calculations.
+
+There is also the `expression_semantic_scoring` function, this only calculates scores. This is not included in the benchmarks however because it is also done within `expression_prediction`.
 
 ## TopoICSim
 
