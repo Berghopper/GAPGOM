@@ -3,7 +3,6 @@ title: "An Introduction to GAPGOM"
 author: "Finn Drabløs, Rezvan Ehsani and Casper Peters"
 date: "`r Sys.Date()`"
 output: 
-  # rmarkdown::html_vignette:
   prettydoc::html_pretty:
     theme: cayman
     toc: true
@@ -11,16 +10,20 @@ output:
     highlight: vignette
     copmressed_css: true
     code_folding: none
+  # rmarkdown::html_vignette:
 vignette: >
   %\VignetteIndexEntry{An Introduction to GAPGOM}
-  %\VignetteEngine{prettydoc::html_pretty}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{prettydoc::html_pretty}
 ---
 
 ```{r setup, include = FALSE}
+library(knitr)
+library(kableExtra)
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  error = F
 )
 ```
 
@@ -112,7 +115,7 @@ View(expset@featureData@data) # where other information is stored.
 
 ### Background
 
-The lncRNApred (long non-coding RNA prediction) or `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
+The lncRNApred (long non-coding RNA prediction) or `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard/specific to this package, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
 
 #### Sobolev metric
 
@@ -203,35 +206,44 @@ result <- GAPGOM::expression_prediction(gid,
                                        sort_list, 
                                        "mouse", 
                                        "BP", filter_pvals = T)
-knitr::kable(result[(nrow(result)-10):nrow(result),])
+kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
-Here we display the 10 last rows of the results. You can see the results has 6 columns;
+Here we display the results, you can see that it has 6 columns;
 
 - `GOID`
 
 Describing the significantly similar GO terms
 
 - `Ontology`
-
 Describing the ontology of the result.
-
 - `Pvalue`
-
 The P-value/significance of the result.
-
 - `FDR`
-
 bonferoni normalized P-value
-
 - `Term`
-
 The description of the GO term.
-
 - `used_method`
-
 Used scoring method for getting the result.
 
+There is also another algorithm that allows you to just calculate scores and skip the enrichment;
+
+```{r lncrnapredscoreonly}
+result <- GAPGOM::expression_semantic_scoring(gid, 
+                                       GAPGOM::ft5_example_data)
+kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+```
+
+We can see that this function returns a different dataframe;
+
+- `original_ids`
+The identifier of the gene expression row
+- `score`
+The semantic similarity score/correlation calculated by one of the methods.
+- `used_method`
+The used method used to calculate the score.
+
+The rownames also represent the gene expression row
 
 ## TopoICSim
 
@@ -336,24 +348,26 @@ Besides all this, there's also an algorithm for the geneset level, you can calcu
 </br></br></br>
 (13) is equal to (14) in the specific case of comparing the geneset to itself.
 
-All forumulas/explenations are quoted from the paper (references edited). [5]
+All forumulas/explanations are quoted from the paper (references edited). [5]
 
 ### Examples
 
 The following example uses the [pfam clan gene set](https://pfam.xfam.org/family/PF00171) to measure intraset similarity. For the single gene, `EntrezID` 218 and 501 are compared.
 
 ```{r TopoICSim}
-result <- GAPGOM::topo_ic_sim_genes("218", "501", ont="MF", organism="human", 
+library(graph)
+library(igraph)
+result <- GAPGOM::topo_ic_sim_genes("MF", "human", "218", "501",
                                    drop=NULL, progress_bar = F)
-knitr::kable(result$AllGoPairs)
+kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 result$GeneSim
 # genelist mode
 list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 "222","8659","501","64577","223","217","4329","10840","7915")
 result <- GAPGOM::topo_ic_sim_genes(list1, list1, ont="MF", organism="human", 
                               drop=NULL, progress_bar = F)
-knitr::kable(result$AllGoPairs)
-knitr::kable(result$GeneSim)
+kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+kable(result$GeneSim) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 mean(result$GeneSim)
 ```
 
@@ -361,7 +375,7 @@ Here we can see the output of TopoICsim, it is a list containg 2 items;
 
 - `AllGoPairs`
 
-The $n\times m$ matrix of GO terms including their similarities. Some values might be NA because these were non-occuring pairs. You can add this to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in neccesary results).
+The $n\times m$ matrix of GO terms including their similarities. Some values might be NA because these were non-occuring pairs. You can add `AllGoPairs` to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in occuring pairs).
 
 - `GeneSim`
 
@@ -373,7 +387,7 @@ As of right now, parallel processing is only supported for the `combined` method
 
 ## Other algorithms and performance
 
-While other algorithms exist, they are not neccesarily included in the package directly. The performance of this package is however well tested in the Benchmarks vignette, in which other algorithms are also touched upon/compared.
+While other algorithms exist, they are not neccesarily included in the package directly. The performance of this package is however well tested in the [Benchmarks vignette](benchmarks.html), in which other algorithms are also touched upon/compared.
 
 ## Contact and support
 

@@ -390,7 +390,6 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  View(topoargs)
   if (length(genes1) == 1 && length(genes2) == 1) {
     # single gene topo
     if (verbose) {
