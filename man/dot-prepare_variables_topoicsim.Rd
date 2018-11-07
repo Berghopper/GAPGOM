@@ -7,7 +7,7 @@
 .prepare_variables_topoicsim(organism, ontology, gene_list1 = NULL,
   gene_list2 = NULL, drop = NULL, verbose = F, progress_bar = NULL,
   garbage_collection = NULL, all_go_pairs = NULL, topoargs = list(),
-  term_only = FALSE, keytype = "ENTREZID")
+  term_only = FALSE, keytype = "ENTREZID", go_data = NULL)
 }
 \arguments{
 \item{organism}{where to be scanned genes reside in, this option
@@ -53,6 +53,9 @@ list}
 \item{term_only}{specify if you only want arguments/params for TERM level.}
 
 \item{keytype}{keytype used in querying of godata}
+
+\item{go_data}{prepared go_data, from the set_go_data function. It is
+practically the same as in GOSemSim, but with a slightly nicer interface.}
 }
 \value{
 list with all topoicsim arguments (can differ depending on 

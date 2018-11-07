@@ -7,7 +7,7 @@
 expression_prediction(gene_id, expression_set, id_select_vector, organism,
   ontology, enrichment_cutoff = 250, method = "combine",
   significance = 0.05, filter_pvals = FALSE, ncluster = 1,
-  idtype = "ENTREZID", verbose = F)
+  idtype = "ENTREZID", verbose = F, id_translation_df = NULL)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -56,6 +56,9 @@ Default=1. Does not work for other methods.}
 error will specify available IDs. default="ENTREZID"}
 
 \item{verbose}{set to true for more informative/elaborate output.}
+
+\item{id_translation_df}{df with translations between ID and GOID. col1 = ID,
+col2 = GOID.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.

@@ -44,6 +44,8 @@
 #' @param idtype idtype of the expression_data. If not correctly specified, 
 #' error will specify available IDs. default="ENTREZID"
 #' @param verbose set to true for more informative/elaborate output.
+#' @param id_translation_df df with translations between ID and GOID. col1 = ID,
+#' col2 = GOID.
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -85,11 +87,13 @@ expression_prediction <- function(gene_id,
                                 filter_pvals = FALSE,
                                 ncluster = 1,
                                 idtype = "ENTREZID",
-                                verbose = F) {
-  # prepare the data with some special operations/vars that are needed later
+                                verbose = F, 
+                                id_translation_df = NULL) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
+  
+  # prepare the data with some special operations/vars that are needed later
   
   gene_id <- as.character(gene_id)
   expression_data_sorted <- expression_set@assayData$exprs[!(rownames(
@@ -104,13 +108,15 @@ expression_prediction <- function(gene_id,
   if (verbose) {
     message("Looking up GO terms...")
   }
-  id_translation_df <- .generate_translation_df(
-    expression_set, 
-    organism, 
-    ontology,
-    idtype,
-    verbose)
   
+  if (is.null(id_translation_df)) {
+    id_translation_df <- .generate_translation_df(
+      expression_set, 
+      organism, 
+      ontology,
+      idtype,
+      verbose)
+  }
   # make args list for ambiguous functions
   args <- list(
     "gene_id" = gene_id,
@@ -176,12 +182,12 @@ expression_prediction <- function(gene_id,
 NULL
 
 #' @rdname ambiguous_functions
-.ambiguous_scorecalc <- compiler::cmpfun(function(args, applyfunc) {
+.ambiguous_scorecalc <- compiler::cmpfun(function(args, expression_data, applyfunc) {
   # apply the score calculation function
-  score <- apply(args$expression_data_sorted,
+  score <- apply(expression_data,
                        1, applyfunc)
-  # prepare and format a datafrane to return
-  score_df <- .prepare_score_df(args$expression_data_sorted_ids, score, 
+  # prepare and format a dataframe to return
+  score_df <- .prepare_score_df(rownames(expression_data), score, 
                                 args$gene_id)
   return(score_df)
 })
@@ -215,23 +221,23 @@ NULL
 })
 
 #' @rdname ambiguous_functions
-.ambiguous_method_origin <- compiler::cmpfun(function(enrichment_result, 
+.ambiguous_method_origin <- compiler::cmpfun(function(df, 
                                                      methodname) {
   # add used_method column
-  if (length(enrichment_result) != 0) {
-    enrichment_result[, "used_method"] <- rep(
-      methodname, nrow(enrichment_result))
+  if (length(df) != 0) {
+    df[, "used_method"] <- rep(
+      methodname, nrow(df))
   }
-  return(enrichment_result)
+  return(df)
 })
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
 .predict_pearson <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
+  score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, function(x) abs(cor(
     as.numeric(x), args$target_expression_data)))
   enrichment_result <- .ambiguous_enrichment(args,
-                                            .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "pearson")
   return(enrichment_result)
 })
@@ -239,10 +245,10 @@ NULL
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
 .predict_spearman <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
+  score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "spearman")))
   enrichment_result <- .ambiguous_enrichment(args,
-                                            .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "spearman")
   return(enrichment_result)
 })
@@ -250,30 +256,30 @@ NULL
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
 .predict_kendall <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, function(x) abs(cor(
+  score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, function(x) abs(cor(
     as.numeric(x), args$target_expression_data, method = "kendall")))
   enrichment_result <- .ambiguous_enrichment(args,
-                                            .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "kendall")
   return(enrichment_result)
 })
 
 #' @rdname ambiguous_functions
 .predict_fisher <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, function(x) fisher_metric(
+  score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, function(x) fisher_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- .ambiguous_enrichment(args,
-                                            .ambiguous_score_sort(score_df))
+                                             .ambiguous_score_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "fisher")
   return(enrichment_result)
 })
 
 #' @rdname ambiguous_functions
 .predict_sobolev <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, function(x) sobolev_metric(
+  score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, function(x) sobolev_metric(
     as.numeric(x), args$target_expression_data))
   enrichment_result <- .ambiguous_enrichment(args,
-                                            .ambiguous_score_sort(score_df))
+                                             .ambiguous_score_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "sobolev")
   return(enrichment_result)
 })
@@ -286,19 +292,19 @@ NULL
   # Run enrichment for each method
   predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, 
                        .predict_sobolev, .predict_fisher)
-  cl <- makeCluster(args$ncluster)
-  registerDoParallel(cl)
-  combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind') %dopar% {
-    return(method(args))
-  }
-  stopCluster(cl)
+  # cl <- makeCluster(args$ncluster)
+  # registerDoParallel(cl)
+  # combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind') %dopar% {
+  #   return(method(args))
+  # }
+  # stopCluster(cl)
   
   # apply for non-parallel testing purposes
-  # combined_enrichment <<-
-  #   lapply(predict_methods, function(method) {
-  #   return(method(args))
-  #     })
-  # combined_enrichment <- do.call("rbind", combined_enrichment)
+  combined_enrichment <<-
+    lapply(predict_methods, function(method) {
+    return(method(args))
+      })
+  combined_enrichment <- do.call("rbind", combined_enrichment)
 
   if (length(combined_enrichment) == 0) {
     return(combined_enrichment)

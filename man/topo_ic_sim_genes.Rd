@@ -6,7 +6,7 @@
 \usage{
 topo_ic_sim_genes(ontology, organism, genes1, genes2, verbose = F,
   progress_bar = T, garbage_collection = F, drop = NULL,
-  all_go_pairs = NULL, idtype = "ENTREZID")
+  all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL)
 }
 \arguments{
 \item{ontology}{desired ontology to use for similarity calculations.
@@ -46,6 +46,9 @@ at least part of the genes of the current run). You can also use it for
 pre-calculation and getting the results back in a fast manner.}
 
 \item{idtype}{id type of the genes you specified. default="ENTREZID"}
+
+\item{go_data}{prepared go_data, from the set_go_data function. It is
+practically the same as in GOSemSim, but with a slightly nicer interface.}
 }
 \value{
 List containing the following;

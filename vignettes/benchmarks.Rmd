@@ -2,10 +2,18 @@
 title: "Benchmarks and other GO similarity methods"
 author: "Casper Peters"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  # rmarkdown::html_vignette:
+  prettydoc::html_pretty:
+    theme: cayman
+    toc: true
+    toc_depth: 4
+    highlight: vignette
+    copmressed_css: true
+    code_folding: none
 vignette: >
   %\VignetteIndexEntry{Benchmarks and other GO similarity methods}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{prettydoc::html_pretty}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -34,7 +42,7 @@ library(reshape2)
 
 Benchmarks are an important part of getting to know how fast algorithms performs and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. 
 
-Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
+Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Molecular Function or MF ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
 
 Besides this, results have been pre-calculated and come with the package, as otherwise calculations times wouldn't be reasonable nor accurate. For some reasons running a vignette build takes longer than evaluating normal R code... All code blocks used to generate the results are included however.
 
@@ -202,8 +210,6 @@ DirectMap1G:    265289728 kB
 
 All processes are singlecore. (Some functions might be mutli-threadable however)
 
-
-
 ## lncRNApred (`expression_prediction_function`)
 
 Since lncRNApred is based on expression values, we'll use the standard example that is included with the pacakge to make life easier. This algorithm should be linear depending on how many expression values you add. This will however not be shown because the actual calculations on the expression data are actually very fast. The main thing that slows down this algorithm is querying the GO terms and attaching them to the correct ID for the results.
@@ -250,7 +256,7 @@ The laptop took about ~5 seconds to complete the calculations, while the server 
 ## TopoICSim
 
 
-There's three algorithms in the GAPGOM package in regards to TopoICSim; One on term level (`.topo_ic_sim_titj`), one on gene level (`topo_ic_sim_g1g2`) and one on geneset level (`topo_ic_sim`).
+There's three algorithms in the GAPGOM package in regards to TopoICSim; One on term level (`topo_ic_sim_term`), one on gene level (`topo_ic_sim_genes`) and one on geneset level (also `topo_ic_sim_genes`).
 Because it is slightly difficult to determine which GOs are attributes of which genes, random genes will be sampled for testing some of the algorithms. The same goes for all GOs, as their path lookup might be different as well.
 
 Prepare GO data for random data selection, topoICSim term calculation and some other neccesary variables.
@@ -259,19 +265,10 @@ Prepare GO data for random data selection, topoICSim term calculation and some o
 # prepare the godata for mouse and some other calculations later needed in benchmarking
 organism <- "human"
 ontology <- "BP"
-go_data <- GAPGOM:::.set_go_data(organism, ontology)
-# Initial definitions and sets based on organism and ontology type
-xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
-                     BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
-
-go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
-                        CC = GOCCANCESTOR)
-
-root <- switch(ontology, MF = "GO:0003674", BP = "GO:0008150",
-               CC = "GO:0005575")
-weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
-IC <- go_data@IC
+go_data <- GAPGOM::set_go_data(organism, ontology)
 ```
+
+Since go data does not neccesarily need to be prepared for functions, real use cases might be slower if it isn't prepared.
 
 ### TopoICSim - Term level
 
@@ -279,14 +276,14 @@ To get a good baseline of the underlying algorithm, multiple combinations of pai
 
 ```{r topotitj, eval=FALSE}
 # grab 15 random GOs (for term algorithm)
-# sample(unique(go_data@geneAnno$GO), 15)
+## sample(unique(go_data@geneAnno$GO), 15)
 random_gos <- c("GO:0030177", "GO:0001771", "GO:0045715", "GO:0044330", "GO:0098780", 
 "GO:1901006", "GO:0061143", "GO:0060025", "GO:0015695", "GO:0090074", 
 "GO:0035445", "GO:0008595", "GO:1903634", "GO:1903826", "GO:0048389"
 )
 # print them for reproducability
-dput(random_gos)
-# now compare all unique random GO pairs. (105 uniques)
+## dput(random_gos)
+# now compare all unique random GO pairs. (105 uniques).
 unique_pairs <- GAPGOM:::.unique_combos(random_gos, random_gos)
 
 times <- c()
@@ -296,7 +293,7 @@ for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i]
     go1 <- pair[[1]]
     go2 <- pair[[2]]
-    GAPGOM:::.topo_ic_sim_titj(go1, go2, ontology, organism, weighted_dag, go_annotation, root, IC)
+    GAPGOM::topo_ic_sim_term(ontology, organism, go1, go2, go_data = go_data)
   })
   time <- max(prof_toptitj$x$message$prof$time)*10
   mem <- max(prof_toptitj$x$message$prof$memalloc)
@@ -308,7 +305,7 @@ times_term <- times
 mems_term <- mem_usages
 ```
 
-```{r, fig.width=3, fig.height=3, eval=FALSE}
+```{r, fig.width=3, fig.height=3}
 times_term_df <- data.frame(GAPGOM:::benchmarks$server_times_term, 
                           GAPGOM:::benchmarks$laptop_times_term, 
                           seq_len(105)
@@ -325,7 +322,7 @@ ggplot(times_term_df_melted, aes(x=machine, y=milliseconds, colour=machine)) +
 
 The term algorithm seems to largely complete within 500ms, with ~1500ms being the max. The median is around ~100 ms, so most calculations last about that long, they also last at least 100ms it seems.
 
-```{r, fig.width=3, fig.height=3, eval=FALSE}
+```{r, fig.width=3, fig.height=3}
 mems_term_df <- data.frame(GAPGOM:::benchmarks$server_mems_term, 
                           GAPGOM:::benchmarks$laptop_mems_term, 
                           seq_len(105)
@@ -347,7 +344,7 @@ The RAM usage is a bit more peculiar, there's more outliers for the server and t
 To measure how the gene level algorithm performs with random genes, we will sample 10 random gene-pairs to test on it.
 
 ```{r, eval=FALSE, eval=FALSE}
-# sample(unique(go_data@geneAnno$ENTREZID), 5)
+## dput(sample(unique(go_data@geneAnno$ENTREZID), 5))
 random_genes <- c("3848", "2824", "65108", "3988", "10800")
 
 unique_pairs <- GAPGOM:::.unique_combos(random_genes, random_genes)
@@ -359,7 +356,7 @@ for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i]
     gene1 <- pair[[1]]
     gene2 <- pair[[2]]
-    GAPGOM::topo_ic_sim_g1g2(gene1, gene2, ontology, organism)
+    GAPGOM::topo_ic_sim_genes(ontology, organism, gene1, gene2, go_data=go_data)
   })
   time <- max(prof_topg1g2$x$message$prof$time)*10
   mem <- max(prof_topg1g2$x$message$prof$memalloc)
@@ -420,7 +417,7 @@ for (i in seq(length(list1)-1)) {
   sampled_list <- list1[1:(i+1)]
   print(sampled_list)
   p <- profvis({
-     GAPGOM::topo_ic_sim(list1, list1, ont=ontology, organism=organism, drop=NULL)
+     GAPGOM::topo_ic_sim_genes(ontology, organism, sampled_list, sampled_list, drop=NULL, go_data=go_data)
    })
   time <- max(p$x$message$prof$time)*10
   mem <- max(p$x$message$prof$memalloc)

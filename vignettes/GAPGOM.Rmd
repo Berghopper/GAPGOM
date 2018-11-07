@@ -13,7 +13,7 @@ output:
     code_folding: none
 vignette: >
   %\VignetteIndexEntry{An Introduction to GAPGOM}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{prettydoc::html_pretty}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -76,7 +76,7 @@ Random expression value generation;
 
 ```{r randvals, eval=F}
 # select 10000 random IDs
-go_data <- GAPGOM:::.set_go_data("human", "BP", computeIC = F)
+go_data <- GAPGOM::set_go_data("human", "BP", computeIC = F)
 random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep 
 # uniques
 
@@ -108,7 +108,7 @@ View(expset@assayData$exprs) # where expressionvalues are stored.
 View(expset@featureData@data) # where other information is stored.
 ```
 
-## lncRNApred
+## lncRNApred (expression similarity)
 
 ### Background
 

@@ -332,6 +332,8 @@
 #' at least part of the genes of the current run). You can also use it for 
 #' pre-calculation and getting the results back in a fast manner.
 #' @param idtype id type of the genes you specified. default="ENTREZID"
+#' @param go_data prepared go_data, from the set_go_data function. It is
+#' practically the same as in GOSemSim, but with a slightly nicer interface.
 #'
 #' @return List containing the following;
 #' $GeneSim;
@@ -369,7 +371,8 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               garbage_collection = F,
                               drop = NULL,
                               all_go_pairs = NULL,
-                              idtype="ENTREZID"
+                              idtype = "ENTREZID",
+                              go_data = NULL
                               ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
@@ -385,7 +388,9 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            progress_bar, 
                                            garbage_collection, 
                                            all_go_pairs, 
-                                           keytype=idtype)
+                                           keytype = idtype,
+                                           go_data = go_data)
+  View(topoargs)
   if (length(genes1) == 1 && length(genes2) == 1) {
     # single gene topo
     if (verbose) {
@@ -428,6 +433,9 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' "xenopus".
 #' @param go1 GO term of first term.
 #' @param go2 GO term of second term.
+#' @param go_data prepared go_data, from the set_go_data function. It is
+#' practically the same as in GOSemSim, but with a slightly nicer interface.
+#' 
 #' @return TopoICSim score between the two terms.
 #'
 #' @examples 
@@ -447,11 +455,13 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 topo_ic_sim_term <- compiler::cmpfun(function(ontology,
                              organism,
                              go1, 
-                             go2) {
+                             go2,
+                             go_data = NULL) {
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
                                            go1, 
                                            go2, 
-                                           term_only=T)
+                                           term_only=T,
+                                           go_data = go_data)
   return(.topo_ic_sim_titj(go1, go2, topoargs))
 })

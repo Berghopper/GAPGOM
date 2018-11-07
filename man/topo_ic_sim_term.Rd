@@ -4,7 +4,7 @@
 \alias{topo_ic_sim_term}
 \title{GAPGOM - topo_ic_sim_term()}
 \usage{
-topo_ic_sim_term(ontology, organism, go1, go2)
+topo_ic_sim_term(ontology, organism, go1, go2, go_data = NULL)
 }
 \arguments{
 \item{ontology}{desired ontology to use for similarity calculations.
@@ -25,6 +25,9 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 \item{go1}{GO term of first term.}
 
 \item{go2}{GO term of second term.}
+
+\item{go_data}{prepared go_data, from the set_go_data function. It is
+practically the same as in GOSemSim, but with a slightly nicer interface.}
 }
 \value{
 TopoICSim score between the two terms.

@@ -34,7 +34,7 @@
   weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
   tmp_godat <- GAPGOM:::.set_go_data(organism, onto, computeIC = T)
   geneanno <- data.table(tmp_godat@geneAnno)
-  counted <- geneanno[unique(geneanno[[1]]), .N, by=GO, on=.(ENTREZID)] # ENSEMBL --> ID SUPPORT IN LATER VERSIONS!!!
+  counted <- geneanno[unique(geneanno[[1]]), .N, by=GO, on=.(ENTREZID)]
   top_100_gos <- counted[rev(order(counted$N)),][1:amount,][[1]]
   scores <- GAPGOM:::.prepare_score_matrix_topoicsim(top_100_gos, top_100_gos, sparse=T)
   IC <-tmp_godat@IC

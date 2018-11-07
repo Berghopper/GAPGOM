@@ -15,14 +15,19 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 ### Added
 - Re-added data which lncRNApred's paper is based on.*
 - Support for all AnnotationDbi Key types
-- Vignette for GAPGOM.*
+- Vignette for GAPGOM.
 - Vignette for benchmarks/performance measuring.*
 - Term algorithm as exported function.
+- Set go data as exported function
+- some frequently used params can now be set manually (go_data, All_Go_pairs)
+- seperate scoring function (If people want to do their own enrichment/only get semantic similarity scores.)
 ### Changed
+- data preparation functions, they are now updated and more clear.
 - topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
-- Documentation and comments (again)
-- argument parsing for topoicsim
-- some tests (topoicsim)
+- Documentation and comments (again).
+- argument parsing for topoicsim.
+- some tests (topoicsim).
+- used arguments in both algorithms.
 ### Removed
 ### Fixed
 - documentation of internal functions is now hidden.

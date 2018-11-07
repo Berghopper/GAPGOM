@@ -41,6 +41,8 @@
 #' list
 #' @param term_only specify if you only want arguments/params for TERM level.
 #' @param keytype keytype used in querying of godata
+#' @param go_data prepared go_data, from the set_go_data function. It is
+#' practically the same as in GOSemSim, but with a slightly nicer interface.
 #' 
 #' @return list with all topoicsim arguments (can differ depending on 
 #' algorithm level gene/geneset/term); organism, ontology, verbose, IC 
@@ -66,9 +68,10 @@
                                          progress_bar = NULL, 
                                          garbage_collection = NULL,
                                          all_go_pairs = NULL,
-                                         topoargs=list(),
-                                         term_only=FALSE,
-                                         keytype="ENTREZID") {
+                                         topoargs = list(),
+                                         term_only = FALSE,
+                                         keytype = "ENTREZID",
+                                         go_data = NULL) {
   # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology
@@ -81,9 +84,13 @@
   # go_data --> IC
   if (is.null(topoargs$IC)) {
     if (verbose) {
-      go_data <- .set_go_data(organism = organism, ontology = ontology, keytype = keytype)
+      if (is.null(go_data)) {
+        go_data <- set_go_data(organism = organism, ontology = ontology, keytype = keytype)
+      }
     } else {
-      go_data <- suppressMessages(.set_go_data(organism = organism, ontology = ontology, keytype = keytype))  
+      if (is.null(go_data)) {
+        go_data <- suppressMessages(set_go_data(organism = organism, ontology = ontology, keytype = keytype))  
+      }
     }
     topoargs$IC <- go_data@IC
   }
@@ -125,7 +132,7 @@
     # translation_to_goids
     if (is.null(topoargs$translation_to_goids)) {
       if (is.null(go_data)) {
-        go_data <- .set_go_data(organism = organism, ontology = ontology, computeIC = F, keytype = keytype)
+        go_data <- set_go_data(organism = organism, ontology = ontology, computeIC = F, keytype = keytype)
       }
       if (is.null(gene_list1) || is.null(gene_list2)) {
         topoargs$translation_to_goids <- NULL
@@ -157,12 +164,10 @@
 }
 
 
-#' GAPGOM internal - set_go_data()
-#' 
-#' This function is an internal function and should not be called by the user.
+#' GAPGOM - set_go_data()
 #'
-#' Set GO data (this function purely makes choosing Bioconductor datasets a 
-#' little easier)
+#' Sets GO data like GOSemSim (this function purely makes choosing datasets a 
+#' little easier and prints available keytypes if specified incorrectly.)
 #'
 #' @section Notes:
 #' Internal function used in multiple functions of topoICSim.
@@ -187,8 +192,8 @@
 #' 
 #' @importFrom GOSemSim godata
 #' @importFrom AnnotationDbi keytypes
-#' @keywords internal
-.set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keytype="ENTREZID") {
+#' @export
+set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keytype="ENTREZID") {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
                     mouse = "org.Mm.eg.db",
