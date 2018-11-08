@@ -1,13 +1,13 @@
 ---
 title: "An Introduction to GAPGOM"
-author: "Finn Drabløs, Rezvan Ehsani and Casper Peters"
+author: "by Finn Drabløs, Rezvan Ehsani and Casper Peters"
 date: "`r Sys.Date()`"
 output: 
   # rmarkdown::html_vignette:
   prettydoc::html_pretty:
     theme: cayman
     toc: true
-    toc_depth: 4
+    toc_depth: 5
     highlight: vignette
     copmressed_css: true
     code_folding: none
@@ -187,6 +187,8 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 
 ### Example
 
+#### Scores + Enrichment
+
 The following example is an arbitrary use-case. Meaning that, this is just an example and does not imply a certain question/real life use-case.
 
 ```{r lncRNApred}
@@ -226,12 +228,21 @@ The description of the GO term.
 - `used_method`
 Used scoring method for getting the result.
 
+Besides this, there's an optional parameter for different GO labeling/annotation; `id_translation_df`. This dataframe should contain the following; 
+- rownames \to rownames of the expression set
+- first column \to ID (e.g. EntrezID). EntrezID should be the same as in the Fantom5 dataset.
+- second colum \to GO IDs.
+
+This can also drastically improves calculations times as most of the time is spent querying for this translation.
+
+#### Only scores
+
 There is also another algorithm that allows you to just calculate scores and skip the enrichment;
 
 ```{r lncrnapredscoreonly}
 result <- GAPGOM::expression_semantic_scoring(gid, 
                                        GAPGOM::ft5_example_data)
-kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+kable(result[1:100,]) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
 We can see that this function returns a different dataframe;
@@ -243,7 +254,7 @@ The semantic similarity score/correlation calculated by one of the methods.
 - `used_method`
 The used method used to calculate the score.
 
-The rownames also represent the gene expression row
+The rownames also represent the gene expression row. Only the first 100 rows are show, otherwise the table would be quite big. Enrichment and also the GO annotation/translation needs to be done manually after this step. However, this should be quite doable with a bit of help from `GOSemSim`.
 
 ## TopoICSim
 
