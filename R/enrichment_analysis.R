@@ -15,10 +15,9 @@
 #'
 #' @param ordered_score_df the score dataframe see documentation on
 #' GAPGOM::example_score_dataframe for formatting.
-#' @param id_select_vector gene rowname(s) that you want filtered out of the
+#' @param id_select_vector gene rowname(s) that you want to keep in the
 #' dataset. For example, let's say you need to only include protein coding
-#' genes. You then select all other genes that aren't and put the ids in this
-#' vector.
+#' genes. You then make a vector including only ids that are protein coding.
 #' @param id_translation_df dataframe that has translation between rowname,
 #' entrez id and GO ids (generated internally using GOSemSim+entrez ids).
 #' @param organism where to be scanned genes reside in, this option
@@ -66,18 +65,26 @@
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
   # expression data rows. 
-  extracted_genes <- id_translation_df[!(id_translation_df$ORIGID %in%
+  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
+  assign("extracted_genes", extracted_genes, envir = .GlobalEnv)
+  assign("ordered_score_df", ordered_score_df, envir = .GlobalEnv)
+  
   # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
+  
+  assign("list_top_genes", list_top_genes, envir = .GlobalEnv)
+  
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
   # list_of_gos, n genes but all unqiue corresponding GO IDs
   list_of_gos <- extracted_genes[(extracted_genes$ORIGID %in%
-                                    list_top_genes), 3]
+                                    list_top_genes), 2]
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
+  
+  assign("list_of_gos", list_of_gos, envir = .GlobalEnv)
   
   if (dim(extracted_genes)[1] == 0 || dim(extracted_genes)[2] == 0) {
     return(data.frame()) # return empty dataframe if there's no extracted genes.
@@ -101,7 +108,7 @@
   # corresponding ensembl IDs)
   quantified_ext_id_to_term_id <- .ext_id_to_term_id(extracted_genes,
                                                     list_top_genes)
-
+  
   # After this, filter it for existing Gene ontologies within the top GOs
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(
       quantified_ext_id_to_term_id[, 1] %in% list_of_gos), ]
@@ -127,7 +134,9 @@
   n3 <- length(unique(id_select_vector)) - enrichment_cutoff -
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
   n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
-
+  
+  assign("nana", list(n1,n2,n3,n4), envir = .GlobalEnv)
+  
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
   # select quantification values to at least be 5 for goID quantification.

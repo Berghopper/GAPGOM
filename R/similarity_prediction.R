@@ -14,10 +14,9 @@
 #' other useful information, see GAPGOM::f5_example_data
 #' documentation for further explanation of this type. If you want a custom
 #' ExpressionSet you have to define one yourself.
-#' @param id_select_vector gene rowname(s) that you want filtered out of the
+#' @param id_select_vector gene rowname(s) that you want to keep in the
 #' dataset. For example, let's say you need to only include protein coding
-#' genes. You then select all other genes that aren't and put the ids in this
-#' vector.
+#' genes. You then make a vector including only ids that are protein coding.
 #' @param organism where to be scanned genes reside in, this option
 #' is neccesary to select the correct GO DAG. Options are based on the org.db
 #' bioconductor package;
@@ -88,7 +87,8 @@ expression_prediction <- function(gene_id,
                                 ncluster = 1,
                                 idtype = "ENTREZID",
                                 verbose = F, 
-                                id_translation_df = NULL) {
+                                id_translation_df = NULL,
+                                go_data = NULL) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -96,9 +96,8 @@ expression_prediction <- function(gene_id,
   # prepare the data with some special operations/vars that are needed later
   
   gene_id <- as.character(gene_id)
-  expression_data_sorted <- expression_set@assayData$exprs[!(rownames(
+  expression_data_sorted <- expression_set@assayData$exprs[(rownames(
     expression_set@assayData$exprs) %in% id_select_vector),]
-  #if(expression_data_sorted)
   expression_data_sorted_ids <- rownames(expression_data_sorted)
 
   # Target expression data where gene id matches
@@ -115,7 +114,8 @@ expression_prediction <- function(gene_id,
       organism, 
       ontology,
       idtype,
-      verbose)
+      verbose,
+      go_data = go_data)
   }
   # make args list for ambiguous functions
   args <- list(

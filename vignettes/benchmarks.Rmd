@@ -490,10 +490,6 @@ Although the speed can be reasonably determined for the algorithms, RAM is a bit
 
 Speed might vary hugely depending on the organism, ontology and geneset used. This is because, again, GO paths may differ drastically.
 
-## Comparisons between algorithms
-
-For comparisons between other algorithms, `expression_prediction_function` will be left out as it is the only algorithm based on expression values. 
-
 ## For code reviewers
 
 Finally, for code reviewers, you can just call the result of each `profvis` to get a flame graph and other details of code speed.

@@ -104,12 +104,15 @@
                                                       organism, 
                                                       ontology,
                                                       keytype,
-                                                      verbose = F) {
+                                                      verbose = F,
+                                                      go_data = NULL) {
   keys_col <- .resolve_keys_col(expression_set, keytype)
-  if (verbose) {
-    go_data <- set_go_data(organism, ontology, computeIC = F, keytype = keytype)
-  } else {
-    go_data <- suppressMessages(set_go_data(organism, ontology, computeIC = F, keytype = keytype))
+  if (is.null(go_data)) {
+    if (verbose) {
+      go_data <- set_go_data(organism, ontology, computeIC = F, keytype = keytype)
+    } else {
+      go_data <- suppressMessages(set_go_data(organism, ontology, computeIC = F, keytype = keytype))
+    }  
   }
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
   
@@ -204,7 +207,6 @@
   # add 1 for each go that is in list top genes.
   dtdata <- as.data.table(data)
   quantified_only <- dtdata[dtdata$ORIGID %in% as.data.table(list_top_genes)[[1]], .N, by=GO]
-  rm(dtdata)
   non_quantified_gos <- unique(data[!(data$GO %in% quantified_only$GO), ]$GO)
   return(as.data.frame(rbind(quantified_only, list(non_quantified_gos, rep(0, length(non_quantified_gos))))))
 })
