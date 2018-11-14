@@ -7,7 +7,8 @@
 expression_prediction(gene_id, expression_set, id_select_vector, organism,
   ontology, enrichment_cutoff = 250, method = "combine",
   significance = 0.05, filter_pvals = FALSE, ncluster = 1,
-  idtype = "ENTREZID", verbose = F, id_translation_df = NULL)
+  idtype = "ENTREZID", verbose = F, id_translation_df = NULL,
+  go_data = NULL)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -17,10 +18,9 @@ other useful information, see GAPGOM::f5_example_data
 documentation for further explanation of this type. If you want a custom
 ExpressionSet you have to define one yourself.}
 
-\item{id_select_vector}{gene rowname(s) that you want filtered out of the
+\item{id_select_vector}{gene rowname(s) that you want to keep in the
 dataset. For example, let's say you need to only include protein coding
-genes. You then select all other genes that aren't and put the ids in this
-vector.}
+genes. You then make a vector including only ids that are protein coding.}
 
 \item{organism}{where to be scanned genes reside in, this option
 is neccesary to select the correct GO DAG. Options are based on the org.db

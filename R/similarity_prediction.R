@@ -38,8 +38,6 @@
 #' @param significance normalized p-values (fdr) that are below this number 
 #' will be kept. has to be a float/double between 0-1. Default is 0.05
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
-#' @param ncluster Amount of cores you want to run the combined method on. 
-#' Default=1. Does not work for other methods.
 #' @param idtype idtype of the expression_data. If not correctly specified, 
 #' error will specify available IDs. default="ENTREZID"
 #' @param verbose set to true for more informative/elaborate output.
@@ -83,8 +81,8 @@ expression_prediction <- function(gene_id,
                                 enrichment_cutoff = 250,
                                 method = "combine",
                                 significance = 0.05,
+                                go_amount = 5,
                                 filter_pvals = FALSE,
-                                ncluster = 1,
                                 idtype = "ENTREZID",
                                 verbose = F, 
                                 id_translation_df = NULL,
@@ -116,6 +114,7 @@ expression_prediction <- function(gene_id,
       idtype,
       verbose,
       go_data = go_data)
+    assign("id_translation_df", id_translation_df, .GlobalEnv)
   }
   # make args list for ambiguous functions
   args <- list(
@@ -129,8 +128,8 @@ expression_prediction <- function(gene_id,
     "ontology" = ontology,
     "enrichment_cutoff" = enrichment_cutoff,
     "significance" = significance,
-    "filter_pvals" = filter_pvals,
-    "ncluster" = ncluster)
+    "go_amount" = go_amount,
+    "filter_pvals" = filter_pvals)
 
 
   # these functions calculate score between target expression of target gene
@@ -195,13 +194,21 @@ NULL
 #' @rdname ambiguous_functions
 .ambiguous_score_rev_sort <- compiler::cmpfun(function(score_df) {
   # reverse sorts the score column
-  return(score_df[rev(order(score_df[, 2])), ])
+  if (length(score_df) == 0) {
+    return(NULL)
+  } else {
+    return(score_df[rev(order(score_df[, 2])), ]) 
+  }
 })
 
 #' @rdname ambiguous_functions
 .ambiguous_score_sort <- compiler::cmpfun(function(score_df) {
   # sorts the score column
-  return(score_df[order(score_df[, 2]), ])
+  if (length(score_df) == 0) {
+    return(NULL)
+  } else {
+    return(score_df[order(score_df[, 2]), ])
+  }
 })
 
 #' @rdname ambiguous_functions
@@ -215,14 +222,15 @@ NULL
     args$ontology,
     args$enrichment_cutoff,
     args$significance,
-    args$filter_pvals
+    args$filter_pvals,
+    args$go_amount
   )
   return(enrichment_result)
 })
 
 #' @rdname ambiguous_functions
 .ambiguous_method_origin <- compiler::cmpfun(function(df, 
-                                                     methodname) {
+                                                      methodname) {
   # add used_method column
   if (length(df) != 0) {
     df[, "used_method"] <- rep(
@@ -292,18 +300,10 @@ NULL
   # Run enrichment for each method
   predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, 
                        .predict_sobolev, .predict_fisher)
-  # cl <- makeCluster(args$ncluster)
-  # registerDoParallel(cl)
-  # combined_enrichment <- foreach(method=predict_methods, .combine = 'rbind') %dopar% {
-  #   return(method(args))
-  # }
-  # stopCluster(cl)
-  
-  # apply for non-parallel testing purposes
-  combined_enrichment <<-
+  combined_enrichment <-
     lapply(predict_methods, function(method) {
-    return(method(args))
-      })
+      return(method(args))
+    })
   combined_enrichment <- do.call("rbind", combined_enrichment)
 
   if (length(combined_enrichment) == 0) {

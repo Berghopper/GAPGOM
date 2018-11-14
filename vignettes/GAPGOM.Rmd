@@ -192,23 +192,104 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 The following example is an arbitrary use-case. Meaning that, this is just an example and does not imply a certain question/real life use-case.
 
 ```{r lncRNApred}
+#go_data <- GAPGOM::set_go_data("mouse", "BP", computeIC = F)
+
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on with making of the filter etc. (Biobase 
 # ExpressionSet)
 
 # make a filter of all the ids that contain a 0 in their expression row.
 sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
-apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
-function(row) {all(row==0)}),])
-# set an artbitrary gene you want to find similarities for. (name of 5th row in this case)
-gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
+apply(GAPGOM::ft5_example_data@assayData$exprs, 1,
+function(row) {all(row!=0)}),])
+# sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs)
+
+bla <- list()
+useless <- c()
+data <- expsetty@assayData$exprs
+#data <- GAPGOM::ft5_example_data@assayData$exprs[sort_list,]
+#data <- data[rownames(data)!=useless,]
+
+for (gid in rownames(data[sample(1:nrow(data)),])) {
+  result <- suppressMessages(GAPGOM::expression_prediction(gid, 
+                                         expsetty, 
+                                         protein_coding, 
+                                         "mouse", 
+                                         "BP", filter_pvals = T, go_data = go_data, go_amount = 5))
+  if(!is.null(result)) {
+    print(gid)
+    bla[[gid]] <- result
+  } else {
+    useless <- c(useless, gid)
+  }
+  #kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+  }
+```
+
+```{r, eval=F}
+### Adding to exampleset
+all_raw <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_counts_ann.osc.txt", verbose=T)
+all_raw2 <- all_raw$df
+sort_list <- all_raw2[
+apply(all_raw2[,8:18], 1, 
+function(row) {all(row!=0)}),1]
+all_raw2 <- as.data.frame(all_raw2)
+all_raw3 <- all_raw2[all_raw2[,1] %in% unlist(sort_list),1:18]
+all_raw3 <- all_raw3[2:nrow(all_raw3),]
+
+uniques <- unique(all_raw3$`entrezgene (genes) id associated with the transcript`)
+# for (uniq in uniques) {
+#   res <- all_raw3[all_raw3$`entrezgene (genes) id associated with the transcript`==uniq,]
+#   res <- na.omit(res)
+#   if (length(res) > 1) {
+#     apply(res[,7:18], 2, mean)
+#   } else {
+#     rbind()
+#   }
+# }
+
+means <- apply(all_raw3[,7:18], 1, function(x) {mean(as.numeric(x))})
+
+aaa <- all_raw3[means[means < 50] > 10,][1:100,][,1]
+bbb <- all_raw3[means[means < 20000] > 100,][,1]
+all_raw4 <- rbind(all_raw3[means[means < 50] > 10,][1:100,], all_raw3[means[means < 20000] > 100,])
+all_raw$df <- unique(all_raw4)
+expsetty <- fantom_to_expset(all_raw)
+protein_coding <- rownames(expsetty@featureData@data[expsetty@featureData@data$`uniprot (protein) id associated with the transcript`=="",])
+
+###
 # get the result.
-result <- GAPGOM::expression_prediction(gid, 
-                                       GAPGOM::ft5_example_data, 
-                                       sort_list, 
+sampy <- sample(aaa,1)
+result <- GAPGOM::expression_prediction(sampy, 
+                                       expsetty, 
+                                       protein_coding, 
                                        "mouse", 
-                                       "BP", filter_pvals = T)
-kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+                                       "BP", filter_pvals = T, go_amount = 2, significance = 1)
+
+bla <- list()
+useless <- c()
+data <- expsetty@assayData$exprs
+#data <- GAPGOM::ft5_example_data@assayData$exprs[sort_list,]
+#data <- data[rownames(data)!=useless,]
+
+for (gid in rownames(data[sample(1:nrow(data)),])) {
+  result <- suppressMessages(GAPGOM::expression_prediction(gid, 
+                                         expsetty, 
+                                         protein_coding, 
+                                         "mouse", 
+                                         "BP", filter_pvals = T, go_data = go_data, go_amount = 5))
+  if(!is.null(result)) {
+    print(gid)
+    bla[[gid]] <- result
+  } else {
+    useless <- c(useless, gid)
+  }
+  #kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
+  }
+# result <- GAPGOM::expression_semantic_scoring("chr6:146450633..146450655,-", 
+#                                               all)
+
+
 ```
 
 Here we display the results, you can see that it has 6 columns;
@@ -263,7 +344,14 @@ The rownames also represent the gene expression row. Only the first 100 rows are
 ## ORIGINAL DATA
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
+options(stringsAsFactors = F)
 ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
+
+# expression data selection
+#ENSG00000228630
+rowsample <- sample(1:nrow(ExpressionData),1000)
+ExpressionData <- unique(rbind(ExpressionData[rowsample,], ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
+
 # Gene ID's and annotation term type.
 EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t',head=TRUE)
 
@@ -296,10 +384,10 @@ result <- GAPGOM::expression_prediction(gid,
                                        "human", 
                                        "BP",
                                        id_translation_df = id_translation_df,
-                                       method = "combine"
+                                       method = "combine", verbose = T, filter_pvals = T
                                        )
-
-
+nrow(result)
+#save(ExpressionData, file = "~/test2.RData", compress = "xz", compression_level = 9)
 ```
 
 ## TopoICSim

@@ -132,6 +132,7 @@
     message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))
   }
   # get goids for both genes
+  # if (gene1 %in% rownames(topoargs))
   gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
   gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
 

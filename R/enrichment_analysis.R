@@ -61,19 +61,18 @@
                                 ontology,
                                 enrichment_cutoff,
                                 significance,
-                                filter_pvals) {
+                                filter_pvals,
+                                go_amount) {
+  old <- options(stringsAsFactors = FALSE, warn=-1)
+  on.exit(options(old), add = TRUE)
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
   # expression data rows. 
   extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
-  assign("extracted_genes", extracted_genes, envir = .GlobalEnv)
-  assign("ordered_score_df", ordered_score_df, envir = .GlobalEnv)
   
   # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
-  
-  assign("list_top_genes", list_top_genes, envir = .GlobalEnv)
   
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more
@@ -83,8 +82,6 @@
                                     list_top_genes), 2]
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
-  
-  assign("list_of_gos", list_of_gos, envir = .GlobalEnv)
   
   if (dim(extracted_genes)[1] == 0 || dim(extracted_genes)[2] == 0) {
     return(data.frame()) # return empty dataframe if there's no extracted genes.
@@ -135,12 +132,10 @@
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
   n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
   
-  assign("nana", list(n1,n2,n3,n4), envir = .GlobalEnv)
-  
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
   # select quantification values to at least be 5 for goID quantification.
-  qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= 5), ]
+  qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= go_amount), ]
 
   # select last 4 columns (n1,n2,n3,n4)
   args.df <- qterm_id_to_ext_id[, c(3:6)]
@@ -162,7 +157,7 @@
   fdr <- p.adjust(pvalues, method = "fdr", n = length(pvalues))
   # grab description of each gene ontology term using Term() from the 
   # annotationDbi package.
-
+  
   term <- Term(qterm_id_to_ext_id[, 1])
   # Create a dataframe containing all results in a neat format.
   enrichment_dataframe <- data.frame(GOID = as.character(go_id), 
@@ -170,15 +165,15 @@
                                      Pvalue = pvalues,
                                      FDR = fdr,
                                      Term = as.character(term))
-
+  
   # Omit NA's
   enrichment_dataframe <- na.omit(enrichment_dataframe)
   # Order the result by FDR (the adjusted p values)
   enrichment_dataframe <- enrichment_dataframe[(order(as.numeric(
-      enrichment_dataframe[, 4]))), ]
+    enrichment_dataframe[, 4]))), ]
   # Only keep every P-value that is significant (set by user)
   enrichment_dataframe <- enrichment_dataframe[(as.numeric(
-      enrichment_dataframe[, 4]) < significance), ]
+    enrichment_dataframe[, 4]) < significance), ]
   # filter out 0's if set by user.
   if (filter_pvals) {
     enrichment_dataframe <- enrichment_dataframe[(as.numeric(
