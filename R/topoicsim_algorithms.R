@@ -132,10 +132,22 @@
     message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))
   }
   # get goids for both genes
-  # if (gene1 %in% rownames(topoargs))
-  gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
-  gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
-
+  if (gene1 %in% names(topoargs$custom_genes1)) {
+    gos1 <- topoargs$custom_genes1[[gene1]]
+  } else if (gene1 %in% names(topoargs$custom_genes2)) {
+    gos1 <- topoargs$custom_genes2[[gene1]]
+  } else {
+    gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
+  }
+  
+  if (gene2 %in% names(topoargs$custom_genes1)) {
+    gos2 <- topoargs$custom_genes1[[gene2]]
+  } else if (gene1 %in% names(topoargs$custom_genes2)) {
+    gos2 <- topoargs$custom_genes2[[gene2]]
+  } else {
+    gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
+  }
+  
   # return NA if goids sums are both 0 (no goids available to measure)
   if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
     return(list(GeneSim = NA, 
@@ -256,6 +268,14 @@
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
+    # append gene_lists with custom genes if neccesary
+    if(!is.null(topoargs$custom_genes1)) {
+      gene_list1 <- c(names(topoargs$custom_genes1), gene_list1)
+    }
+    if(!is.null(topoargs$custom_genes2)) {
+      gene_list2 <- c(names(topoargs$custom_genes2), gene_list2)
+    }
+    
     # set up score matrix in advance
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
     
@@ -320,6 +340,7 @@
 #' "xenopus".
 #' @param genes1 Gene ID(s) of the first Gene (vector).
 #' @param genes2 Gene ID(s) of the second Gene (vector).
+#' @param custom_genes1 Custom genes added to the first list, 
 #' @param verbose set to true for more informative/elaborate output.
 #' @param progress_bar Whether to show the progress of the calculation 
 #' (default = FALSE)
@@ -366,7 +387,9 @@
 topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               organism,
                               genes1, 
-                              genes2, 
+                              genes2,
+                              custom_genes1 = NULL,
+                              custom_genes2 = NULL,
                               verbose = F,
                               progress_bar = T,
                               garbage_collection = F,
@@ -384,6 +407,8 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            ontology, 
                                            genes1, 
                                            genes2, 
+                                           custom_genes1,
+                                           custom_genes2,
                                            drop,
                                            verbose,
                                            progress_bar, 

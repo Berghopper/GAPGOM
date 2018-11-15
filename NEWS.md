@@ -21,14 +21,17 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Set go data as exported function
 - some frequently used params can now be set manually (go_data, All_Go_pairs)
 - seperate scoring function (If people want to do their own enrichment/only get semantic similarity scores.)
+- some more arguments for the algorithms to make the user have more control.
 ### Changed
 - data preparation functions, they are now updated and more clear.
 - topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
 - Documentation and comments (again).
 - argument parsing for topoicsim.
-- some tests (topoicsim).
+- some tests and their results.
 - used arguments in both algorithms.
 ### Removed
+- fantom5 example data*
+- direct interface from fantom5 file to expset `fantom_load_expressionset()`.
 ### Fixed
 - documentation of internal functions is now hidden.
 - `data-raw` missing in `.Rbuildignore`.

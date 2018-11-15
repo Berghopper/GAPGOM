@@ -4,7 +4,8 @@
 \alias{topo_ic_sim_genes}
 \title{GAPGOM - topo_ic_sim_genes()}
 \usage{
-topo_ic_sim_genes(ontology, organism, genes1, genes2, verbose = F,
+topo_ic_sim_genes(ontology, organism, genes1, genes2,
+  custom_genes1 = NULL, custom_genes2 = NULL, verbose = F,
   progress_bar = T, garbage_collection = F, drop = NULL,
   all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL)
 }
@@ -27,6 +28,8 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 \item{genes1}{Gene ID(s) of the first Gene (vector).}
 
 \item{genes2}{Gene ID(s) of the second Gene (vector).}
+
+\item{custom_genes1}{Custom genes added to the first list,}
 
 \item{verbose}{set to true for more informative/elaborate output.}
 

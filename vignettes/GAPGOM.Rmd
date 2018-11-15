@@ -53,20 +53,24 @@ As of right now, the package only has 1 main dataset for expression data; The Fa
 
 ```{r f5, eval=F}
 # download the fantom5 data file
-fantom_file <- fantom_download("./", organism = "mouse", noprompt = T) # saves filename
+fantom_file <- fantom_download("./", organism = "mouse", 
+                               noprompt = T) # saves filename
 # load the file (use fantom_file variable if doing all at once)
 ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
 verbose = T)
+# remove first two rows from fantom5 data (these are seperate statistis, 
+# we just need expressionvalues)
+ft5$df <- ft5$df[3:nrow(ft5$df),]
+
 # convert the raw fantom table to an ExpressionSet
 expset <- fantom_to_expset(ft5, verbose = T)
-
-# you can also directly load an ExpressionSet from a file;
-expset <- fantom_load_expression_set(fantom_file)
 ```
+
+**Do not that all standard columns are neccesary when converting to an `ExpressionSet` in this way!**
 
 ### Manually specifying an `ExpressionSet`
 
-Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. I will give an example with randomly generated expression values and IDs.
+Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. I will give an example with randomly generated expression values and IDs. In some cases if you want something specific, defining it this way can actually be better!
 
 Minimal requirement for an `ExpressionSet`;
 
@@ -349,8 +353,8 @@ ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/r
 
 # expression data selection
 #ENSG00000228630
-rowsample <- sample(1:nrow(ExpressionData),1000)
-ExpressionData <- unique(rbind(ExpressionData[rowsample,], ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
+#rowsample <- sample(1:nrow(ExpressionData),10000)
+#ExpressionData <- unique(rbind(ExpressionData[rowsample,], ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
 
 # Gene ID's and annotation term type.
 EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t',head=TRUE)

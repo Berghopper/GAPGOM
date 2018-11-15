@@ -5,7 +5,8 @@
 \title{GAPGOM internal - enrichment_analysis()}
 \usage{
 .enrichment_analysis(ordered_score_df, id_select_vector, id_translation_df,
-  organism, ontology, enrichment_cutoff, significance, filter_pvals)
+  organism, ontology, enrichment_cutoff, significance, filter_pvals,
+  go_amount)
 }
 \arguments{
 \item{ordered_score_df}{the score dataframe see documentation on

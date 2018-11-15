@@ -3,7 +3,6 @@
 export(expression_prediction)
 export(expression_semantic_scoring)
 export(fantom_download)
-export(fantom_load_expressionset)
 export(fantom_load_raw)
 export(fantom_to_expset)
 export(set_go_data)

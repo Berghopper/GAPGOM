@@ -63,6 +63,8 @@
                                          ontology, 
                                          gene_list1 = NULL, 
                                          gene_list2 = NULL,
+                                         custom_genes1 = NULL,
+                                         custom_genes2 = NULL,
                                          drop = NULL,
                                          verbose = F,
                                          progress_bar = NULL, 
@@ -76,6 +78,8 @@
   topoargs$organism <- organism
   topoargs$ontology <- ontology
   topoargs$verbose <- verbose
+  topoargs$custom_genes1 <- custom_genes1
+  topoargs$custom_genes2 <- custom_genes2
   
   if (verbose) {
     message("Preparing topoICSim data...")
@@ -145,14 +149,18 @@
     }
     if (is.null(all_go_pairs)) {
       if (is.null(topoargs$all_go_pairs)) {
-        go_unique_list <- unique(topoargs$translation_to_goids$GO)
+        go_unique_list <- unique(c(topoargs$translation_to_goids$GO,
+                                 unlist(custom_genes1, F, F),
+                                 unlist(custom_genes2, F, F)))
         topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
                                                                  go_unique_list) 
       }
     } else {
       go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
                                  colnames(topoargs$all_go_pairs), 
-                                 topoargs$translation_to_goids$GO))
+                                 topoargs$translation_to_goids$GO,
+                                 unlist(custom_genes1, F, F),
+                                 unlist(custom_genes2, F, F)))
       topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
                                                                go_unique_list,
                                                                old_scores = 
