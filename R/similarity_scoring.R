@@ -35,9 +35,9 @@
 #' 
 #' # set an artbitrary gene you want to find similarities for. (5th row in this
 #' # case)
-#' gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
+#' gid <- "ENSG00000228630"
 #' result <- GAPGOM::expression_semantic_scoring(gid, 
-#'                                        GAPGOM::ft5_example_data)
+#'                                               GAPGOM::expset)                                        
 #'
 #' @import Biobase
 #' @export

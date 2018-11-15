@@ -57,19 +57,20 @@
 #' # to fully grasp what's going on with making of the filter etc. (Biobase 
 #' # ExpressionSet)
 #' 
-#' # make a filter of all the ids that contain a 0 in their expression row.
-#' sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
-#' apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
-#' function(row) {all(row==0)}),])
-#' # set an artbitrary gene you want to find similarities for. (5th row in this
-#' # case)
-#' gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
+#' # keep everything that is a protein coding gene
+#' filter_vector <- GAPGOM::expset@featureData@data[(
+#' GAPGOM::expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+#' # set gid and run.
+#' gid <- "ENSG00000228630"
+#' 
 #' result <- GAPGOM::expression_prediction(gid, 
-#'                                        GAPGOM::ft5_example_data, 
-#'                                        sort_list, 
-#'                                        "mouse", 
-#'                                        "BP"
-#'                                        )
+#'                                         GAPGOM::expset, 
+#'                                         filter_vector, 
+#'                                         "human", 
+#'                                         "BP",
+#'                                         id_translation_df = GAPGOM::id_translation_df,
+#'                                         method = "combine", verbose = T, filter_pvals = T
+#' )
 #' @importFrom plyr ddply .
 #' @import Biobase
 #' @export

@@ -29,11 +29,6 @@ knitr::opts_chunk$set(
 ### Neccesary libraries
 
 ```{r load_libs, warning = F, message = F, include = T}
-## install ppipre seperately! (INtelliGO)
-#install.packages("https://cran.r-project.org/src/contrib/Archive/ppiPre/ppiPre_1.9.tar.gz", repos=NULL)
-## install csbl.go seperately (SimGIC)
-#install.packages("http://csbi.ltdk.helsinki.fi/csbl.go/csbl.go_1.4.1.tar.gz", repos=NULL)
-
 library(GAPGOM)
 library(profvis)
 library(GO.db)
@@ -222,22 +217,20 @@ Since lncRNApred is based on expression values, we'll use the standard example t
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on with making of the filter etc. (Biobase 
 # ExpressionSet)
+ 
+# keep everything that is a protein coding gene
+filter_vector <- expset@featureData@data[(expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+# set gid and run.
+gid <- "ENSG00000228630"
 
-# make a filter of all the ids that contain a 0 in their expression row.
-sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
- apply(GAPGOM::ft5_example_data@assayData$exprs, 1, 
- function(row) {all(row==0)}),])
-# set an artbitrary gene you want to find similarities for. (5th row in this
-# case)
-gid <- rownames(GAPGOM::ft5_example_data@assayData$exprs)[5]
-
-p <- profvis::profvis({GAPGOM::expression_prediction_function(gid, 
-                                     GAPGOM::ft5_example_data, 
-                                     sort_list, 
-                                     "mouse", 
-                                     "BP"
-                                     )
-                     })
+p <- profvis::profvis({GAPGOM::expression_prediction(gid, 
+                                        GAPGOM::expset, 
+                                        filter_vector, 
+                                        "human", 
+                                        "BP",
+                                        id_translation_df = GAPGOM::id_translation_df,
+                                        method = "combine", verbose = T, filter_pvals = T
+                       )})
 time <- max(p$x$message$prof$time)*10
 mem <- max(p$x$message$prof$memalloc)
 ```
@@ -489,6 +482,10 @@ You can see that the ram fits a bigger exponential curve, again proving the poin
 Although the speed can be reasonably determined for the algorithms, RAM is a bit more tricky because of a lot of variables. This can be caused by differences in R session, memory leaks and other semi-random events/structuring of the code. Thus the only real thing that we can conclude is that there is quite a lot of RAM leaks, especially in the case of the geneset algorithm because of its iterative nature.
 
 Speed might vary hugely depending on the organism, ontology and geneset used. This is because, again, GO paths may differ drastically.
+
+## Benchmarks
+
+<TODO: lncRNApred benchmark!>
 
 ## For code reviewers
 

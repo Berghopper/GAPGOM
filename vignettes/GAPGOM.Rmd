@@ -66,7 +66,7 @@ ft5$df <- ft5$df[3:nrow(ft5$df),]
 expset <- fantom_to_expset(ft5, verbose = T)
 ```
 
-**Do not that all standard columns are neccesary when converting to an `ExpressionSet` in this way!**
+**Do note that all standard columns are neccesary when converting to an `ExpressionSet` in this way!**
 
 ### Manually specifying an `ExpressionSet`
 
@@ -193,107 +193,28 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 
 #### Scores + Enrichment
 
-The following example is an arbitrary use-case. Meaning that, this is just an example and does not imply a certain question/real life use-case.
+The following example is an arbitrary use-case. Meaning that, this is just an example and does not (neccesarily) imply a certain question/real life use-case.
 
 ```{r lncRNApred}
-#go_data <- GAPGOM::set_go_data("mouse", "BP", computeIC = F)
-
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on with making of the filter etc. (Biobase 
 # ExpressionSet)
+ 
+# keep everything that is a protein coding gene
+filter_vector <- GAPGOM::expset@featureData@data[(
+  GAPGOM::expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+# set gid and run.
+gid <- "ENSG00000228630"
 
-# make a filter of all the ids that contain a 0 in their expression row.
-sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs[
-apply(GAPGOM::ft5_example_data@assayData$exprs, 1,
-function(row) {all(row!=0)}),])
-# sort_list <- rownames(GAPGOM::ft5_example_data@assayData$exprs)
-
-bla <- list()
-useless <- c()
-data <- expsetty@assayData$exprs
-#data <- GAPGOM::ft5_example_data@assayData$exprs[sort_list,]
-#data <- data[rownames(data)!=useless,]
-
-for (gid in rownames(data[sample(1:nrow(data)),])) {
-  result <- suppressMessages(GAPGOM::expression_prediction(gid, 
-                                         expsetty, 
-                                         protein_coding, 
-                                         "mouse", 
-                                         "BP", filter_pvals = T, go_data = go_data, go_amount = 5))
-  if(!is.null(result)) {
-    print(gid)
-    bla[[gid]] <- result
-  } else {
-    useless <- c(useless, gid)
-  }
-  #kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
-  }
-```
-
-```{r, eval=F}
-### Adding to exampleset
-all_raw <- fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/mouse/mm9.cage_peak_phase1and2combined_counts_ann.osc.txt", verbose=T)
-all_raw2 <- all_raw$df
-sort_list <- all_raw2[
-apply(all_raw2[,8:18], 1, 
-function(row) {all(row!=0)}),1]
-all_raw2 <- as.data.frame(all_raw2)
-all_raw3 <- all_raw2[all_raw2[,1] %in% unlist(sort_list),1:18]
-all_raw3 <- all_raw3[2:nrow(all_raw3),]
-
-uniques <- unique(all_raw3$`entrezgene (genes) id associated with the transcript`)
-# for (uniq in uniques) {
-#   res <- all_raw3[all_raw3$`entrezgene (genes) id associated with the transcript`==uniq,]
-#   res <- na.omit(res)
-#   if (length(res) > 1) {
-#     apply(res[,7:18], 2, mean)
-#   } else {
-#     rbind()
-#   }
-# }
-
-means <- apply(all_raw3[,7:18], 1, function(x) {mean(as.numeric(x))})
-
-aaa <- all_raw3[means[means < 50] > 10,][1:100,][,1]
-bbb <- all_raw3[means[means < 20000] > 100,][,1]
-all_raw4 <- rbind(all_raw3[means[means < 50] > 10,][1:100,], all_raw3[means[means < 20000] > 100,])
-all_raw$df <- unique(all_raw4)
-expsetty <- fantom_to_expset(all_raw)
-protein_coding <- rownames(expsetty@featureData@data[expsetty@featureData@data$`uniprot (protein) id associated with the transcript`=="",])
-
-###
-# get the result.
-sampy <- sample(aaa,1)
-result <- GAPGOM::expression_prediction(sampy, 
-                                       expsetty, 
-                                       protein_coding, 
-                                       "mouse", 
-                                       "BP", filter_pvals = T, go_amount = 2, significance = 1)
-
-bla <- list()
-useless <- c()
-data <- expsetty@assayData$exprs
-#data <- GAPGOM::ft5_example_data@assayData$exprs[sort_list,]
-#data <- data[rownames(data)!=useless,]
-
-for (gid in rownames(data[sample(1:nrow(data)),])) {
-  result <- suppressMessages(GAPGOM::expression_prediction(gid, 
-                                         expsetty, 
-                                         protein_coding, 
-                                         "mouse", 
-                                         "BP", filter_pvals = T, go_data = go_data, go_amount = 5))
-  if(!is.null(result)) {
-    print(gid)
-    bla[[gid]] <- result
-  } else {
-    useless <- c(useless, gid)
-  }
-  #kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
-  }
-# result <- GAPGOM::expression_semantic_scoring("chr6:146450633..146450655,-", 
-#                                               all)
-
-
+result <- GAPGOM::expression_prediction(gid, 
+                                        GAPGOM::expset, 
+                                        filter_vector, 
+                                        "human", 
+                                        "BP",
+                                        id_translation_df = GAPGOM::id_translation_df,
+                                        method = "combine", verbose = T, filter_pvals = T
+)
+kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
 Here we display the results, you can see that it has 6 columns;
@@ -325,8 +246,15 @@ This can also drastically improves calculations times as most of the time is spe
 There is also another algorithm that allows you to just calculate scores and skip the enrichment;
 
 ```{r lncrnapredscoreonly}
+# Example with default dataset, take a look at the data documentation
+# to fully grasp what's going on with making of the filter etc. (Biobase 
+# ExpressionSet)
+
+# set an artbitrary gene you want to find similarities for. (5th row in this
+# case)
+gid <- "ENSG00000228630"
 result <- GAPGOM::expression_semantic_scoring(gid, 
-                                       GAPGOM::ft5_example_data)
+                                              GAPGOM::expset)
 kable(result[1:100,]) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
@@ -341,23 +269,24 @@ The used method used to calculate the score.
 
 The rownames also represent the gene expression row. Only the first 100 rows are show, otherwise the table would be quite big. Enrichment and also the GO annotation/translation needs to be done manually after this step. However, this should be quite doable with a bit of help from `GOSemSim`.
 
-```{r, eval=F, include=F}
-# this block of code is actually hidden in the user documentation, it serves as a test to see if the package's algorithm matches up with the original.
-# For this it also uses the original lncRNA2Function dataset. While the original source in unavaible, there's still an intermediary version available.
+#### Original dataset
+
+The original algorithm used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison. [4]
+
+```{r, eval=F}
+# this block serves as a test to see if the package's algorithm matches up with the original.
+# For this it also uses the original lncRNA2Function dataset. While the original source is unavaible, there's still an intermediary version available.
 
 ## ORIGINAL DATA
 
+# link: https://tare.medisin.ntnu.no/pred_lncRNA/
+
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
 options(stringsAsFactors = F)
-ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
-
-# expression data selection
-#ENSG00000228630
-#rowsample <- sample(1:nrow(ExpressionData),10000)
-#ExpressionData <- unique(rbind(ExpressionData[rowsample,], ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
+ExpressionData = read.table('./lncRNA2function_data.txt', sep='\t', head=TRUE)
 
 # Gene ID's and annotation term type.
-EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t',head=TRUE)
+EnsemblID2GOID = read.table('./EG2GO.txt', sep='\t',head=TRUE)
 
 ## Conversion to expressionset
 
@@ -371,7 +300,7 @@ expset <- ExpressionSet(expression_matrix,
 
 ## selection of filter
 
-# filter out everything that IS NOT a protein coding gene
+# keep everything that is a protein coding gene
 filter_vector <- expset@featureData@data[(expset@featureData@data$GeneType=="protein_coding"),]$GeneID
 
 ## make translational data.frame (BP only)
@@ -380,6 +309,8 @@ id_translation_df <- bp_only[,1:2]
 colnames(id_translation_df) <- c("ORIGID","GO")
 
 ## algorithm run
+
+# set gid and run.
 gid <- "ENSG00000228630"
 
 result <- GAPGOM::expression_prediction(gid, 
@@ -388,10 +319,9 @@ result <- GAPGOM::expression_prediction(gid,
                                        "human", 
                                        "BP",
                                        id_translation_df = id_translation_df,
-                                       method = "combine", verbose = T, filter_pvals = T
-                                       )
-nrow(result)
-#save(ExpressionData, file = "~/test2.RData", compress = "xz", compression_level = 9)
+                                       method = "combine", verbose = T, 
+                                       filter_pvals = T)
+kable(result[1:100,]) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
 ## TopoICSim
@@ -408,7 +338,7 @@ For the information content the following forumla is used;
 Where $t$ is the (GO) term. The IC is calculated by GOSemSim.
 
 </br>
-A GO tree can be described as a triplet $\Lambda=(G,\Sigma,R)$, where $G$ is the set of GO terms, $\Sigma$ is the set of hierarchical relations between GO terms (mostly defined as *is_a* or *part_of*) [4], and $R$ is a triplet $(t_i, t_j, \xi)$, where $t_i,t_j\in G$ and $\xi\in R$ and $t_i\xi t_j$. The $\xi$ relationship is an oriented child-parent relation. Top level node of the GO rDAG is the Root, which is a direct parent of the MF, BP and CC nodes. These nodes are called aspect-specific roots and we refer to them as root in the following. 
+A GO tree can be described as a triplet $\Lambda=(G,\Sigma,R)$, where $G$ is the set of GO terms, $\Sigma$ is the set of hierarchical relations between GO terms (mostly defined as *is_a* or *part_of*) [5], and $R$ is a triplet $(t_i, t_j, \xi)$, where $t_i,t_j\in G$ and $\xi\in R$ and $t_i\xi t_j$. The $\xi$ relationship is an oriented child-parent relation. Top level node of the GO rDAG is the Root, which is a direct parent of the MF, BP and CC nodes. These nodes are called aspect-specific roots and we refer to them as root in the following. 
 A path $P$ of length $n$ between two terms $t_i,t_j$ can be defined as in (23).
 
 </br>
@@ -497,15 +427,13 @@ Besides all this, there's also an algorithm for the geneset level, you can calcu
 </br></br></br>
 (13) is equal to (14) in the specific case of comparing the geneset to itself.
 
-All forumulas/explanations are quoted from the paper (references edited). [5]
+All forumulas/explanations are quoted from the paper (references edited). [6]
 
 ### Examples
 
 The following example uses the [pfam clan gene set](https://pfam.xfam.org/family/PF00171) to measure intraset similarity. For the single gene, `EntrezID` 218 and 501 are compared.
 
 ```{r TopoICSim}
-library(graph)
-library(igraph)
 result <- GAPGOM::topo_ic_sim_genes("MF", "human", "218", "501",
                                    drop=NULL, progress_bar = F)
 kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
@@ -532,11 +460,11 @@ The gene/geneset similarities depending on your input. Can be 1 number, or a mat
 
 ## Parrallel processing and big data
 
-As of right now, parallel processing is only supported for the `combined` method of lncRNApred. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported for other algorithms as well. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work.
+As of right now, parallel processing is not supported. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work. The `all_go_pairs` object in the result can then be combined together with other results.
 
-## Other algorithms and performance
+## Performance and benchmarks
 
-While other algorithms exist, they are not neccesarily included in the package directly. The performance of this package is however well tested in the [Benchmarks vignette](benchmarks.html), in which other algorithms are also touched upon/compared.
+The performance of this package is well tested in the [Benchmarks vignette](benchmarks.html), in which benchmarks are also prepared.
 
 ## Contact and support
 
@@ -553,5 +481,6 @@ sessionInfo()
 - [1] Ehsani R, Drablos F: [UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
 - [2] Villmann T: **Sobolev metrics for learning of functional data - mathematical and theoretical aspects**. In: *Machine Learning Reports.* Edited by Villmann T, Schleif F-M, vol. 1. Leipzig, Grmany: Medical Department, University of Leipzig; 2007: 1-13.
 - [3] Lebanon G: **Learning riemannian metrics.** In: *Proceedings of the Nineteenth conference on Uncertainty in Artificial Intelligence; Acapulco, Mexico.* Morgan Kaufmann Publishers Inc. 2003: 362-369
-- [4] Benabderrahmane S, Smail-Tabbone, Poch O, Napoli A, Devignes MD. **IntelliGO: a new vector-based semantic similarity measure including annotation origin.** In: *BMC Bioinformatics*. 2010;11:588.
-- [5] Ehsani R, Drablos F: **TopoICSim: a new semantic similarity measure based on gene ontology.** In: *BMC Bioinformatics* 2016, **17**(1):296. DOI: [https://doi.org/10.1186/s12859-016-1160-0](https://doi.org/10.1186/s12859-016-1160-0)
+- [4] Jian Q: **LncRNA2Function: a comprehensive resource for functional investigation of human lncRNAs based on RNA-seq data.**  In: *BMC Genomics* 2015. DOI: [10.1186/1471-2164-16-S3-S2](https://doi.org/10.1186/1471-2164-16-S3-S2)
+- [5] Benabderrahmane S, Smail-Tabbone, Poch O, Napoli A, Devignes MD. **IntelliGO: a new vector-based semantic similarity measure including annotation origin.** In: *BMC Bioinformatics*. 2010;11:588.
+- [6] Ehsani R, Drablos F: **TopoICSim: a new semantic similarity measure based on gene ontology.** In: *BMC Bioinformatics* 2016, **17**(1):296. DOI: [10.1186/s12859-016-1160-0](https://doi.org/10.1186/s12859-016-1160-0)
