@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: novel Gene Annotation Prediction and other GO Metrics
-Version: 0.2.19
+Version: 0.20
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
@@ -16,9 +16,6 @@ Imports:
   methods,
   Matrix,
   compiler,
-  parallel,
-  foreach,
-  doParallel,
   plyr,
   data.table,
   igraph,
