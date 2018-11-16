@@ -45,13 +45,13 @@ annotation to calculate similarity scores between GO terms,
 }
 \examples{
 # Example with default dataset, take a look at the data documentation
-# to fully grasp what's going on with making of the filter etc. (Biobase 
+# to fully grasp what's going on with making of the filter etc. (Biobase
 # ExpressionSet)
 
 # set an artbitrary gene you want to find similarities for. (5th row in this
 # case)
 gid <- "ENSG00000228630"
-result <- GAPGOM::expression_semantic_scoring(gid, 
-                                              GAPGOM::expset)                                        
+result <- GAPGOM::expression_semantic_scoring(gid,
+                                              GAPGOM::expset)
 
 }

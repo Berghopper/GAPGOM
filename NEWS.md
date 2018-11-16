@@ -13,15 +13,16 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 ## [0.3.0 - Unreleased]
 ### Planned changes/features (subject to changes) *=not yet implemented/finished
 ### Added
-- Re-added data which lncRNApred's paper is based on.*
+- Re-added data which lncRNApred's paper is based on.
 - Support for all AnnotationDbi Key types
 - Vignette for GAPGOM.
-- Vignette for benchmarks/performance measuring.*
+- Vignette for benchmarks/performance measuring.* (LAST THING BEING WORKED ON)
 - Term algorithm as exported function.
-- Set go data as exported function
+- Set go data as exported function.
 - some frequently used params can now be set manually (go_data, All_Go_pairs)
 - seperate scoring function (If people want to do their own enrichment/only get semantic similarity scores.)
 - some more arguments for the algorithms to make the user have more control.
+- custom gene interface for topoicsim
 ### Changed
 - data preparation functions, they are now updated and more clear.
 - topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
@@ -30,12 +31,14 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - some tests and their results.
 - used arguments in both algorithms.
 ### Removed
-- fantom5 example data*
+- fantom5 example data
 - direct interface from fantom5 file to expset `fantom_load_expressionset()`.
 ### Fixed
 - documentation of internal functions is now hidden.
 - `data-raw` missing in `.Rbuildignore`.
 - `R CMD check` failing because of different lncRNApred results in factor indices. Fixed by converting unnecesary factors to chars.
+- `R CMD check` failing because of `T` and `F` usage instead of `TRUE`/`FALSE`.
+- `fantom_to_expset()` not always loading correctly; mouse and human had different metadata.
 
 ## [0.2.0 - Polished Potato] - 2018-10-20
 ### Added

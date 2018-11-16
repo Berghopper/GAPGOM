@@ -66,7 +66,7 @@
                                          custom_genes1 = NULL,
                                          custom_genes2 = NULL,
                                          drop = NULL,
-                                         verbose = F,
+                                         verbose = FALSE,
                                          progress_bar = NULL, 
                                          garbage_collection = NULL,
                                          all_go_pairs = NULL,
@@ -89,11 +89,14 @@
   if (is.null(topoargs$IC)) {
     if (verbose) {
       if (is.null(go_data)) {
-        go_data <- set_go_data(organism = organism, ontology = ontology, keytype = keytype)
+        go_data <- set_go_data(organism = organism, ontology = ontology, 
+                               keytype = keytype)
       }
     } else {
       if (is.null(go_data)) {
-        go_data <- suppressMessages(set_go_data(organism = organism, ontology = ontology, keytype = keytype))  
+        go_data <- suppressMessages(set_go_data(organism = organism, 
+                                                ontology = ontology, 
+                                                keytype = keytype))  
       }
     }
     topoargs$IC <- go_data@IC
@@ -136,7 +139,8 @@
     # translation_to_goids
     if (is.null(topoargs$translation_to_goids)) {
       if (is.null(go_data)) {
-        go_data <- set_go_data(organism = organism, ontology = ontology, computeIC = F, keytype = keytype)
+        go_data <- set_go_data(organism = organism, ontology = ontology, 
+                               computeIC = FALSE, keytype = keytype)
       }
       if (is.null(gene_list1) || is.null(gene_list2)) {
         topoargs$translation_to_goids <- NULL
@@ -150,8 +154,8 @@
     if (is.null(all_go_pairs)) {
       if (is.null(topoargs$all_go_pairs)) {
         go_unique_list <- unique(c(topoargs$translation_to_goids$GO,
-                                 unlist(custom_genes1, F, F),
-                                 unlist(custom_genes2, F, F)))
+                                 unlist(custom_genes1, FALSE, FALSE),
+                                 unlist(custom_genes2, FALSE, FALSE)))
         topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
                                                                  go_unique_list) 
       }
@@ -159,8 +163,8 @@
       go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 
                                  colnames(topoargs$all_go_pairs), 
                                  topoargs$translation_to_goids$GO,
-                                 unlist(custom_genes1, F, F),
-                                 unlist(custom_genes2, F, F)))
+                                 unlist(custom_genes1, FALSE, FALSE),
+                                 unlist(custom_genes2, FALSE, FALSE)))
       topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
                                                                go_unique_list,
                                                                old_scores = 
@@ -201,7 +205,8 @@
 #' @importFrom GOSemSim godata
 #' @importFrom AnnotationDbi keytypes
 #' @export
-set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keytype="ENTREZID") {
+set_go_data <- compiler::cmpfun(function(organism, ontology, 
+                                         computeIC = TRUE, keytype="ENTREZID") {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
                     mouse = "org.Mm.eg.db",
@@ -229,7 +234,8 @@ set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keyt
                 "\" IS NOT AVAILABLE. AVAILABLE KEYTYPES;\n"), 
          paste0(keytypes(eval(parse(text=species))), collapse = ", "))
   }
-  return(godata(species, ont = ontology, computeIC = computeIC, keytype = keytype))
+  return(godata(species, ont = ontology, computeIC = computeIC, keytype = 
+                  keytype))
 })
 
 ###TOPOICSIM FUNCTIONS
@@ -253,8 +259,9 @@ set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keyt
 #' @importFrom Matrix Matrix
 #' @keywords internal
 .prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2, 
-                                                             sparse = F,
-                                                             old_scores = F) {
+                                                             sparse = FALSE,
+                                                             old_scores = 
+                                                               FALSE) {
   if (sparse) {
     score_matrix <- Matrix(nrow = length(vec1), 
          ncol = length(vec2), 
@@ -271,7 +278,8 @@ set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keyt
   if (old_scores) {
     for (row in rownames(old_scores)) {
       for (col in colnames(old_scores)) {
-        score_matrix <- .set_values(row, col, score_matrix, old_scores[row, col]) 
+        score_matrix <- .set_values(row, col, score_matrix, 
+                                    old_scores[row, col]) 
       }
     }
   }
@@ -346,7 +354,8 @@ set_go_data <- compiler::cmpfun(function(organism, ontology, computeIC = T, keyt
 #' @keywords internal
 .prepare_score_df <- compiler::cmpfun(function(original_ids, score, gene_id) {
   # score_df is the 'score' (correlation/metric) dataframe against target gene.
-  # combine the dataframe if combine is selected, otherwise just add regular score.
+  # combine the dataframe if combine is selected, otherwise just add regular 
+  # score.
   score_df <- data.frame(original_ids, score)
   score_df <- na.omit(score_df)
   # filter gene ID's (Select everything except the chosen gene).

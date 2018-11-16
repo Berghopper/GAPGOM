@@ -30,14 +30,14 @@
 #' used_method - the used method to determine the ontology term similarity
 #' @examples
 #' # Example with default dataset, take a look at the data documentation
-#' # to fully grasp what's going on with making of the filter etc. (Biobase 
+#' # to fully grasp what's going on with making of the filter etc. (Biobase
 #' # ExpressionSet)
 #' 
 #' # set an artbitrary gene you want to find similarities for. (5th row in this
 #' # case)
 #' gid <- "ENSG00000228630"
-#' result <- GAPGOM::expression_semantic_scoring(gid, 
-#'                                               GAPGOM::expset)                                        
+#' result <- GAPGOM::expression_semantic_scoring(gid,
+#'                                               GAPGOM::expset)
 #'
 #' @import Biobase
 #' @export
@@ -77,10 +77,20 @@ expression_semantic_scoring <- function(gene_id,
 }
 
 #' @rdname ambiguous_functions
+.ambiguous_scorecalc <- compiler::cmpfun(function(args, expression_data, applyfunc) {
+  # apply the score calculation function
+  score <- apply(expression_data,
+                 1, applyfunc, args)
+  # prepare and format a dataframe to return
+  score_df <- .prepare_score_df(rownames(expression_data), score, 
+                                args$gene_id)
+  return(score_df)
+})
+
+#' @rdname ambiguous_functions
 #' @importFrom stats cor
 .score_pearson <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, args$expression_data, function(x) abs(cor(
-    as.numeric(x), args$target_expression_data)))
+  score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_pearson)
   score_df <- .ambiguous_method_origin(score_df, "pearson")
   return(score_df)
 })
@@ -88,8 +98,7 @@ expression_semantic_scoring <- function(gene_id,
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
 .score_spearman <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, args$expression_data, function(x) abs(cor(
-    as.numeric(x), args$target_expression_data, method = "spearman")))
+  score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_spearman)
   score_df <- .ambiguous_method_origin(score_df, "spearman")
   return(score_df)
 })
@@ -97,45 +106,32 @@ expression_semantic_scoring <- function(gene_id,
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
 .score_kendall <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, args$expression_data, function(x) abs(cor(
-    as.numeric(x), args$target_expression_data, method = "kendall")))
+  score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_kendall)
   score_df <- .ambiguous_method_origin(score_df, "kendall")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
 .score_fisher <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, args$expression_data, function(x) fisher_metric(
-    as.numeric(x), args$target_expression_data))
+  score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_fisher)
   score_df <- .ambiguous_method_origin(score_df, "fisher")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
 .score_sobolev <- compiler::cmpfun(function(args) {
-  score_df <- .ambiguous_scorecalc(args, args$expression_data, function(x) sobolev_metric(
-    as.numeric(x), args$target_expression_data))
+  score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_sobolev)
   score_df <- .ambiguous_method_origin(score_df, "sobolev")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
-#' @importFrom parallel makeCluster stopCluster
-#' @importFrom doParallel registerDoParallel
-#' @import foreach
 .score_combined <- compiler::cmpfun(function(args) {
   # Run enrichment for each method
   score_methods <- c(.score_pearson, .score_spearman, .score_kendall, 
                        .score_sobolev, .score_fisher)
-  # cl <- makeCluster(args$ncluster)
-  # registerDoParallel(cl)
-  # scores <- foreach(method=score_methods, .combine = 'rbind') %dopar% {
-  #   return(method(args))
-  # }
-  # stopCluster(cl)
-  
   # apply for non-parallel testing purposes
-  scores <<-
+  scores <-
     lapply(score_methods, function(method) {
     return(method(args))
       })

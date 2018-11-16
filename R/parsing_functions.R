@@ -104,14 +104,17 @@
                                                       organism, 
                                                       ontology,
                                                       keytype,
-                                                      verbose = F,
+                                                      verbose = FALSE,
                                                       go_data = NULL) {
   keys_col <- .resolve_keys_col(expression_set, keytype)
   if (is.null(go_data)) {
     if (verbose) {
-      go_data <- set_go_data(organism, ontology, computeIC = F, keytype = keytype)
+      go_data <- set_go_data(organism, ontology, computeIC = FALSE, 
+                             keytype = keytype)
     } else {
-      go_data <- suppressMessages(set_go_data(organism, ontology, computeIC = F, keytype = keytype))
+      go_data <- suppressMessages(set_go_data(organism, ontology, 
+                                              computeIC = FALSE, 
+                                              keytype = keytype))
     }  
   }
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
@@ -119,7 +122,7 @@
   # convert entrez_ids and grab subset of godata (quicker)
   all_keys <- lapply(expression_set@featureData@data[, keys_col], 
                      .entrezraw_to_entrez)
-  all_keys <- unique(unlist(all_keys, F, F))
+  all_keys <- unique(unlist(all_keys, FALSE, FALSE))
   # grab correct go data
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% 
                                         all_keys,])
@@ -179,7 +182,7 @@
   regex_str <- paste0(".*", paste0(regex_str, collapse=""), ".*")
   exp <- regexec(regex_str, colnames_vector)
   # get result
-  regex_result <- unlist(regmatches(colnames_vector, exp), F, F)
+  regex_result <- unlist(regmatches(colnames_vector, exp), FALSE, FALSE)
   if (length(regex_result) < 1) {
     return(NULL)
   } else {
@@ -252,12 +255,12 @@
   regex_str <- "[Ee][Nn][Tt][Rr][Ee][Zz][Gg][Ee][Nn][Ee]:\\d*,?"
   exp <- regexec(regex_str, rawid)
   # get result
-  regex_result <- unlist(regmatches(rawid, exp), F, F)
+  regex_result <- unlist(regmatches(rawid, exp), FALSE, FALSE)
   # check if raw id
   if (length(regex_result) > 0) {
     # regex match!
     ids_split <- unlist(strsplit(rawid, 
-                                 ",|:"), F, F)
+                                 ",|:"), FALSE, FALSE)
     ids <- ids_split[seq(2, length(ids_split), 2)] 
   } else {
     # in any other case, or where the id is not entrez, return the input.

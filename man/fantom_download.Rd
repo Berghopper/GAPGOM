@@ -4,8 +4,8 @@
 \alias{fantom_download}
 \title{GAPGOM - fantom_download()}
 \usage{
-fantom_download(down_dir, organism = "human", unpack = T,
-  noprompt = F)
+fantom_download(down_dir, organism = "human", unpack = TRUE,
+  noprompt = FALSE)
 }
 \arguments{
 \item{down_dir}{The folder/directory to download the fantom5 file to.}
@@ -31,6 +31,6 @@ unpacking can be turned off
 }
 \examples{
 \dontrun{
-fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
+fantom_file <- fantom_download("./", organism = "mouse", noprompt = TRUE)
 }
 }

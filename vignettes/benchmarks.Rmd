@@ -486,6 +486,52 @@ Speed might vary hugely depending on the organism, ontology and geneset used. Th
 ## Benchmarks
 
 <TODO: lncRNApred benchmark!>
+```{r, eval=F}
+####NOT WORKING FOR NOW
+ft5 <- GAPGOM::fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/human/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose = T)
+ft5_subset <- ft5
+ft5_subset$df <- unique(as.data.frame(ft5$df)[c(76762,
+76764,
+76765,
+17694:17696,
+56201:56204,
+56197:56199,
+193989:193993,
+194001:194004,
+44898:44907,
+44896,
+44983,
+44987,
+44993,
+42141:42144,
+42149,
+42150,
+193300,
+193301,
+20433,
+20439:20443,
+56186:56189,
+17679:17683,
+87065,
+87072:87075,
+148279,
+148280,
+159341:159343,
+85156:85158,
+21112,
+40385,
+40386,
+128512:128519,
+162700:162718,
+8482:8485, sample(rownames(ft5$df), 1000)), ])
+ft5_expset <- GAPGOM::fantom_to_expset(ft5_subset, verbose = T, species = "human")
+rm(ft5)
+gc()
+# list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915","5832")
+coffee_filter <- rownames(ft5_expset@featureData@data[ft5_expset@featureData@data$`hgnc (gene symbol) id associated with the transcript`!="",])
+result <- GAPGOM::expression_prediction("chr19:49956885..49956905,+", ft5_expset, coffee_filter, "human", "MF")
+```
+
 
 ## For code reviewers
 

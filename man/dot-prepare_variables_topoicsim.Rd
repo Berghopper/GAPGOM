@@ -6,7 +6,7 @@
 \usage{
 .prepare_variables_topoicsim(organism, ontology, gene_list1 = NULL,
   gene_list2 = NULL, custom_genes1 = NULL, custom_genes2 = NULL,
-  drop = NULL, verbose = F, progress_bar = NULL,
+  drop = NULL, verbose = FALSE, progress_bar = NULL,
   garbage_collection = NULL, all_go_pairs = NULL, topoargs = list(),
   term_only = FALSE, keytype = "ENTREZID", go_data = NULL)
 }

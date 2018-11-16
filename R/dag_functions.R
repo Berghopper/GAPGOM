@@ -29,8 +29,8 @@ NULL
   if (p1 == 0 || p2 == 0)
     return(NA)
 
-  ancestor1 <- unlist(go_annotation[[go_id1]], F, F)
-  ancestor2 <- unlist(go_annotation[[go_id2]], F, F)
+  ancestor1 <- unlist(go_annotation[[go_id1]], FALSE, FALSE)
+  ancestor2 <- unlist(go_annotation[[go_id2]], FALSE, FALSE)
   # always intersect all GOIDs, even if they are the same.
   common_ancestor <- intersect(ancestor1, ancestor2)
   return(common_ancestor)

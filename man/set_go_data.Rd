@@ -4,7 +4,7 @@
 \alias{set_go_data}
 \title{GAPGOM - set_go_data()}
 \usage{
-set_go_data(organism, ontology, computeIC = T, keytype = "ENTREZID")
+set_go_data(organism, ontology, computeIC = TRUE, keytype = "ENTREZID")
 }
 \arguments{
 \item{organism}{where to be scanned genes reside in, this option

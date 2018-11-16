@@ -2,7 +2,6 @@
 % Please edit documentation in R/similarity_prediction.R, R/similarity_scoring.R
 \name{ambiguous_functions}
 \alias{ambiguous_functions}
-\alias{.ambiguous_scorecalc}
 \alias{.ambiguous_score_rev_sort}
 \alias{.ambiguous_score_sort}
 \alias{.ambiguous_enrichment}
@@ -13,6 +12,7 @@
 \alias{.predict_fisher}
 \alias{.predict_sobolev}
 \alias{.predict_combined}
+\alias{.ambiguous_scorecalc}
 \alias{.score_pearson}
 \alias{.score_spearman}
 \alias{.score_kendall}
@@ -21,8 +21,6 @@
 \alias{.score_combined}
 \title{GAPGOM internal - Ambiguous/prediction functions}
 \usage{
-.ambiguous_scorecalc(args, expression_data, applyfunc)
-
 .ambiguous_score_rev_sort(score_df)
 
 .ambiguous_score_sort(score_df)
@@ -42,6 +40,8 @@
 .predict_sobolev(args)
 
 .predict_combined(args)
+
+.ambiguous_scorecalc(args, expression_data, applyfunc)
 
 .score_pearson(args)
 

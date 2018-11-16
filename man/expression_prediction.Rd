@@ -7,7 +7,7 @@
 expression_prediction(gene_id, expression_set, id_select_vector, organism,
   ontology, enrichment_cutoff = 250, method = "combine",
   significance = 0.05, go_amount = 5, filter_pvals = FALSE,
-  idtype = "ENTREZID", verbose = F, id_translation_df = NULL,
+  idtype = "ENTREZID", verbose = FALSE, id_translation_df = NULL,
   go_data = NULL)
 }
 \arguments{
@@ -47,6 +47,9 @@ and "combine".}
 \item{significance}{normalized p-values (fdr) that are below this number 
 will be kept. has to be a float/double between 0-1. Default is 0.05}
 
+\item{go_amount}{minimal amount of gos that a result needs to have to be 
+considered similar enough.}
+
 \item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
 
 \item{idtype}{idtype of the expression_data. If not correctly specified, 
@@ -56,6 +59,8 @@ error will specify available IDs. default="ENTREZID"}
 
 \item{id_translation_df}{df with translations between ID and GOID. col1 = ID,
 col2 = GOID.}
+
+\item{go_data}{from set_go_data function. A GoSemSim go_data object.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
@@ -94,7 +99,9 @@ result <- GAPGOM::expression_prediction(gid,
                                         filter_vector, 
                                         "human", 
                                         "BP",
-                                        id_translation_df = GAPGOM::id_translation_df,
-                                        method = "combine", verbose = T, filter_pvals = T
+                                        id_translation_df = 
+                                          GAPGOM::id_translation_df,
+                                        method = "combine", verbose = TRUE, 
+                                        filter_pvals = TRUE
 )
 }

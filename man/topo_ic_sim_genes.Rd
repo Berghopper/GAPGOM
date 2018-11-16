@@ -5,8 +5,8 @@
 \title{GAPGOM - topo_ic_sim_genes()}
 \usage{
 topo_ic_sim_genes(ontology, organism, genes1, genes2,
-  custom_genes1 = NULL, custom_genes2 = NULL, verbose = F,
-  progress_bar = T, garbage_collection = F, drop = NULL,
+  custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE,
+  progress_bar = TRUE, garbage_collection = FALSE, drop = NULL,
   all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL)
 }
 \arguments{
@@ -29,7 +29,11 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 
 \item{genes2}{Gene ID(s) of the second Gene (vector).}
 
-\item{custom_genes1}{Custom genes added to the first list,}
+\item{custom_genes1}{Custom genes added to the first list, needs to be a 
+named list with the name being the arbitrary ID and the value being a vector
+of GO terms.}
+
+\item{custom_genes2}{same as custom_genes1 but added to second gene list.}
 
 \item{verbose}{set to true for more informative/elaborate output.}
 

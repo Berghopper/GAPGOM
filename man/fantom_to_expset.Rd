@@ -4,10 +4,13 @@
 \alias{fantom_to_expset}
 \title{GAPGOM - fantom_to_expset()}
 \usage{
-fantom_to_expset(fanraw, filter = T, verbose = F)
+fantom_to_expset(fanraw, species, filter = TRUE, verbose = FALSE)
 }
 \arguments{
 \item{fanraw}{raw data.table object from the fantom_load_raw() function.}
+
+\item{species}{either "human" or "mouse". This is important because both
+datasets have different metadata/stats}
 
 \item{filter}{Filter, this causes only entries to be added that have an
 entrez ID. Normally this should be left on default (TRUE) because all
@@ -32,7 +35,7 @@ This function only accepts the RLE normalized data!
 \examples{
 \dontrun{
 ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
-verbose = T)
-expset <- fantom_to_expset(ft5, verbose = T)
+verbose = TRUE)
+expset <- fantom_to_expset(ft5, verbose = TRUE)
 }
 }

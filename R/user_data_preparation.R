@@ -14,12 +14,12 @@
 #' @examples 
 #' \dontrun{
 #' ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
-#' verbose=T)
+#' verbose=TRUE)
 #' }
 #' @importFrom data.table fread
 #' @export
-fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
-  old <- options(stringsAsFactors = F)
+fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = FALSE) {
+  old <- options(stringsAsFactors = FALSE)
   on.exit(options(old), add = TRUE)
   # first parse fantom column variables.
   if (verbose) print("reading header variables...")
@@ -48,10 +48,13 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
   if (verbose) print("DONE")
   if (verbose) print("formatting column names...")
   # and touch up column names
-  colnames(fan) <- sapply(colnames(fan), function(x){translation_df[translation_df$key==x,]$value})
+  colnames(fan) <- sapply(colnames(fan), function(x){
+    translation_df[translation_df$key==x,]$value})
   if (verbose) print("DONE")
   # return df+leftover metadata (header variables).
-  return(list(df=fan, meta=translation_df[translation_df$type!="ColumnVariables" | translation_df$type!=0,]))
+  return(list(df=fan, 
+              meta=translation_df[translation_df$type!="ColumnVariables" | 
+                                    translation_df$type!=0,]))
 })
 
 #' GAPGOM - fantom_to_expset()
@@ -63,6 +66,8 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
 #' This function only accepts the RLE normalized data!
 #'
 #' @param fanraw raw data.table object from the fantom_load_raw() function.
+#' @param species either "human" or "mouse". This is important because both
+#' datasets have different metadata/stats
 #' @param filter Filter, this causes only entries to be added that have an
 #' entrez ID. Normally this should be left on default (TRUE) because all
 #' algorithms in this library need the entrez IDs for translation. 
@@ -76,13 +81,14 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = F) {
 #' @examples 
 #' \dontrun{
 #' ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
-#' verbose = T)
-#' expset <- fantom_to_expset(ft5, verbose = T)
+#' verbose = TRUE)
+#' expset <- fantom_to_expset(ft5, verbose = TRUE)
 #' }
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new
 #' @export
-fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
+fantom_to_expset <- compiler::cmpfun(function(fanraw, species, filter = TRUE, 
+                                              verbose = FALSE) {
   fan <- fanraw$df
   meta <- fanraw$meta
   if (filter) {
@@ -90,14 +96,18 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
     if (verbose) print("DONE")
     fan <- .fantom_filter_entrez(fan)
   } 
+  icol <- switch (species,
+          human=8,
+          mouse=7)
   if (verbose) print("converting to expressionset...")
-  expression_matrix <- as.matrix(fan[,7:ncol(fan)])
+  expression_matrix <- as.matrix(fan[,icol:ncol(fan)])
   rownames(expression_matrix) <- fan$`CAGE peak id`
-  featuredat <- as.data.frame(fan[,2:6])
+  featuredat <- as.data.frame(fan[,2:(icol-1)])
   rownames(featuredat) <- fan$`CAGE peak id`
   expset <- ExpressionSet(expression_matrix, 
                           featureData = new("AnnotatedDataFrame", 
-                                            data=featuredat),...=meta) # issue #6
+                                            data=featuredat),...=meta) 
+  # issue #6
   if (verbose) print("DONE")
   return(expset)
 })
@@ -137,13 +147,15 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, filter = T, verbose = F) {
 #' 
 #' @examples
 #' \dontrun{
-#' fantom_file <- fantom_download("./", organism = "mouse", noprompt = T)
+#' fantom_file <- fantom_download("./", organism = "mouse", noprompt = TRUE)
 #' }
 #' @importFrom GEOquery gunzip
 #' @importFrom utils download.file
 #' @export
-fantom_download <- compiler::cmpfun(function(down_dir, organism="human", unpack = T, 
-                            noprompt = F) {
+fantom_download <- compiler::cmpfun(function(down_dir, 
+                                             organism="human", 
+                                             unpack = TRUE, 
+                                             noprompt = FALSE) {
   baseurl <- "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/"
   url <- switch(organism, 
                 "human" = paste0(
@@ -186,7 +198,7 @@ fantom_download <- compiler::cmpfun(function(down_dir, organism="human", unpack 
   } 
   download.file(url, full_filename, "auto")
   if (unpack) {
-    gunzip(full_filename, overwrite = T)
+    gunzip(full_filename, overwrite = TRUE)
     full_filename <- substr(full_filename, 1, length(full_filename)-3)
   }
   return(full_filename)

@@ -8,7 +8,8 @@
 #' is temporary and will be replaced with other checks later on.
 #' 
 #' @keywords internal
-.topo_ic_sim_argcheck_genes <- compiler::cmpfun(function(ontology, organism, genes1, genes2) {
+.topo_ic_sim_argcheck_genes <- compiler::cmpfun(function(ontology, organism, 
+                                                         genes1, genes2) {
   # set ontology and organism
   ontology <- match.arg(ontology, c("MF", "BP", "CC"))
   organism <- match.arg(organism, c("human",

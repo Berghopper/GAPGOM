@@ -101,7 +101,8 @@ View(expressions)
 Converting the expression dataframe to an ExpressionSet;
 
 ```{r expset, eval=F}
-expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
+library(Matrix)
+expression_matrix <- Matrix(as.matrix(expressions[,2:ncol(expressions)]))
 rownames(expression_matrix) <- expressions$ENTREZID
 featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
 rownames(featuredat) <- expressions$ENTREZID # because they will be the rownames anyway.
@@ -211,9 +212,10 @@ result <- GAPGOM::expression_prediction(gid,
                                         filter_vector, 
                                         "human", 
                                         "BP",
-                                        id_translation_df = GAPGOM::id_translation_df,
-                                        method = "combine", verbose = T, filter_pvals = T
-)
+                                        id_translation_df = 
+                                          GAPGOM::id_translation_df,
+                                        method = "combine", 
+                                        verbose = TRUE, filter_pvals = TRUE)
 kable(result) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
@@ -312,6 +314,7 @@ colnames(id_translation_df) <- c("ORIGID","GO")
 
 # set gid and run.
 gid <- "ENSG00000228630"
+#gid <- "ENSG00000161618"
 
 result <- GAPGOM::expression_prediction(gid, 
                                        expset, 

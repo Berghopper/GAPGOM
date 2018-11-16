@@ -4,7 +4,7 @@
 \alias{fantom_load_raw}
 \title{GAPGOM - fantom_load_raw()}
 \usage{
-fantom_load_raw(filepath, verbose = F)
+fantom_load_raw(filepath, verbose = FALSE)
 }
 \arguments{
 \item{filepath}{filename of fantom5 file.}
@@ -25,6 +25,6 @@ data.frame object.
 \examples{
 \dontrun{
 ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
-verbose=T)
+verbose=TRUE)
 }
 }

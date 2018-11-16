@@ -62,7 +62,8 @@
       if (x != "all" & x != topoargs$root & !is.na(x) &
         length(intersect(immediate_children_x, common_ancestors)) == 0) {
         # Subgraph from a disjunctive common ancestor to root
-        sglca <- subGraph(c(get(x, topoargs$go_annotation), x), topoargs$weighted_dag)
+        sglca <- subGraph(c(get(x, topoargs$go_annotation), x), 
+                          topoargs$weighted_dag)
         sglca <- .set_edge_weight(sglca, topoargs$IC)
         
         wLP_x_root <- .longest_path(sglca, x, topoargs$root, topoargs$IC)
@@ -137,7 +138,8 @@
   } else if (gene1 %in% names(topoargs$custom_genes2)) {
     gos1 <- topoargs$custom_genes2[[gene1]]
   } else {
-    gos1 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene1,]$GO)
+    gos1 <- as.character(topoargs$translation_to_goids[
+      topoargs$translation_to_goids$ID==gene1,]$GO)
   }
   
   if (gene2 %in% names(topoargs$custom_genes1)) {
@@ -145,7 +147,8 @@
   } else if (gene1 %in% names(topoargs$custom_genes2)) {
     gos2 <- topoargs$custom_genes2[[gene2]]
   } else {
-    gos2 <- as.character(topoargs$translation_to_goids[topoargs$translation_to_goids$ID==gene2,]$GO)
+    gos2 <- as.character(topoargs$translation_to_goids[
+      topoargs$translation_to_goids$ID==gene2,]$GO)
   }
   
   # return NA if goids sums are both 0 (no goids available to measure)
@@ -178,8 +181,11 @@
     } else if(go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
               go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
       # set precalculated value.
-      scores <- .set_values(go1, go2, scores, topoargs$selected_freq_go_pairs[go1, go2])
-      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, topoargs$selected_freq_go_pairs[go1, go2])
+      scores <- .set_values(go1, go2, scores, 
+                            topoargs$selected_freq_go_pairs[go1, go2])
+      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
+                                           topoargs$selected_freq_go_pairs[
+                                             go1, go2])
     } else {
       score <-
         .topo_ic_sim_titj(go1,
@@ -340,7 +346,10 @@
 #' "xenopus".
 #' @param genes1 Gene ID(s) of the first Gene (vector).
 #' @param genes2 Gene ID(s) of the second Gene (vector).
-#' @param custom_genes1 Custom genes added to the first list, 
+#' @param custom_genes1 Custom genes added to the first list, needs to be a 
+#' named list with the name being the arbitrary ID and the value being a vector
+#' of GO terms.
+#' @param custom_genes2 same as custom_genes1 but added to second gene list.
 #' @param verbose set to true for more informative/elaborate output.
 #' @param progress_bar Whether to show the progress of the calculation 
 #' (default = FALSE)
@@ -390,9 +399,9 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               genes2,
                               custom_genes1 = NULL,
                               custom_genes2 = NULL,
-                              verbose = F,
-                              progress_bar = T,
-                              garbage_collection = F,
+                              verbose = FALSE,
+                              progress_bar = TRUE,
+                              garbage_collection = FALSE,
                               drop = NULL,
                               all_go_pairs = NULL,
                               idtype = "ENTREZID",

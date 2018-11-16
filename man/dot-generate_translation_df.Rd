@@ -5,7 +5,7 @@
 \title{GAPGOM internal - .generate_translation_df()}
 \usage{
 .generate_translation_df(expression_set, organism, ontology, keytype,
-  verbose = F, go_data = NULL)
+  verbose = FALSE, go_data = NULL)
 }
 \arguments{
 \item{expression_set}{ExpressionSet object --> see Biobase package.}
