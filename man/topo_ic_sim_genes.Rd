@@ -4,18 +4,13 @@
 \alias{topo_ic_sim_genes}
 \title{GAPGOM - topo_ic_sim_genes()}
 \usage{
-topo_ic_sim_genes(ontology, organism, genes1, genes2,
+topo_ic_sim_genes(organism, ontology, genes1, genes2,
   custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE,
-  progress_bar = TRUE, garbage_collection = FALSE, drop = NULL,
-  all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL)
+  progress_bar = TRUE, garbage_collection = FALSE,
+  use_precalculation = FALSE, drop = NULL, all_go_pairs = NULL,
+  idtype = "ENTREZID", go_data = NULL)
 }
 \arguments{
-\item{ontology}{desired ontology to use for similarity calculations.
-One of three;
-"BP" (Biological process),
-"MF" (Molecular function) or
-"CC" (Cellular Component).}
-
 \item{organism}{organism where to be scanned genes reside in, this option
 is neccesary to select the correct GO DAG. Options are based on the org.db
 bioconductor package;
@@ -24,6 +19,12 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 "xenopus".}
+
+\item{ontology}{desired ontology to use for similarity calculations.
+One of three;
+"BP" (Biological process),
+"MF" (Molecular function) or
+"CC" (Cellular Component).}
 
 \item{genes1}{Gene ID(s) of the first Gene (vector).}
 
@@ -43,6 +44,12 @@ of GO terms.}
 \item{garbage_collection}{whether to do R garbage collection. This is
 useful for very large calculations/datasets, as it might decrease ram usage.
 This option might however increase calculation time slightly.}
+
+\item{use_precalculation}{wheter to use precalculated score matrix or not.
+This speeds up calculation for the most frequent GO terms.
+Only available for human, mouse with ids entrez/ensembl. Default is False
+because this is the safest and most accurate option. Every update of org.Db
+libraries makes this matrix outdated, so use at your own risk.}
 
 \item{drop}{vector of GOID you want to exclude from the analysis.}
 
@@ -84,14 +91,16 @@ InterSet similarities are only applicable to gene sets). [1]
 }
 \examples{
 # single gene mode
-result <- GAPGOM::topo_ic_sim_genes("218", "501", ont="MF", organism="human", 
-                                   drop=NULL)
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", drop = NULL)
 # genelist mode
 list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 "222","8659","501","64577","223","217","4329","10840","7915")
-result <- GAPGOM::topo_ic_sim_genes(list1, list1, ont="MF", organism="human", 
-                              drop=NULL)
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, drop = NULL)
 
+# with custom gene
+custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", 
+                                    custom_genes1 = custom, drop = NULL)
 
 }
 \references{

@@ -17,8 +17,6 @@
 #' @param method which statistical method to use for the prediction, currently
 #' there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 #' and "combine".
-#' @param ncluster Amount of cores you want to run the combined method on. 
-#' Default=1. Does not work for other methods.
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -43,8 +41,7 @@
 #' @export
 expression_semantic_scoring <- function(gene_id,
                                         expression_set,
-                                        method = "combine",
-                                        ncluster = 1) {
+                                        method = "combine") {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -58,8 +55,7 @@ expression_semantic_scoring <- function(gene_id,
   args <- list(
     "gene_id" = gene_id,
     "expression_data" = expression_set@assayData$exprs,
-    "target_expression_data" = target_expression_data,
-    "ncluster" = ncluster)
+    "target_expression_data" = target_expression_data)
   scores <- switch(method,
          "pearson" =  .score_pearson(args),
          "spearman" = .score_spearman(args),

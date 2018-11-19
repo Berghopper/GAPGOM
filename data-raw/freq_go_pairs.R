@@ -5,9 +5,10 @@
   # old_listy is deprecated
   options(digits=22, stringsAsFactors = F)
   ids <- c("ENTREZ", "ENSEMBL")
-  organisms <- c("mouse")#, "human")
-  ontologies <- c("MF")#, "CC", "BP")
+  organisms <- c("mouse", "human")
+  ontologies <- c("MF", "CC", "BP")
   combos <- expand.grid(ids, ontologies, organisms, stringsAsFactors = F)
+  my_names <- apply(combos, 1, function(row) {paste0(row, collapse = "_")})
   #colnames(combos) <- c("id", "organism", "ontology")
   res <- lapply(seq_len(nrow(combos)), function(i) {
     row <- combos[i,]
@@ -20,14 +21,20 @@
     top_gos <- counted[rev(order(counted$N)),][1:amount,][[1]]
     # now that we have the top gos, generate the matrix.
     custom <- setNames(as.list(top_gos), seq(top_gos))
-    return(GAPGOM::topo_ic_sim_genes(ontology, organism, c(), c(), 
-                                     custom_genes1 = custom, 
-                                     custom_genes2 = custom, 
-                                     go_data = tmp_godat, 
-                                     use_precalculation = F, 
-                                     garbage_collection = T, idtype = id)$AllGoPairs)
+    resmat <- GAPGOM::topo_ic_sim_genes(ontology, organism, c(), c(), 
+                                        custom_genes1 = custom, 
+                                        custom_genes2 = custom, 
+                                        go_data = tmp_godat, 
+                                        use_precalculation = F, 
+                                        garbage_collection = T, idtype = id)$AllGoPairs
+    save(resmat, file=paste0("./", my_names[i] ,".RData"), compress = "xz", compression_level = 9)
+    return(resmat)
   })
-  names(res) <- apply(combos, 1, function(row) {paste0(row, collapse = "_")})
+  names(res) <- my_names
   return(res)
 }
-res <- .gen_semscor_topo_matrices()
+res <- .gen_semscor_topo_matrices(amount=350)
+# add sessioninfo to stored result, very important to see if the matrix is still
+# up-to-date.
+res$sessioninfo <- sessionInfo()
+save(res, file="./res.RData", compress = "xz", compression_level = 9)

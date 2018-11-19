@@ -101,8 +101,7 @@ View(expressions)
 Converting the expression dataframe to an ExpressionSet;
 
 ```{r expset, eval=F}
-library(Matrix)
-expression_matrix <- Matrix(as.matrix(expressions[,2:ncol(expressions)]))
+expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
 rownames(expression_matrix) <- expressions$ENTREZID
 featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
 rownames(featuredat) <- expressions$ENTREZID # because they will be the rownames anyway.
@@ -285,10 +284,10 @@ The original algorithm used the lncRNA2Function data, to test if the results are
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
 options(stringsAsFactors = F)
-ExpressionData = read.table('./lncRNA2function_data.txt', sep='\t', head=TRUE)
+ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
 
 # Gene ID's and annotation term type.
-EnsemblID2GOID = read.table('./EG2GO.txt', sep='\t',head=TRUE)
+EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t',head=TRUE)
 
 ## Conversion to expressionset
 
@@ -437,14 +436,14 @@ All forumulas/explanations are quoted from the paper (references edited). [6]
 The following example uses the [pfam clan gene set](https://pfam.xfam.org/family/PF00171) to measure intraset similarity. For the single gene, `EntrezID` 218 and 501 are compared.
 
 ```{r TopoICSim}
-result <- GAPGOM::topo_ic_sim_genes("MF", "human", "218", "501",
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
                                    drop=NULL, progress_bar = F)
 kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 result$GeneSim
 # genelist mode
 list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 "222","8659","501","64577","223","217","4329","10840","7915")
-result <- GAPGOM::topo_ic_sim_genes(list1, list1, ont="MF", organism="human", 
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, 
                               drop=NULL, progress_bar = F)
 kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 kable(result$GeneSim) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
@@ -460,6 +459,23 @@ The $n\times m$ matrix of GO terms including their similarities. Some values mig
 - `GeneSim`
 
 The gene/geneset similarities depending on your input. Can be 1 number, or a matrix displaying all possible combinations. $\to$ The mean of the geneset matrix shows the intraset/interset similarity.
+
+#### Custom genes
+
+Besides this, you can also define custom genes for TopoICSim. This consists of an arbitrary amount of GO terms. The custom genes have to individually defined in a named list.
+
+```{r, eval=FALSE}
+custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", 
+                                     custom_genes1 = custom, drop = NULL)
+```
+
+Here we define a custom gene named "cus1" with the GO terms; "GO:0016787", "GO:0042802", "GO:0005524", it will be added to the first gene vector (218).
+If you want to just have a custom gene, you can define an empty vector.
+
+#### Other notes.
+
+With TopoICSim there is a pre-calculated score matrix available, this can be turned on/off. The scores might become deprecated however, as soon as one of the org.DB packages gets an update. For this reason, we advise to most keep this option off. You can also pre-calculate some GO's yourself using the custom genes. all_go_pairs can then be used as a precalculated score matrix.
 
 ## Parrallel processing and big data
 

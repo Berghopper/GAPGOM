@@ -4,8 +4,7 @@
 \alias{expression_semantic_scoring}
 \title{GAPGOM - expression_prediction()}
 \usage{
-expression_semantic_scoring(gene_id, expression_set, method = "combine",
-  ncluster = 1)
+expression_semantic_scoring(gene_id, expression_set, method = "combine")
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -18,9 +17,6 @@ ExpressionSet you have to define one yourself.}
 \item{method}{which statistical method to use for the prediction, currently
 there are 5 available; "pearson", "spearman", "kendall", "fisher", "sobolev"
 and "combine".}
-
-\item{ncluster}{Amount of cores you want to run the combined method on. 
-Default=1. Does not work for other methods.}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.

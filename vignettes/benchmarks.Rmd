@@ -292,7 +292,7 @@ for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i]
     go1 <- pair[[1]]
     go2 <- pair[[2]]
-    GAPGOM::topo_ic_sim_term(ontology, organism, go1, go2, go_data = go_data)
+    GAPGOM::topo_ic_sim_term(organism, ontology, go1, go2, go_data = go_data)
   })
   time <- max(prof_toptitj$x$message$prof$time)*10
   mem <- max(prof_toptitj$x$message$prof$memalloc)
@@ -357,7 +357,7 @@ for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i]
     gene1 <- pair[[1]]
     gene2 <- pair[[2]]
-    GAPGOM::topo_ic_sim_genes(ontology, organism, gene1, gene2, go_data=go_data)
+    GAPGOM::topo_ic_sim_genes(organism, ontology, gene1, gene2, go_data=go_data)
   })
   time <- max(prof_topg1g2$x$message$prof$time)*10
   mem <- max(prof_topg1g2$x$message$prof$memalloc)
@@ -417,7 +417,7 @@ for (i in seq(length(list1)-1)) {
   sampled_list <- list1[1:(i+1)]
   print(sampled_list)
   p <- profvis({
-     GAPGOM::topo_ic_sim_genes(ontology, organism, sampled_list, sampled_list, drop=NULL, go_data=go_data)
+     GAPGOM::topo_ic_sim_genes(organism, ontology, sampled_list, sampled_list, drop=NULL, go_data=go_data)
    })
   time <- max(p$x$message$prof$time)*10
   mem <- max(p$x$message$prof$memalloc)
@@ -487,49 +487,40 @@ Speed might vary hugely depending on the organism, ontology and geneset used. Th
 
 <TODO: lncRNApred benchmark!>
 ```{r, eval=F}
+options(stringsAsFactors = F)
 ####NOT WORKING FOR NOW
-ft5 <- GAPGOM::fantom_load_raw("/media/casper/USB_ccpeters/internship_thesis/data/f5/human/hg19.cage_peak_phase1and2combined_tpm_ann.osc.txt", verbose = T)
-ft5_subset <- ft5
-ft5_subset$df <- unique(as.data.frame(ft5$df)[c(76762,
-76764,
-76765,
-17694:17696,
-56201:56204,
-56197:56199,
-193989:193993,
-194001:194004,
-44898:44907,
-44896,
-44983,
-44987,
-44993,
-42141:42144,
-42149,
-42150,
-193300,
-193301,
-20433,
-20439:20443,
-56186:56189,
-17679:17683,
-87065,
-87072:87075,
-148279,
-148280,
-159341:159343,
-85156:85158,
-21112,
-40385,
-40386,
-128512:128519,
-162700:162718,
-8482:8485, sample(rownames(ft5$df), 1000)), ])
-ft5_expset <- GAPGOM::fantom_to_expset(ft5_subset, verbose = T, species = "human")
-rm(ft5)
-gc()
-# list1=c("126133","221","218","216","8854","220","219","160428","224","222","8659","501","64577","223","217","4329","10840","7915","5832")
-coffee_filter <- rownames(ft5_expset@featureData@data[ft5_expset@featureData@data$`hgnc (gene symbol) id associated with the transcript`!="",])
-result <- GAPGOM::expression_prediction("chr19:49956885..49956905,+", ft5_expset, coffee_filter, "human", "MF")
+expdata <- read.table("~/Downloads/GSE63733_m.txt")
+geneset <- read.table("~/Downloads/geneset_glyc.txt", sep="\n") #GLYCOLOSIS HALLMARK
+geneset <- as.vector(geneset[3:nrow(geneset),])
+geneset_ensembl <- expdata[expdata$V2 %in% geneset,]$V1
+
+expression_matrix <- as.matrix(expdata[,3:ncol(expdata)])
+rownames(expression_matrix) <- expdata[[1]]
+featuredat <- as.data.frame(expdata[,1:2])
+rownames(featuredat) <- expdata[[1]]
+expset <- ExpressionSet(expression_matrix, 
+                        featureData = new("AnnotatedDataFrame", 
+                        data=featuredat))
+
+entrezidsample <- sample(expdata[[1]], 1000)
+entrezidsample_filtered <- expdata[ apply(expdata[expdata$V1 %in% entrezidsample,3:ncol(expdata)],1,mean) > 25,]$V1
+fakefilter <- unique(c(entrezidsample_filtered, sample(geneset_ensembl, 15)))
+# set gid and run.
+#gid <- "AGRN"
+gid <- sample(geneset_ensembl, 1)
+fakefilter <- fakefilter[!(fakefilter == gid)]
+
+result <- GAPGOM::expression_prediction(gid, 
+                                        expset, 
+                                        geneset, 
+                                        "human", 
+                                        "MF",
+                                        method = "combine", 
+                                        verbose = TRUE, go_amount = 2,
+                                        significance = 1, enrichment_cutoff = 250)
+result
+
+GAPGOM::expression_semantic_scoring(gid, expset)
 ```
 
 

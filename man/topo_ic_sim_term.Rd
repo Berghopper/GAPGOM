@@ -4,15 +4,9 @@
 \alias{topo_ic_sim_term}
 \title{GAPGOM - topo_ic_sim_term()}
 \usage{
-topo_ic_sim_term(ontology, organism, go1, go2, go_data = NULL)
+topo_ic_sim_term(organism, ontology, go1, go2, go_data = NULL)
 }
 \arguments{
-\item{ontology}{desired ontology to use for similarity calculations.
-One of three;
-"BP" (Biological process),
-"MF" (Molecular function) or
-"CC" (Cellular Component).}
-
 \item{organism}{where to be scanned genes reside in, this option
 is neccesary to select the correct GO DAG. Options are based on the org.db
 bioconductor package;
@@ -21,6 +15,12 @@ Following options are available: "fly", "mouse", "rat", "yeast",
 "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 "xenopus".}
+
+\item{ontology}{desired ontology to use for similarity calculations.
+One of three;
+"BP" (Biological process),
+"MF" (Molecular function) or
+"CC" (Cellular Component).}
 
 \item{go1}{GO term of first term.}
 
@@ -41,7 +41,7 @@ terms in the GO DAG structure. The topological similarity is based on
 edge weights and information content (IC). [1]
 }
 \examples{
-result <- topo_ic_sim_term("MF", "human", "GO:0018478", "GO:0047105")
+result <- topo_ic_sim_term("human", "MF", "GO:0018478", "GO:0047105")
 
 }
 \references{

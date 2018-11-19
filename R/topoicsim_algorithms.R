@@ -358,6 +358,11 @@
 #' @param garbage_collection whether to do R garbage collection. This is
 #' useful for very large calculations/datasets, as it might decrease ram usage.
 #' This option might however increase calculation time slightly.
+#' @param use_precalculation wheter to use precalculated score matrix or not.
+#' This speeds up calculation for the most frequent GO terms.
+#' Only available for human, mouse with ids entrez/ensembl. Default is False
+#' because this is the safest and most accurate option. Every update of org.Db
+#' libraries makes this matrix outdated, so use at your own risk.
 #' @param drop vector of GOID you want to exclude from the analysis.
 #' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. You can add the dataframe from
@@ -381,22 +386,24 @@
 #' 
 #' @examples
 #' # single gene mode
-#' result <- GAPGOM::topo_ic_sim_genes("218", "501", ont="MF", organism="human", 
-#'                                    drop=NULL)
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", drop = NULL)
 #' # genelist mode
 #' list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 #' "222","8659","501","64577","223","217","4329","10840","7915")
-#' result <- GAPGOM::topo_ic_sim_genes(list1, list1, ont="MF", organism="human", 
-#'                               drop=NULL)
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, drop = NULL)
 #'
+#' # with custom gene
+#' custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", 
+#'                                     custom_genes1 = custom, drop = NULL)
 #'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
 #'
 #' @export
-topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
-                              organism,
+topo_ic_sim_genes <- compiler::cmpfun(function(organism,
+                              ontology,
                               genes1, 
                               genes2,
                               custom_genes1 = NULL,
@@ -404,7 +411,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               verbose = FALSE,
                               progress_bar = TRUE,
                               garbage_collection = FALSE,
-                              use_precalculation = TRUE, 
+                              use_precalculation = FALSE, 
                               drop = NULL,
                               all_go_pairs = NULL,
                               idtype = "ENTREZID",
@@ -429,7 +436,8 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  if (length(genes1) == 1 && length(genes2) == 1) {
+  if ((length(genes1)+length(custom_genes1)) == 1 &&
+      (length(genes2)+length(custom_genes2)) == 1) {
     # single gene topo
     if (verbose) {
       result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)
@@ -456,11 +464,6 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' terms in the GO DAG structure. The topological similarity is based on
 #' edge weights and information content (IC). [1]
 #'
-#' @param ontology desired ontology to use for similarity calculations.
-#' One of three;
-#' "BP" (Biological process),
-#' "MF" (Molecular function) or
-#' "CC" (Cellular Component).
 #' @param organism where to be scanned genes reside in, this option
 #' is neccesary to select the correct GO DAG. Options are based on the org.db
 #' bioconductor package;
@@ -469,6 +472,11 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
+#' @param ontology desired ontology to use for similarity calculations.
+#' One of three;
+#' "BP" (Biological process),
+#' "MF" (Molecular function) or
+#' "CC" (Cellular Component).
 #' @param go1 GO term of first term.
 #' @param go2 GO term of second term.
 #' @param go_data prepared go_data, from the set_go_data function. It is
@@ -477,7 +485,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' @return TopoICSim score between the two terms.
 #'
 #' @examples 
-#' result <- topo_ic_sim_term("MF", "human", "GO:0018478", "GO:0047105")
+#' result <- topo_ic_sim_term("human", "MF", "GO:0018478", "GO:0047105")
 #'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
@@ -490,11 +498,11 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
 #' @export
-topo_ic_sim_term <- compiler::cmpfun(function(ontology,
-                             organism,
-                             go1, 
-                             go2,
-                             go_data = NULL) {
+topo_ic_sim_term <- compiler::cmpfun(function(organism,
+                                              ontology,
+                                              go1, 
+                                              go2,
+                                              go_data = NULL) {
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
                                            go1, 

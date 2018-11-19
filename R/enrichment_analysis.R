@@ -131,6 +131,10 @@
   n3 <- length(unique(id_select_vector)) - enrichment_cutoff -
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
   n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
+  assign("n1", n1, .GlobalEnv)
+  assign("n2", n2, .GlobalEnv)
+  assign("n3", n3, .GlobalEnv)
+  assign("n4", n4, .GlobalEnv)
   
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
@@ -139,6 +143,8 @@
 
   # select last 4 columns (n1,n2,n3,n4)
   args.df <- qterm_id_to_ext_id[, c(3:6)]
+  assign("args.df", args.df, .GlobalEnv)
+  
   
   # calculate p-values using the hypergeometrix distribution.
   pvalues <- apply(args.df, 1, function(n) min(phyper(0:n[1] - 1, n[2], n[3],
