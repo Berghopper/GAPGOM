@@ -31,7 +31,7 @@
                                     "rhesus",
                                     "pig",
                                     "xenopus"))
-  if (length(genes1) < 1 || length(genes2) < 1) {
-    stop("Not enough genes specified!")
-  }
+  #if (length(genes1) < 1 || length(genes2) < 1) {
+  #  stop("Not enough genes specified!")
+  #}
 })

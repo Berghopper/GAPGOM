@@ -68,6 +68,7 @@
                                          drop = NULL,
                                          verbose = FALSE,
                                          progress_bar = NULL, 
+                                         use_precalculation = TRUE,
                                          garbage_collection = NULL,
                                          all_go_pairs = NULL,
                                          topoargs = list(),
@@ -80,6 +81,7 @@
   topoargs$verbose <- verbose
   topoargs$custom_genes1 <- custom_genes1
   topoargs$custom_genes2 <- custom_genes2
+  topoargs$use_precalculation <- use_precalculation
   
   if (verbose) {
     message("Preparing topoICSim data...")
@@ -225,7 +227,11 @@ set_go_data <- compiler::cmpfun(function(organism, ontology,
                     malaria = "org.Pf.plasmo.db",
                     rhesus = "org.Mmu.eg.db",
                     pig = "org.Ss.eg.db",
-                    xenopus = "org.Xl.eg.db")
+                    xenopus = "org.Xl.eg.db",
+                    stop(
+                      print(paste0("Error, invalid organism; \"" , organism , 
+                                   "\"!"))
+                    ))
   # load correct library for GO data to check/show keytypes
   eval(parse(text=paste0("library(\"",species,"\")")))
   if (!(keytype %in% keytypes(eval(parse(text=species))))) {

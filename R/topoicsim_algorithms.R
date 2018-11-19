@@ -178,9 +178,11 @@
     if (!is.na(topoargs$all_go_pairs[go1, go2])) {
       # set already existing value.
       scores <- .set_values(go1, go2, scores, topoargs$all_go_pairs[go1, go2])
-    } else if(go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
+    } else if(topoargs$use_precalculation && 
+              go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
               go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
       # set precalculated value.
+      print("PRECALC")
       scores <- .set_values(go1, go2, scores, 
                             topoargs$selected_freq_go_pairs[go1, go2])
       topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
@@ -402,6 +404,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                               verbose = FALSE,
                               progress_bar = TRUE,
                               garbage_collection = FALSE,
+                              use_precalculation = TRUE, 
                               drop = NULL,
                               all_go_pairs = NULL,
                               idtype = "ENTREZID",
@@ -421,6 +424,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(ontology,
                                            drop,
                                            verbose,
                                            progress_bar, 
+                                           use_precalculation,
                                            garbage_collection, 
                                            all_go_pairs, 
                                            keytype = idtype,
