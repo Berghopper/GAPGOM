@@ -491,7 +491,7 @@ options(stringsAsFactors = F)
 ####NOT WORKING FOR NOW
 expdata <- read.table("~/Downloads/GSE63733_m.txt")
 geneset <- read.table("~/Downloads/geneset_glyc.txt", sep="\n") #GLYCOLOSIS HALLMARK
-#geneset <- read.table("~/Downloads/geneset(1).txt", sep="\n") # APOPTOSIS
+
 #expdata <- ExpressionData[,c(1,3,4:ncol(ExpressionData))]
 
 #apply(expdata[3:ncol(expdata)],1,function(x) {all(x==0)})
@@ -508,25 +508,24 @@ expset <- ExpressionSet(expression_matrix,
                         featureData = new("AnnotatedDataFrame", 
                         data=featuredat))
 
-entrezidsample <- sample(expdata[[1]], 1000)
-#entrezidsample_filtered <- expdata[ apply(expdata[expdata[[1]] %in% entrezidsample,3:ncol(expdata)],1,mean) > 25,][[1]]
-fakefilter <- unique(c(entrezidsample, entrezidsample)) #sample(geneset_ensembl, 15)))
-# set gid and run.
-#gid <- "AGRN"
-gid <- sample(geneset_ensembl, 1)
-fakefilter <- fakefilter[!(fakefilter == gid)]
+# set gid and run of Pyruvate Carboxylase.
+gid <- expdata[expdata[[2]] == "PC",][[1]]
 
 result <- GAPGOM::expression_prediction(gid, 
-                                        expset, 
-                                        fakefilter, 
+                                        expset,
                                         "human", 
-                                        "BP",
+                                        "MF",
                                         method = "combine", 
                                         verbose = TRUE, go_amount = 5,
                                         significance = 0.05, enrichment_cutoff = 250, idtype = "ENSEMBL")
-result
+go_annotation_prediction <- unique(as.vector(result$GOID))
 
-#GAPGOM::expression_semantic_scoring(gid, expset)
+geneset_ensembl_topvar <- names(rev(sort(apply(expression_matrix[geneset_ensembl,], 1, var)))[1:5])
+geneset_filtered <- expdata[expdata$ENSEMBL %in% geneset_ensembl_topvar,]$V2
+geneset_filtered <- geneset_filtered[geneset_filtered!="PC"]
+orig <- GAPGOM::topo_ic_sim_genes("human", "MF", "PC", geneset_filtered, custom_genes1 = NULL, idtype = "SYMBOL")
+
+cus <- GAPGOM::topo_ic_sim_genes("human", "MF", c(), geneset_filtered, custom_genes1 = list(PC=go_annotation_prediction), idtype = "SYMBOL")
 ```
 
 

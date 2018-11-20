@@ -469,8 +469,8 @@ Besides this, you can also define custom genes for TopoICSim. This consists of a
 
 ```{r, eval=FALSE}
 custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
-result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", 
-                                     custom_genes1 = custom, drop = NULL)
+result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
+                                     custom_genes1 = custom, drop = NULL, verbose = T)
 ```
 
 Here we define a custom gene named "cus1" with the GO terms; "GO:0016787", "GO:0042802", "GO:0005524", it will be added to the first gene vector (218).

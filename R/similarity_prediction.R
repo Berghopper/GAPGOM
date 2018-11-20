@@ -14,9 +14,6 @@
 #' other useful information, see GAPGOM::f5_example_data
 #' documentation for further explanation of this type. If you want a custom
 #' ExpressionSet you have to define one yourself.
-#' @param id_select_vector gene rowname(s) that you want to keep in the
-#' dataset. For example, let's say you need to only include protein coding
-#' genes. You then make a vector including only ids that are protein coding.
 #' @param organism where to be scanned genes reside in, this option
 #' is neccesary to select the correct GO DAG. Options are based on the org.db
 #' bioconductor package;
@@ -43,6 +40,9 @@
 #' @param idtype idtype of the expression_data. If not correctly specified, 
 #' error will specify available IDs. default="ENTREZID"
 #' @param verbose set to true for more informative/elaborate output.
+#' @param id_select_vector gene rowname(s) that you want to keep in the
+#' dataset. For example, let's say you need to only include protein coding
+#' genes. You then make a vector including only ids that are protein coding.
 #' @param id_translation_df df with translations between ID and GOID. col1 = ID,
 #' col2 = GOID.
 #' @param go_data from set_go_data function. A GoSemSim go_data object.
@@ -81,7 +81,6 @@
 #' @export
 expression_prediction <- function(gene_id,
                                 expression_set,
-                                id_select_vector,
                                 organism,
                                 ontology,
                                 enrichment_cutoff = 250,
@@ -90,7 +89,8 @@ expression_prediction <- function(gene_id,
                                 go_amount = 5,
                                 filter_pvals = FALSE,
                                 idtype = "ENTREZID",
-                                verbose = FALSE, 
+                                verbose = FALSE,
+                                id_select_vector = NULL,
                                 id_translation_df = NULL,
                                 go_data = NULL) {
   old <- options(stringsAsFactors = FALSE, warn=2)
@@ -100,6 +100,12 @@ expression_prediction <- function(gene_id,
   # prepare the data with some special operations/vars that are needed later
   
   gene_id <- as.character(gene_id)
+  # check if selection vector is defined, if not, include everything.
+  if (is.null(id_select_vector)) {
+    id_select_vector <- rownames(expression_set@assayData$exprs)
+  }
+  
+  id_select_vector
   expression_data_sorted <- expression_set@assayData$exprs[(rownames(
     expression_set@assayData$exprs) %in% id_select_vector),]
   expression_data_sorted_ids <- rownames(expression_data_sorted)

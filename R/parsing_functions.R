@@ -17,7 +17,7 @@
 #' goids.
 #' @import data.table
 #' @keywords internal
-.go_ids_lookup <- compiler::cmpfun(function(ids, go_data, drop=NULL) {
+.go_ids_lookup <- compiler::cmpfun(function(ids, go_data, custom_genes=NULL, drop=NULL) {
   go_gene_anno <- data.table(go_data@geneAnno)
   go_gene_anno <- go_gene_anno[!go_gene_anno$EVIDENCE %in% drop, 1:2]
   
@@ -35,6 +35,14 @@
       return(data.frame(ID=id, GO=goids))
     }
   })
+  if (!is.null(custom_genes)) {
+    go_dfs <- c(go_dfs, 
+                lapply(names(custom_genes), 
+                       function(id, cus_genes) {
+                        return(data.frame(ID=id, GO=cus_genes[[id]]))
+                       }, custom_genes)
+                )
+  }
   go_df <- unique(data.table::rbindlist(go_dfs))
   return(go_df)
 })

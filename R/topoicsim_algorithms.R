@@ -127,7 +127,7 @@
 .topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                                gene2,
                                                topoargs) {
-  old <- options(stringsAsFactors = FALSE, warn = -1)
+  old <- options(stringsAsFactors = FALSE, warn = -1, error=recover)
   on.exit(options(old), add = TRUE)
   if (topoargs$verbose) {
     message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))
@@ -212,8 +212,9 @@
   }
   # if score is NA, return.
   if (!sum(!is.na(scores))) {
-  return(list(GeneSim = NA,
-              AllGoPairs = topoargs$all_go_pairs))
+    assign("scores", scores, .GlobalEnv)
+    return(list(GeneSim = NA,
+           AllGoPairs = topoargs$all_go_pairs))
   }
   scores <- sqrt(scores)
   m <- length(gos1)
@@ -275,13 +276,8 @@
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
-    # append gene_lists with custom genes if neccesary
-    if(!is.null(topoargs$custom_genes1)) {
-      gene_list1 <- c(names(topoargs$custom_genes1), gene_list1)
-    }
-    if(!is.null(topoargs$custom_genes2)) {
-      gene_list2 <- c(names(topoargs$custom_genes2), gene_list2)
-    }
+    cat(gene_list1)
+    cat(gene_list2)
     
     # set up score matrix in advance
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
@@ -435,8 +431,16 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  if ((length(genes1)+length(custom_genes1)) == 1 &&
-      (length(genes2)+length(custom_genes2)) == 1) {
+  assign("topoargs",topoargs,.GlobalEnv)
+  # append gene_lists with custom genes if neccesary
+  if(!is.null(topoargs$custom_genes1)) {
+    genes1 <- c(names(topoargs$custom_genes1), genes1)
+  }
+  if(!is.null(topoargs$custom_genes2)) {
+    genes2 <- c(names(topoargs$custom_genes2), genes2)
+  }
+  if ((length(genes1)) == 1 &&
+      (length(genes2)) == 1) {
     # single gene topo
     if (verbose) {
       result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)

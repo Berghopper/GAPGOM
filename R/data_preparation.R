@@ -144,12 +144,14 @@
         go_data <- set_go_data(organism = organism, ontology = ontology, 
                                computeIC = FALSE, keytype = keytype)
       }
-      if (is.null(gene_list1) || is.null(gene_list2)) {
+      if ((is.null(gene_list1) && is.null(custom_genes1)) || 
+          (is.null(gene_list2) && is.null(custom_genes2))) {
         topoargs$translation_to_goids <- NULL
       } else {
         topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
                                                                  gene_list2)), 
                                                         go_data, 
+                                                        custom_genes = c(custom_genes1, custom_genes2),
                                                         drop = drop) 
       }
     }
