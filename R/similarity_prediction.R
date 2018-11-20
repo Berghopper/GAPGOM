@@ -93,7 +93,7 @@ expression_prediction <- function(gene_id,
                                 verbose = FALSE, 
                                 id_translation_df = NULL,
                                 go_data = NULL) {
-  old <- options(stringsAsFactors = FALSE, warn=-1)
+  old <- options(stringsAsFactors = FALSE, warn=2)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
@@ -103,6 +103,11 @@ expression_prediction <- function(gene_id,
   expression_data_sorted <- expression_set@assayData$exprs[(rownames(
     expression_set@assayData$exprs) %in% id_select_vector),]
   expression_data_sorted_ids <- rownames(expression_data_sorted)
+  
+  # check if expression_data sorted has anything at all
+  if (nrow(expression_data_sorted) == 0) {
+    stop("Selection of id_select_vector is empty!")
+  }
 
   # Target expression data where gene id matches
   target_expression_data <- expression_set@assayData$exprs[gene_id,]
@@ -120,7 +125,6 @@ expression_prediction <- function(gene_id,
       idtype,
       verbose,
       go_data = go_data)
-    assign("id_translation_df", id_translation_df, .GlobalEnv)
   }
   # make args list for ambiguous functions
   args <- list(

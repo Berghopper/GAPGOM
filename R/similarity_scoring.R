@@ -74,6 +74,12 @@ expression_semantic_scoring <- function(gene_id,
 
 #' @rdname ambiguous_functions
 .ambiguous_scorecalc <- compiler::cmpfun(function(args, expression_data, applyfunc) {
+  # check if the expression_data has any 0 values in it and filter them.
+  expression_data <- expression_data[!(apply(expression_data, 1,
+                                          function(x) {all(x==0)})),]
+  if (nrow(expression_data) == 0) {
+   stop("dataset does not contain any non-zero expression values!")
+  }
   # apply the score calculation function
   score <- apply(expression_data,
                  1, applyfunc, args)

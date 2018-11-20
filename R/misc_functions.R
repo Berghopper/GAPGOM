@@ -15,6 +15,7 @@ NULL
 
 #' @rdname misc_functions
 misc_pearson <- compiler::cmpfun(function(x, args) {
+  #print(x)
   return(abs(cor(as.numeric(x), args$target_expression_data)))})
 
 #' @rdname misc_functions

@@ -126,7 +126,6 @@
   # grab correct go data
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% 
                                         all_keys,])
-  
   # keep track of row to properly bind main ID
   rowtracker <- 0
   passed_ids <- list()

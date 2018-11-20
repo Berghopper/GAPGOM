@@ -491,8 +491,14 @@ options(stringsAsFactors = F)
 ####NOT WORKING FOR NOW
 expdata <- read.table("~/Downloads/GSE63733_m.txt")
 geneset <- read.table("~/Downloads/geneset_glyc.txt", sep="\n") #GLYCOLOSIS HALLMARK
+#geneset <- read.table("~/Downloads/geneset(1).txt", sep="\n") # APOPTOSIS
+#expdata <- ExpressionData[,c(1,3,4:ncol(ExpressionData))]
+
+#apply(expdata[3:ncol(expdata)],1,function(x) {all(x==0)})
+
+colnames(expdata)[1] <- "ENSEMBL"
 geneset <- as.vector(geneset[3:nrow(geneset),])
-geneset_ensembl <- expdata[expdata$V2 %in% geneset,]$V1
+geneset_ensembl <- expdata[expdata[[2]] %in% geneset,][[1]]
 
 expression_matrix <- as.matrix(expdata[,3:ncol(expdata)])
 rownames(expression_matrix) <- expdata[[1]]
@@ -503,8 +509,8 @@ expset <- ExpressionSet(expression_matrix,
                         data=featuredat))
 
 entrezidsample <- sample(expdata[[1]], 1000)
-entrezidsample_filtered <- expdata[ apply(expdata[expdata$V1 %in% entrezidsample,3:ncol(expdata)],1,mean) > 25,]$V1
-fakefilter <- unique(c(entrezidsample_filtered, sample(geneset_ensembl, 15)))
+#entrezidsample_filtered <- expdata[ apply(expdata[expdata[[1]] %in% entrezidsample,3:ncol(expdata)],1,mean) > 25,][[1]]
+fakefilter <- unique(c(entrezidsample, entrezidsample)) #sample(geneset_ensembl, 15)))
 # set gid and run.
 #gid <- "AGRN"
 gid <- sample(geneset_ensembl, 1)
@@ -512,15 +518,15 @@ fakefilter <- fakefilter[!(fakefilter == gid)]
 
 result <- GAPGOM::expression_prediction(gid, 
                                         expset, 
-                                        geneset, 
+                                        fakefilter, 
                                         "human", 
-                                        "MF",
+                                        "BP",
                                         method = "combine", 
-                                        verbose = TRUE, go_amount = 2,
-                                        significance = 1, enrichment_cutoff = 250)
+                                        verbose = TRUE, go_amount = 5,
+                                        significance = 0.05, enrichment_cutoff = 250, idtype = "ENSEMBL")
 result
 
-GAPGOM::expression_semantic_scoring(gid, expset)
+#GAPGOM::expression_semantic_scoring(gid, expset)
 ```
 
 

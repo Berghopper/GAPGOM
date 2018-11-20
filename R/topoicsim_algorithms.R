@@ -182,7 +182,6 @@
               go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
               go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
       # set precalculated value.
-      print("PRECALC")
       scores <- .set_values(go1, go2, scores, 
                             topoargs$selected_freq_go_pairs[go1, go2])
       topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 

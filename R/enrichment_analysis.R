@@ -63,14 +63,13 @@
                                 significance,
                                 filter_pvals,
                                 go_amount) {
-  old <- options(stringsAsFactors = FALSE, warn=-1)
+  old <- options(stringsAsFactors = FALSE, warn=2)
   on.exit(options(old), add = TRUE)
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
-  # expression data rows. 
+  # expression data rows
   extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
-  
   # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
   
@@ -79,7 +78,7 @@
   # gene ontologies.
   # list_of_gos, n genes but all unqiue corresponding GO IDs
   list_of_gos <- extracted_genes[(extracted_genes$ORIGID %in%
-                                    list_top_genes), 2]
+                                    list_top_genes),]$GO
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
   
@@ -105,7 +104,6 @@
   # corresponding ensembl IDs)
   quantified_ext_id_to_term_id <- .ext_id_to_term_id(extracted_genes,
                                                     list_top_genes)
-  
   # After this, filter it for existing Gene ontologies within the top GOs
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(
       quantified_ext_id_to_term_id[, 1] %in% list_of_gos), ]
@@ -131,10 +129,6 @@
   n3 <- length(unique(id_select_vector)) - enrichment_cutoff -
       qterm_id_to_ext_id[, 2] + quantified_ext_id_to_term_id
   n4 <- rep(enrichment_cutoff, nrow(qterm_id_to_ext_id)) # Issue #1 Bitbucket 
-  assign("n1", n1, .GlobalEnv)
-  assign("n2", n2, .GlobalEnv)
-  assign("n3", n3, .GlobalEnv)
-  assign("n4", n4, .GlobalEnv)
   
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
@@ -143,8 +137,6 @@
 
   # select last 4 columns (n1,n2,n3,n4)
   args.df <- qterm_id_to_ext_id[, c(3:6)]
-  assign("args.df", args.df, .GlobalEnv)
-  
   
   # calculate p-values using the hypergeometrix distribution.
   pvalues <- apply(args.df, 1, function(n) min(phyper(0:n[1] - 1, n[2], n[3],
