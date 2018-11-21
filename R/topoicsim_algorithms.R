@@ -84,7 +84,7 @@
         return(wSP_ti_tj_x/wLP_x_root)
       }
     })
-    D_ti_tj_x <- unlist(D_ti_tj_x, F, F)
+    D_ti_tj_x <- unlist(D_ti_tj_x, FALSE, FALSE)
   }
   if (!is.null(D_ti_tj_x)) {
       sim <- round(1 - (atan(min(D_ti_tj_x, na.rm = TRUE))/(pi/2)), 3)
@@ -212,7 +212,6 @@
   }
   # if score is NA, return.
   if (!sum(!is.na(scores))) {
-    assign("scores", scores, .GlobalEnv)
     return(list(GeneSim = NA,
            AllGoPairs = topoargs$all_go_pairs))
   }
@@ -276,9 +275,6 @@
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
-    cat(gene_list1)
-    cat(gene_list2)
-    
     # set up score matrix in advance
     score_matrix <- .prepare_score_matrix_topoicsim(gene_list1, gene_list2)
     
@@ -328,11 +324,6 @@
 #' similarity, but between two \strong{different} gene lists (IntraSet and 
 #' InterSet similarities are only applicable to gene sets). [1]
 #'
-#' @param ontology desired ontology to use for similarity calculations.
-#' One of three;
-#' "BP" (Biological process),
-#' "MF" (Molecular function) or
-#' "CC" (Cellular Component).
 #' @param organism organism where to be scanned genes reside in, this option
 #' is neccesary to select the correct GO DAG. Options are based on the org.db
 #' bioconductor package;
@@ -341,6 +332,11 @@
 #' "zebrafish", "worm", "arabidopsis", "ecolik12", "bovine", "canine",
 #' "anopheles", "ecsakai", "chicken", "chimp", "malaria", "rhesus", "pig",
 #' "xenopus".
+#' @param ontology desired ontology to use for similarity calculations.
+#' One of three;
+#' "BP" (Biological process),
+#' "MF" (Molecular function) or
+#' "CC" (Cellular Component).
 #' @param genes1 Gene ID(s) of the first Gene (vector).
 #' @param genes2 Gene ID(s) of the second Gene (vector).
 #' @param custom_genes1 Custom genes added to the first list, needs to be a 
@@ -364,7 +360,8 @@
 #' previous runs to improve performance (only works if the last result has
 #' at least part of the genes of the current run). You can also use it for 
 #' pre-calculation and getting the results back in a fast manner.
-#' @param idtype id type of the genes you specified. default="ENTREZID"
+#' @param idtype id type of the genes you specified. default="ENTREZID". To see
+#' other options, enter empty string.
 #' @param go_data prepared go_data, from the set_go_data function. It is
 #' practically the same as in GOSemSim, but with a slightly nicer interface.
 #'
@@ -431,7 +428,6 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  assign("topoargs",topoargs,.GlobalEnv)
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)

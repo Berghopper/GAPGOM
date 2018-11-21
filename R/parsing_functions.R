@@ -24,19 +24,21 @@
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% ids,])
   
   passed_ids <- list()
-  go_dfs <- lapply(ids, function(id) {
+  go_dfs <- list()
+  
+  for (id in ids) {
     # test if id has already occured earlier
     goids <- passed_ids[[id]]
     if (is.null(goids)) {
       goids <- unique(go_gene_anno[go_gene_anno[[1]]==as.character(id),]$GO)
-      passed_ids[[id]] <<- c(goids)
+      passed_ids[[id]] <- c(goids)
     }
     if (length(goids) != 0) {
       return(data.frame(ID=id, GO=goids))
     }
-  })
+  }
   if (!is.null(custom_genes)) {
-    go_dfs <- c(go_dfs, 
+    go_dfs <- append(go_dfs, 
                 lapply(names(custom_genes), 
                        function(id, cus_genes) {
                         return(data.frame(ID=id, GO=cus_genes[[id]]))
@@ -67,7 +69,7 @@
   # set opposite pair to the same value if it exists
   if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
     the_matrix[item1, item2] <- value
-  } 
+  } <
   if (item2 %in% rownames(the_matrix) && item1 %in% colnames(the_matrix)) {
     the_matrix[item2, item1] <- value 
   }
@@ -137,28 +139,29 @@
   # keep track of row to properly bind main ID
   rowtracker <- 0
   passed_ids <- list()
+  id_go_dfs <- list()
   
-  id_go_dfs <- lapply(expression_set@featureData@data[,keys_col], 
-                          function(rawid) {
-                            rowtracker <<- rowtracker + 1
-                            rawid <- as.character(rawid)
-                            ids <- .entrezraw_to_entrez(rawid)
-                            # test if id has already occurred earlier
-                            goids <- passed_ids[[rawid]]
-                            if (is.null(goids)) {
-                              goids <- go_gene_anno[go_gene_anno[[1]] %in% 
-                                                      ids,]$GO
-                              non_duplicated_goids <- goids[!duplicated(goids)]
-                              passed_ids[[rawid]] <<- 
-                                c(non_duplicated_goids)
-                            }
-                            # check if an output exists, if so return.
-                            if (length(goids) != 0){
-                              return(CJ(ORIGID=rownames(
-                                expression_set@assayData$exprs)[rowtracker], 
-                                        ID=rawid, GO=goids))
-                            }
-                          })
+  for (i in seq_len(nrow(expression_set@featureData@data))) {
+    rawid <- as.character(expression_set@
+                            featureData@
+                            data[i, keys_col])
+    ids <- .entrezraw_to_entrez(rawid)
+    # test if id has already occurred earlier
+    goids <- passed_ids[[rawid]]
+    if (is.null(goids)) {
+      goids <- go_gene_anno[go_gene_anno[[1]] %in% 
+                              ids,]$GO
+      non_duplicated_goids <- goids[!duplicated(goids)]
+      passed_ids[[rawid]] <- 
+        c(non_duplicated_goids)
+    }
+    # check if an output exists, if so return.
+    if (length(goids) != 0){
+      id_go_dfs <- append(id_go_dfs, CJ(ORIGID=rownames(
+        expression_set@assayData$exprs)[i], 
+        ID=rawid, GO=goids))
+    }
+  }
   # bind the results, filter uniques and return.
   id_go_df <- unique(as.data.frame(data.table::rbindlist(id_go_dfs)))
   return(id_go_df)

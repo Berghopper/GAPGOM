@@ -4,7 +4,7 @@
 \alias{.go_ids_lookup}
 \title{GAPGOM internal - .go_ids_lookup()}
 \usage{
-.go_ids_lookup(ids, go_data, drop = NULL)
+.go_ids_lookup(ids, go_data, custom_genes = NULL, drop = NULL)
 }
 \arguments{
 \item{ids}{general ids that you want to search for in godata.}

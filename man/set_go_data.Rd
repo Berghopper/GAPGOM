@@ -38,3 +38,8 @@ little easier and prints available keytypes if specified incorrectly.)
 Internal function used in multiple functions of topoICSim.
 }
 
+\examples{
+# set go data for human, MF ontology.
+go_data <- GAPGOM::set_go_data("human", "MF")
+
+}

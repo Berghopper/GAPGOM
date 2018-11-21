@@ -45,8 +45,8 @@ NULL
 .set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
   edge_matrix <- edgeMatrix(sub_graph)
   weighted_edge_matrix <- eWV(sub_graph, edge_matrix, useNNames = TRUE)
-  Weights <- c()
-  lapply(seq_along(names(weighted_edge_matrix)), function(i) {
+  weights <- unlist(
+    lapply(seq_along(names(weighted_edge_matrix)), function(i) {
     go <- strsplit(names(weighted_edge_matrix)[i], "->")
     ic1 <- information_content[go[[1]][1]]
     ic2 <- information_content[go[[1]][2]]
@@ -56,12 +56,12 @@ NULL
       w1 <- 1/(2 * ic1)
     if (!is.na(ic2) & ic2 != 0)
       w2 <- 1/(2 * ic2)
-    Weights <<- c(Weights, (w1 + w2))
-  })
+    return(w1 + w2)
+  }), FALSE, FALSE)
   sub_igraph <- igraph.from.graphNEL(sub_graph)
   sub_igraph <- set.edge.attribute(sub_igraph, 
                                    name = "weight", 
-                                   value = Weights)
+                                   value = weights)
     return(sub_igraph)
 })
 

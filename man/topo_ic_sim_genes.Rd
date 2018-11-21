@@ -59,7 +59,8 @@ previous runs to improve performance (only works if the last result has
 at least part of the genes of the current run). You can also use it for 
 pre-calculation and getting the results back in a fast manner.}
 
-\item{idtype}{id type of the genes you specified. default="ENTREZID"}
+\item{idtype}{id type of the genes you specified. default="ENTREZID". To see
+other options, enter empty string.}
 
 \item{go_data}{prepared go_data, from the set_go_data function. It is
 practically the same as in GOSemSim, but with a slightly nicer interface.}

@@ -4,10 +4,10 @@
 \alias{expression_prediction}
 \title{GAPGOM - expression_prediction()}
 \usage{
-expression_prediction(gene_id, expression_set, id_select_vector, organism,
-  ontology, enrichment_cutoff = 250, method = "combine",
-  significance = 0.05, go_amount = 5, filter_pvals = FALSE,
-  idtype = "ENTREZID", verbose = FALSE, id_translation_df = NULL,
+expression_prediction(gene_id, expression_set, organism, ontology,
+  enrichment_cutoff = 250, method = "combine", significance = 0.05,
+  go_amount = 5, filter_pvals = FALSE, idtype = "ENTREZID",
+  verbose = FALSE, id_select_vector = NULL, id_translation_df = NULL,
   go_data = NULL)
 }
 \arguments{
@@ -17,10 +17,6 @@ expression_prediction(gene_id, expression_set, id_select_vector, organism,
 other useful information, see GAPGOM::f5_example_data
 documentation for further explanation of this type. If you want a custom
 ExpressionSet you have to define one yourself.}
-
-\item{id_select_vector}{gene rowname(s) that you want to keep in the
-dataset. For example, let's say you need to only include protein coding
-genes. You then make a vector including only ids that are protein coding.}
 
 \item{organism}{where to be scanned genes reside in, this option
 is neccesary to select the correct GO DAG. Options are based on the org.db
@@ -56,6 +52,10 @@ considered similar enough.}
 error will specify available IDs. default="ENTREZID"}
 
 \item{verbose}{set to true for more informative/elaborate output.}
+
+\item{id_select_vector}{gene rowname(s) that you want to keep in the
+dataset. For example, let's say you need to only include protein coding
+genes. You then make a vector including only ids that are protein coding.}
 
 \item{id_translation_df}{df with translations between ID and GOID. col1 = ID,
 col2 = GOID.}
@@ -96,11 +96,11 @@ gid <- "ENSG00000228630"
 
 result <- GAPGOM::expression_prediction(gid, 
                                         GAPGOM::expset, 
-                                        filter_vector, 
                                         "human", 
                                         "BP",
                                         id_translation_df = 
                                           GAPGOM::id_translation_df,
+                                        id_select_vector = filter_vector,
                                         method = "combine", verbose = TRUE, 
                                         filter_pvals = TRUE
 )

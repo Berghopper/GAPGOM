@@ -225,10 +225,10 @@ gid <- "ENSG00000228630"
 
 p <- profvis::profvis({GAPGOM::expression_prediction(gid, 
                                         GAPGOM::expset, 
-                                        filter_vector, 
                                         "human", 
                                         "BP",
                                         id_translation_df = GAPGOM::id_translation_df,
+                                        id_select_vector = filter_vector,
                                         method = "combine", verbose = T, filter_pvals = T
                        )})
 time <- max(p$x$message$prof$time)*10
@@ -485,20 +485,22 @@ Speed might vary hugely depending on the organism, ontology and geneset used. Th
 
 ## Benchmarks
 
-<TODO: lncRNApred benchmark!>
+In the following benchmark, lncRNApred will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNApred will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset. With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
+
 ```{r, eval=F}
+## set stringsasfactors to false to ensure data is loaded properly.
 options(stringsAsFactors = F)
-####NOT WORKING FOR NOW
+
+## load data
+# 
 expdata <- read.table("~/Downloads/GSE63733_m.txt")
-geneset <- read.table("~/Downloads/geneset_glyc.txt", sep="\n") #GLYCOLOSIS HALLMARK
+# http://software.broadinstitute.org/gsea/msigdb/cards/HALLMARK_GLYCOLYSIS.html
+# GLYCOLOSIS HALLMARK
+geneset <- read.table("~/Downloads/geneset_glyc.txt", sep="\n")
 
-#expdata <- ExpressionData[,c(1,3,4:ncol(ExpressionData))]
+colnames(expdata)[1:2] <- c("ENSEMBL", "SYMBOL") # Set important colnames
 
-#apply(expdata[3:ncol(expdata)],1,function(x) {all(x==0)})
-
-colnames(expdata)[1] <- "ENSEMBL"
-geneset <- as.vector(geneset[3:nrow(geneset),])
-geneset_ensembl <- expdata[expdata[[2]] %in% geneset,][[1]]
+## make an expressionset
 
 expression_matrix <- as.matrix(expdata[,3:ncol(expdata)])
 rownames(expression_matrix) <- expdata[[1]]
@@ -508,24 +510,46 @@ expset <- ExpressionSet(expression_matrix,
                         featureData = new("AnnotatedDataFrame", 
                         data=featuredat))
 
-# set gid and run of Pyruvate Carboxylase.
-gid <- expdata[expdata[[2]] == "PC",][[1]]
+## make a selection on the geneset
+geneset <- as.vector(geneset[3:nrow(geneset),])
+geneset_ensembl <- expdata[expdata[[2]] %in% geneset,][[1]]
+# select on the 10 genes with the most variance
+geneset_ensembl_topvar <- names(rev(sort(apply(
+  expression_matrix[geneset_ensembl,], 1, var)))[1:10])
+# convert back to symbol
+geneset_selection <- expdata[expdata$ENSEMBL %in% geneset_ensembl_topvar,][[2]]
 
-result <- GAPGOM::expression_prediction(gid, 
-                                        expset,
-                                        "human", 
-                                        "MF",
-                                        method = "combine", 
-                                        verbose = TRUE, go_amount = 5,
-                                        significance = 0.05, enrichment_cutoff = 250, idtype = "ENSEMBL")
-go_annotation_prediction <- unique(as.vector(result$GOID))
+## predict annotation of the geneset selection (per ontology).
 
-geneset_ensembl_topvar <- names(rev(sort(apply(expression_matrix[geneset_ensembl,], 1, var)))[1:5])
-geneset_filtered <- expdata[expdata$ENSEMBL %in% geneset_ensembl_topvar,]$V2
-geneset_filtered <- geneset_filtered[geneset_filtered!="PC"]
-orig <- GAPGOM::topo_ic_sim_genes("human", "MF", "PC", geneset_filtered, custom_genes1 = NULL, idtype = "SYMBOL")
-
-cus <- GAPGOM::topo_ic_sim_genes("human", "MF", c(), geneset_filtered, custom_genes1 = list(PC=go_annotation_prediction), idtype = "SYMBOL")
+bench_results <- list()
+for (ontology in c("MF", "BP", "CC")) {
+  predicted_annotations <- list()
+  for (gene in geneset_ensembl_topvar) {
+    symbol <- expdata[expdata$ENSEMBL==gene,]$SYMBOL
+    new_gene_name <- paste0(symbol, "_pred")
+    
+    result <- GAPGOM::expression_prediction(gene, 
+                                          expset,
+                                          "human", 
+                                          ontology,
+                                          idtype = "ENSEMBL")
+    go_annotation_prediction <- unique(as.vector(result$GOID))  
+    predicted_annotations[[new_gene_name]] <- go_annotation_prediction
+  }
+  
+  ## calculate original set
+  orig <- GAPGOM::topo_ic_sim_genes("human", ontology, geneset_selection, 
+                                    geneset_selection, idtype = "SYMBOL")
+  ## compare with custom now
+  cus <- GAPGOM::topo_ic_sim_genes("human", ontology, c(), geneset_selection, 
+                                   custom_genes1 = predicted_annotations, 
+                                   idtype = "SYMBOL", 
+                                   all_go_pairs = orig$AllGoPairs) # use original 
+                                   # GO matrix, as similar GOs are likely 
+                                   # to occur.
+  ## append results to list
+  bench_results[[ontology]] <- list(orig=orig, cus=cus)
+}
 ```
 
 

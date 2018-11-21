@@ -313,20 +313,15 @@ colnames(id_translation_df) <- c("ORIGID","GO")
 
 # set gid and run.
 gid <- "ENSG00000228630"
-#gid <- "ENSG00000161618"
 
 result <- GAPGOM::expression_prediction(gid, 
-                                       expset, 
-                                       filter_vector, 
+                                       expset,
                                        "human", 
                                        "BP",
+                                       id_select_vector = filter_vector,
                                        id_translation_df = id_translation_df,
                                        method = "pearson", verbose = T, 
                                        filter_pvals = T)
-
-#result <- GAPGOM::expression_semantic_scoring(gid, expset, method="pearson")
-
-#kable(result[1:100,]) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 ```
 
 ## TopoICSim

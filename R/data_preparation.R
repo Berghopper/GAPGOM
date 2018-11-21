@@ -206,6 +206,10 @@
 #' 
 #' @return return godata as from GoSemSim
 #' 
+#' @examples 
+#' # set go data for human, MF ontology.
+#' go_data <- GAPGOM::set_go_data("human", "MF")
+#' 
 #' @importFrom GOSemSim godata
 #' @importFrom AnnotationDbi keytypes
 #' @export

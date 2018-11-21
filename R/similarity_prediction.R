@@ -68,11 +68,11 @@
 #' 
 #' result <- GAPGOM::expression_prediction(gid, 
 #'                                         GAPGOM::expset, 
-#'                                         filter_vector, 
 #'                                         "human", 
 #'                                         "BP",
 #'                                         id_translation_df = 
 #'                                           GAPGOM::id_translation_df,
+#'                                         id_select_vector = filter_vector,
 #'                                         method = "combine", verbose = TRUE, 
 #'                                         filter_pvals = TRUE
 #' )
