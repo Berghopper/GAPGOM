@@ -3,7 +3,7 @@
 \docType{data}
 \name{expset}
 \alias{expset}
-\title{GAPGOM - Expression data.}
+\title{GAPGOM - Expression Data.}
 \format{An ExpressionSet containing 1001 rows of the lncRNA2Function 
 expression dataset. 
 Annotation data can be found under;

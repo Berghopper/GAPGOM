@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: novel Gene Annotation Prediction and other GO Metrics
-Version: 0.2.26
+Version: 0.2.27
 Author: Casper Peters, Finn Drabløs, Rezvan Ehsani
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
@@ -56,7 +56,11 @@ Suggests:
   ggplot2,
   kableExtra,
   profvis,
-  reshape2
+  reshape2,
+  venneuler
 Depends: R (>= 3.5.0)
+biocViews: ExpressionData, GO, AnnotationData
+BugReports: [BLANK]
+URL: [BLANK]
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr

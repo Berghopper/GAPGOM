@@ -139,7 +139,7 @@
   # keep track of row to properly bind main ID
   rowtracker <- 0
   passed_ids <- list()
-  id_go_dfs <- list()
+  id_go_df <- data.frame()
   
   for (i in seq_len(nrow(expression_set@featureData@data))) {
     rawid <- as.character(expression_set@
@@ -157,13 +157,13 @@
     }
     # check if an output exists, if so return.
     if (length(goids) != 0){
-      id_go_dfs <- append(id_go_dfs, CJ(ORIGID=rownames(
+      id_go_df <- rbind(CJ(ORIGID=rownames(
         expression_set@assayData$exprs)[i], 
-        ID=rawid, GO=goids))
+        ID=rawid, GO=goids), id_go_df)
     }
   }
   # bind the results, filter uniques and return.
-  id_go_df <- unique(as.data.frame(data.table::rbindlist(id_go_dfs)))
+  id_go_df <- unique(as.data.frame(id_go_df))
   return(id_go_df)
 })
 

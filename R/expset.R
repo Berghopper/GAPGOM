@@ -1,4 +1,4 @@
-#' GAPGOM - Expression data.
+#' GAPGOM - Expression Data.
 #'
 #' An ExpressionSet from Bioconductor containing a subset from the 
 #' lncRNA2Function data.[1]
