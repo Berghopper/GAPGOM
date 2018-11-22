@@ -127,7 +127,7 @@
 .topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
                                                gene2,
                                                topoargs) {
-  old <- options(stringsAsFactors = FALSE, warn = -1, error=recover)
+  old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   if (topoargs$verbose) {
     message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))

@@ -37,7 +37,7 @@ library(GO.db)
 library(graph)
 library(ggplot2)
 library(reshape2)
-library(eulerr)
+library(Biobase)
 ```
 
 ### Background
@@ -488,10 +488,9 @@ Speed might vary hugely depending on the organism, ontology and geneset used. Th
 
 ## Benchmarks
 
-In the following benchmark, lncRNApred will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNApred will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset. With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
+In the following benchmark, lncRNApred will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNApred will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset (leave-one-out method). With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
 
-```{r, eval=F}
-library(Biobase)
+```{r}
 ## set stringsasfactors to false to ensure data is loaded properly.
 options(stringsAsFactors = F)
 
@@ -528,11 +527,11 @@ geneset_selection <- expdata[expdata$ENSEMBL %in% geneset_ensembl_topvar,][[2]]
 ontologies <- c("MF", "BP", "CC")
 bench_results <- list()
 for (ontology in ontologies) {
-  print(ontology)
+  # print("---")
+  # print(ontology)
   predicted_annotations <- list()
   for (gene in geneset_ensembl_topvar) {
     symbol <- expdata[expdata$ENSEMBL==gene,]$SYMBOL
-    new_gene_name <- paste0(symbol, "_pred")
     
     result <- GAPGOM::expression_prediction(gene, 
                                           expset,
@@ -540,21 +539,22 @@ for (ontology in ontologies) {
                                           ontology,
                                           idtype = "ENSEMBL")
     go_annotation_prediction <- unique(as.vector(result$GOID))  
-    predicted_annotations[[new_gene_name]] <- go_annotation_prediction
+    predicted_annotations[[symbol]] <- go_annotation_prediction
   }
   print("Prediction finished! Calculating sims now")
+  
   ## compare custom genes to original genes
   tmp_go_data <- set_go_data("human", ontology, computeIC = T, 
                              keytype = "SYMBOL")
   bench_results[[ontology]] <- mapply(
     function(gos, name) {
       custom_gene <- list()
-      custom_gene[[name]] <- gos
+      custom_gene[[paste0(name, "_pred")]] <- gos
       
       name_orig <- unlist(strsplit(name, "_"), 
                      FALSE, FALSE)[1]
       
-      print(name_orig)
+      # print(name_orig)
       
       return(GAPGOM::topo_ic_sim_genes("human", ontology, c(), name_orig, 
                                    custom_genes1 = custom_gene, 
@@ -563,20 +563,25 @@ for (ontology in ontologies) {
     }, gos = predicted_annotations, name = names(predicted_annotations)
   )
 }
-#save(bench_results, file = "~/tmp_bench.RData")
+# save(bench_results, file = "~/tmp_bench.RData")
 ```
 
-For the results, we calculate the closeness of the intraset similarities of the geneset against itself, and the geneset versus the annotation predicted geneset.
-This give us the following formula:
-
-$score=\frac{min(Intrasetsim(x),Intrasetsim(y))}{max(Intrasetsim(x),Intrasetsim(y))}$
-
-Where $x$ is the normal geneset and $y$ the predicted one. $score$ indicated the similarity between the two values. Preferably, the score is as close to 1 as possible, indicating exactly similar geneset. There is one bias however; if some GO pairs have the same similarity, this might influence results. This is why a venn diagram will also be included, explaining the GO term difference for each case.
+For the results, we calculated the closeness of the individual gene similarities against their annotation predicted counterparts. The similarity should be as close to 1 as possible (exactly same annotation). The GO terms may not be exactly the same nor overlapping, but might be close in the GO tree. Meaning that it still indicates the correct process/function/component (depending on ontology). 
 
 ```{r}
-library(eulerr)
 for (ontology in ontologies) {
-  print(bench_results[[ontology]])
+  dat <- data.frame(Gene = names(bench_results[[ontology]]), 
+                    sim = bench_results[[ontology]])
+  brplot <- ggplot(dat, aes(x=Gene, weight=sim)) + geom_bar() + coord_flip() +
+    labs(title = paste(strwrap("Similarity of custom gene versus original", 
+                               width = 30), collapse = "\n")) +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    ylab("Similarity (TopoICSim)")
+  print("---")
+  print(ontology)
+  print(brplot)
+  print("mean:")
+  print(mean(bench_results[[ontology]]))
 }
 ```
 
