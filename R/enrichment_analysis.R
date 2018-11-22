@@ -63,7 +63,7 @@
                                 significance,
                                 filter_pvals,
                                 go_amount) {
-  old <- options(stringsAsFactors = FALSE, warn=2)
+  old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined

@@ -13,8 +13,10 @@ output:
     code_folding: none
 vignette: >
   %\VignetteIndexEntry{Benchmarks and other GO similarity methods}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include = FALSE}
@@ -35,7 +37,7 @@ library(GO.db)
 library(graph)
 library(ggplot2)
 library(reshape2)
-library(venneuler)
+library(eulerr)
 ```
 
 ### Background
@@ -542,17 +544,20 @@ for (ontology in ontologies) {
   
   ## calculate original set
   orig <- GAPGOM::topo_ic_sim_genes("human", ontology, geneset_selection, 
-                                    geneset_selection, idtype = "SYMBOL")
+                                    geneset_selection, idtype = "SYMBOL", 
+                                    progress_bar = F)
   ## compare with custom now
   cus <- GAPGOM::topo_ic_sim_genes("human", ontology, c(), geneset_selection, 
                                    custom_genes1 = predicted_annotations, 
                                    idtype = "SYMBOL", 
-                                   all_go_pairs = orig$AllGoPairs) # use original 
+                                   all_go_pairs = orig$AllGoPairs, 
+                                   progress_bar = F) # use original 
                                    # GO matrix, as similar GOs are likely 
                                    # to occur.
   ## append results to list
   bench_results[[ontology]] <- list(orig=orig, cus=cus, cusgos=predicted_annotations)
 }
+save(bench_results, file = "~/tmp_bench.RData")
 ```
 
 For the results, we calculate the closeness of the intraset similarities of the geneset against itself, and the geneset versus the annotation predicted geneset.
@@ -563,6 +568,7 @@ $score=\frac{min(Intrasetsim(x),Intrasetsim(y))}{max(Intrasetsim(x),Intrasetsim(
 Where $x$ is the normal geneset and $y$ the predicted one. $score$ indicated the similarity between the two values. Preferably, the score is as close to 1 as possible, indicating exactly similar geneset. There is one bias however; if some GO pairs have the same similarity, this might influence results. This is why a venn diagram will also be included, explaining the GO term difference for each case.
 
 ```{r}
+library(eulerr)
 for (ontology in ontologies) {
   benchscore <- min(mean(bench_results[[ontology]]$orig$GeneSim), 
                   mean(bench_results[[ontology]]$cus$GeneSim)) / 
@@ -572,10 +578,17 @@ for (ontology in ontologies) {
   original_gos <- unique(c(rownames(bench_results[[ontology]]$orig$AllGoPairs), 
                     colnames(bench_results[[ontology]]$orig$AllGoPairs)))
   custom_gos <- unlist(bench_results[[ontology]]$cusgos, F, F)
-  intersect_amount <- length(orgininal_gos[orgininal_gos %in% custom_gos])
+  intersect_amount <- length(original_gos[original_gos %in% custom_gos])
   # make venn diagram
-  plot(venneuler(c(A=length(original_gos), B=length(custom_gos), 
-                   "A&B"=intersect_amount)))
+  fitvenn <- euler(c(original_gos = length(original_gos),
+                     custom_gos = length(custom_gos),
+                "original_gos&custom_gos" = intersect_amount))
+  a <- plot(fitvenn,
+     fills = c("dodgerblue2", "darkgoldenrod1"),
+     fontsize = 8,
+     quantities = list(fontsize = 8))
+  print(a)
+  print(benchscore)
 }
 ```
 

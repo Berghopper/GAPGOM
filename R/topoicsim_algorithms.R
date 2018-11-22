@@ -428,6 +428,7 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
+  assign("topoargs",topoargs,.GlobalEnv)
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
@@ -435,6 +436,10 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
   if(!is.null(topoargs$custom_genes2)) {
     genes2 <- c(names(topoargs$custom_genes2), genes2)
   }
+  
+  assign("genes1", genes1, .GlobalEnv)
+  assign("genes2", genes2, .GlobalEnv)
+  
   if ((length(genes1)) == 1 &&
       (length(genes2)) == 1) {
     # single gene topo

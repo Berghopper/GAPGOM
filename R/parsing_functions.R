@@ -24,7 +24,7 @@
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% ids,])
   
   passed_ids <- list()
-  go_dfs <- list()
+  go_df <- data.frame()
   
   for (id in ids) {
     # test if id has already occured earlier
@@ -34,18 +34,18 @@
       passed_ids[[id]] <- c(goids)
     }
     if (length(goids) != 0) {
-      return(data.frame(ID=id, GO=goids))
+      go_df <- rbind(go_df, data.frame(ID=id, GO=goids))
     }
   }
   if (!is.null(custom_genes)) {
-    go_dfs <- append(go_dfs, 
-                lapply(names(custom_genes), 
+    go_df <- rbind(go_df, 
+                data.table::rbindlist(lapply(names(custom_genes), 
                        function(id, cus_genes) {
                         return(data.frame(ID=id, GO=cus_genes[[id]]))
                        }, custom_genes)
-                )
+                  ))
   }
-  go_df <- unique(data.table::rbindlist(go_dfs))
+  go_df <- unique(as.data.frame(go_df))
   return(go_df)
 })
 
@@ -69,7 +69,7 @@
   # set opposite pair to the same value if it exists
   if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
     the_matrix[item1, item2] <- value
-  } <
+  }
   if (item2 %in% rownames(the_matrix) && item1 %in% colnames(the_matrix)) {
     the_matrix[item2, item1] <- value 
   }

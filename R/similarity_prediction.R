@@ -93,7 +93,7 @@ expression_prediction <- function(gene_id,
                                 id_select_vector = NULL,
                                 id_translation_df = NULL,
                                 go_data = NULL) {
-  old <- options(stringsAsFactors = FALSE, warn=2)
+  old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
