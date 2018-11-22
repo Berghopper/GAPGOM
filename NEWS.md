@@ -10,31 +10,37 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
-## [0.3.0 - Unreleased]
+## [0.3.0 - Vignette Benchy] - 2018-11-22
 ### Planned changes/features (subject to changes) *=not yet implemented/finished
 ### Added
 - Re-added data which lncRNApred's paper is based on.
-- Support for all AnnotationDbi Key types
+- Support for all AnnotationDbi Key types.
 - Vignette for GAPGOM.
-- Vignette for benchmarks/performance measuring.* (LAST THING BEING WORKED ON)
+- Vignette for benchmarks/performance measuring.
 - Term algorithm as exported function.
 - Set go data as exported function.
-- some frequently used params can now be set manually (go_data, All_Go_pairs)
-- seperate scoring function (If people want to do their own enrichment/only get semantic similarity scores.)
-- some more arguments for the algorithms to make the user have more control.
-- custom gene interface for topoicsim
+- Some frequently used params can now be set manually (go_data, All_Go_pairs).
+- Seperate scoring function (If people want to do their own enrichment/only get semantic similarity scores).
+- Some more arguments for the algorithms to make the user have more control.
+- Custom gene interface for topoicsim.
 ### Changed
-- data preparation functions, they are now updated and more clear.
-- topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
+- `DESCRIPTION` file, now adheres to some smaller requirements Bioconductor enforces.
+- Data preparation functions, they are now updated and more clear.
+- Topoicsim for gene and geneset are now 1 generic function `topo_ic_sim_genes`.
 - Documentation and comments (again).
-- argument parsing for topoicsim.
-- some tests and their results.
-- used arguments in both algorithms.
+- Argument parsing for topoicsim.
+- Some tests and their results.
+- Used arguments in both algorithms.
+- Precalculated values are deprecated for this version and thus turned off, warning gets shown if it is tried to be used anyway. The values will be updated in upcoming releases and probably adhere to only certain `org.db` package versions (with a warning shown if incorrect versions are used).
+- Some `lapply` loops, now for loops, as they were using global assignments and this is forbidden/unfavorable in conventions.
+- Updated data-raw files, they now work properly for current version and are better documented.
 ### Removed
-- fantom5 example data
-- direct interface from fantom5 file to expset `fantom_load_expressionset()`.
+- All forms of parallelization support. It was buggy/inconsistent and where it could be implemented insignificant performance gains were made.
+- Fantom5 example data
+- Direct interface from fantom5 file to expset `fantom_load_expressionset()`.
 ### Fixed
-- documentation of internal functions is now hidden.
+- Inconsistent result of lncrnapred compared to original algorithm. Now is exactly the same.
+- Documentation of internal functions is now hidden.
 - `data-raw` missing in `.Rbuildignore`.
 - `R CMD check` failing because of different lncRNApred results in factor indices. Fixed by converting unnecesary factors to chars.
 - `R CMD check` failing because of `T` and `F` usage instead of `TRUE`/`FALSE`.
@@ -43,13 +49,13 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 ## [0.2.0 - Polished Potato] - 2018-10-20
 ### Added
 - TopoICSim performance improvements.
-- lncRNApred performance improvements.
-- parallelisation for combined method
-- some small extra options for similarity prediction.
-- precalculated similarity scores between frequent GO terms.
-- data preperation file, describing methods used for generating package data.
-- progress bars for TopoICSim.
-- basic tests (for main algorithms only).
+- LncRNApred performance improvements.
+- Parallelisation for combined method
+- Some small extra options for similarity prediction.
+- Precalculated similarity scores between frequent GO terms.
+- Data preperation file, describing methods used for generating package data.
+- Progress bars for TopoICSim.
+- Basic tests (for main algorithms only).
 - Some small tests for the main algorithms.
 - LICENSE file.
 ### Changed
@@ -58,20 +64,20 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Imports (per function).
 - Comments, a lot of them.
 - Implementation of entrez -> goid lookup. (some ids get looked up twice)
-- data.frame subsetting/ddply functions --> replaced with way faster data.table alternatives.
+- `data.frame` subsetting/ddply functions --> replaced with way faster data.table alternatives.
 - Vectorisation of parts that weren't yet vectorized.
 - Changed some loops back to for loops instead of apply --> some weren't a good use case for apply.
-- some matrixes now use the Matrix library.
+- Some matrixes now use the Matrix library.
 ### Removed
 - Nothing.
 ### Fixed
 - R depends version (3.4.4 --> 3.5.1).
 - Performance bug in TopoICSim (#4).
 - Performance bug in entrez -> goid lookup (#5).
-- fdr bug (#7).
-- bug where id_select_vector was actually selected for rather than filtered for (#8).
-- topoicsim being a total memory hog, it left a lot of unused items in ram --> using `gc()` now as an optional argument.
-- newline loading bar bug (#9).
+- `fdr` bug (#7).
+- Bug where id_select_vector was actually selected for rather than filtered for (#8).
+- Topoicsim being a total memory hog, it left a lot of unused items in ram --> using `gc()` now as an optional argument.
+- Newline loading bar bug (#9).
 
 
 ## [0.1.0 - Technically Tidied] - 2018-10-04
@@ -89,9 +95,9 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Old example/expression data and their documentation, this will be re-added later once proper source is known.
 ### Fixed
 - Bumped up y version number to correct Bioconductor version conventions.
-- small typo in zzz.R
+- Small typo in zzz.R
 - .gitignore mistake (still including .Rdata temp files... These got really big :( )
-- file typo data_preperation.R --> data_preparation.R
+- File typo data_preperation.R --> data_preparation.R
 
 
 ## [0.0.1 - baby steps] - 2018-09-25
