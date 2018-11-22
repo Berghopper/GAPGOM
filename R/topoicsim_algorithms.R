@@ -412,6 +412,13 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
+  
+  if (use_precalculation) {
+    use_precalculation <- FALSE
+    message("Precalculated matrix is out of date! It will be updated in
+            upcoming versions. Turning option off...")
+  }
+  
   .topo_ic_sim_argcheck_genes(ontology, organism, genes1, genes2)
   # if everything is ok, start preparing...
   topoargs <- .prepare_variables_topoicsim(organism, 
@@ -428,7 +435,6 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  assign("topoargs",topoargs,.GlobalEnv)
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
@@ -436,9 +442,6 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
   if(!is.null(topoargs$custom_genes2)) {
     genes2 <- c(names(topoargs$custom_genes2), genes2)
   }
-  
-  assign("genes1", genes1, .GlobalEnv)
-  assign("genes2", genes2, .GlobalEnv)
   
   if ((length(genes1)) == 1 &&
       (length(genes2)) == 1) {

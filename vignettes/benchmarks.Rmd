@@ -528,6 +528,7 @@ geneset_selection <- expdata[expdata$ENSEMBL %in% geneset_ensembl_topvar,][[2]]
 ontologies <- c("MF", "BP", "CC")
 bench_results <- list()
 for (ontology in ontologies) {
+  print(ontology)
   predicted_annotations <- list()
   for (gene in geneset_ensembl_topvar) {
     symbol <- expdata[expdata$ENSEMBL==gene,]$SYMBOL
@@ -541,23 +542,28 @@ for (ontology in ontologies) {
     go_annotation_prediction <- unique(as.vector(result$GOID))  
     predicted_annotations[[new_gene_name]] <- go_annotation_prediction
   }
-  
-  ## calculate original set
-  orig <- GAPGOM::topo_ic_sim_genes("human", ontology, geneset_selection, 
-                                    geneset_selection, idtype = "SYMBOL", 
-                                    progress_bar = F)
-  ## compare with custom now
-  cus <- GAPGOM::topo_ic_sim_genes("human", ontology, c(), geneset_selection, 
-                                   custom_genes1 = predicted_annotations, 
+  print("Prediction finished! Calculating sims now")
+  ## compare custom genes to original genes
+  tmp_go_data <- set_go_data("human", ontology, computeIC = T, 
+                             keytype = "SYMBOL")
+  bench_results[[ontology]] <- mapply(
+    function(gos, name) {
+      custom_gene <- list()
+      custom_gene[[name]] <- gos
+      
+      name_orig <- unlist(strsplit(name, "_"), 
+                     FALSE, FALSE)[1]
+      
+      print(name_orig)
+      
+      return(GAPGOM::topo_ic_sim_genes("human", ontology, c(), name_orig, 
+                                   custom_genes1 = custom_gene, 
                                    idtype = "SYMBOL", 
-                                   all_go_pairs = orig$AllGoPairs, 
-                                   progress_bar = F) # use original 
-                                   # GO matrix, as similar GOs are likely 
-                                   # to occur.
-  ## append results to list
-  bench_results[[ontology]] <- list(orig=orig, cus=cus, cusgos=predicted_annotations)
+                                   progress_bar = F, go_data = tmp_go_data)$GeneSim)
+    }, gos = predicted_annotations, name = names(predicted_annotations)
+  )
 }
-save(bench_results, file = "~/tmp_bench.RData")
+#save(bench_results, file = "~/tmp_bench.RData")
 ```
 
 For the results, we calculate the closeness of the intraset similarities of the geneset against itself, and the geneset versus the annotation predicted geneset.
@@ -570,25 +576,7 @@ Where $x$ is the normal geneset and $y$ the predicted one. $score$ indicated the
 ```{r}
 library(eulerr)
 for (ontology in ontologies) {
-  benchscore <- min(mean(bench_results[[ontology]]$orig$GeneSim), 
-                  mean(bench_results[[ontology]]$cus$GeneSim)) / 
-                max(mean(bench_results[[ontology]]$orig$GeneSim), 
-                  mean(bench_results[[ontology]]$cus$GeneSim))
-  # insersect and see which GOs occur.
-  original_gos <- unique(c(rownames(bench_results[[ontology]]$orig$AllGoPairs), 
-                    colnames(bench_results[[ontology]]$orig$AllGoPairs)))
-  custom_gos <- unlist(bench_results[[ontology]]$cusgos, F, F)
-  intersect_amount <- length(original_gos[original_gos %in% custom_gos])
-  # make venn diagram
-  fitvenn <- euler(c(original_gos = length(original_gos),
-                     custom_gos = length(custom_gos),
-                "original_gos&custom_gos" = intersect_amount))
-  a <- plot(fitvenn,
-     fills = c("dodgerblue2", "darkgoldenrod1"),
-     fontsize = 8,
-     quantities = list(fontsize = 8))
-  print(a)
-  print(benchscore)
+  print(bench_results[[ontology]])
 }
 ```
 
