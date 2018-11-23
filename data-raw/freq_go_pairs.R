@@ -1,5 +1,8 @@
 # In this file internal procedures will be defined for generating data, this is for "developers only".
 
+library(data.table)
+options(digits=22, stringsAsFactors = FALSE)
+
 # generate score matrix between most frequent occuring gos in all organisms/ontologies
 .gen_semscor_topo_matrices <- function(old_listy = NULL, amount=2) {
   # old_listy is deprecated
@@ -21,7 +24,7 @@
     top_gos <- counted[rev(order(counted$N)),][1:amount,][[1]]
     # now that we have the top gos, generate the matrix.
     custom <- setNames(as.list(top_gos), seq(top_gos))
-    resmat <- GAPGOM::topo_ic_sim_genes(ontology, organism, c(), c(), 
+    resmat <- GAPGOM::topo_ic_sim_genes(organism, ontology, c(), c(), 
                                         custom_genes1 = custom, 
                                         custom_genes2 = custom, 
                                         go_data = tmp_godat, 

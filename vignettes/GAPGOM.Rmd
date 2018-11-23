@@ -41,6 +41,39 @@ GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etric
 In GAPGOM, two main semantic measurement algorithms are available; [TopoICSim](https://doi.org/10.1186/s12859-016-1160-0) and [lncRNApred](). TopoICSim is GO topology based, while lncRNApred is based on expression value semantic distances.
 The main interface for expression data as of right now is the [Fantom5 data](http://fantom.gsc.riken.jp/5/), using Bioconductors [`ExpressionSet`](https://www.bioconductor.org/packages/3.7/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) class. All algorithms are dependent on the GO consortium and thus use GOSemSim for loading GO data.
 
+## Installation
+
+Before installing, the package has quite a few dependencies in both cran and Bioconductor. You can run the following block of code (prerably line-by-line because of prompts) to install these and the package itself.
+
+```{r eval=F}
+### NEEDED (depends)
+
+install.packages(c("plyr", "data.table", "igraph"))
+
+if (!requireNamespace("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install()
+
+BiocManager::install(c("graph", "RBGL", "GO.db", "org.Hs.eg.db", "org.Mm.eg.db", "GOSim", "GOSemSim", "GEOquery", "AnnotationDbi", "Biobase"))
+
+### ADDITIONAL (suggests)
+
+install.packages(c("testthat", "pryr", "knitr", "rmarkdown", "prettydoc", "ggplot2", "kableExtra", "profvis", "reshape2"))
+
+BiocManager::install(c("org.Ag.eg.db", "org.At.tair.db", "org.Bt.eg.db", "org.Ce.eg.db", "org.Cf.eg.db", "org.Dm.eg.db", "org.Dr.eg.db", "org.EcK12.eg.db", "org.EcSakai.eg.db", "org.Gg.eg.db", "org.Mmu.eg.db", "org.Pf.plasmo.db", "org.Pt.eg.db", "org.Rn.eg.db", "org.Sc.sgd.db", "org.Ss.eg.db", "org.Xl.eg.db"))
+
+### DEVELOPER (run these seperate) R 3.6 required!
+
+install.packages(c("devtools", "roxygen2", "stringr", "stringi", "microbenchmark", "R.utils"))
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install(version = "devel")
+BiocManager::valid()              # checks for out of date packages
+
+### PACKAGE INSTALL - unavailable for now. Use install.packages + tar.gz instead
+# BiocManager::install("GAPGOM")
+```
+
 ## Expression data interfaces
 
 ### ID support

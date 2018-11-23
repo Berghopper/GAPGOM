@@ -122,7 +122,9 @@ benchmarks <- GAPGOM:::benchmarks # see below
 #' benchmarks$laptop_mems_genset <- mems_genset
 #' 
 #' c(a, b) #... combines all machine results
+#' 
+#' # LNCRNAPRED BENCHMARK NOW INCLUDED, SEE VIGNETTE INSTEAD
 
 #####
 
-save(freq_go_pairs, lncrnapred_baseresult, maintopo_baseresult, genetopo_baseresult, termtopo_baseresult, benchmarks, file = "/media/casper/USB_ccpeters/Repositories/Personal/gapgom/R/sysdata.rda", compress = "xz", compression_level = 9)
+save(freq_go_pairs, lncrnapred_baseresult, maintopo_baseresult, genetopo_baseresult, termtopo_baseresult, benchmarks, file = "/media/casper/USB_ccpeters/Repositories/Personal/GAPGOM/R/sysdata.rda", compress = "xz", compression_level = 9)

@@ -491,7 +491,7 @@ Speed might vary hugely depending on the organism, ontology and geneset used. Th
 
 In the following benchmark, lncRNApred will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNApred will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset (leave-one-out method). With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
 
-```{r}
+```{r, eval=FALSE}
 ## set stringsasfactors to false to ensure data is loaded properly.
 options(stringsAsFactors = FALSE)
 
@@ -567,24 +567,31 @@ for (ontology in ontologies) {
 # save(bench_results, file = "~/tmp_bench.RData")
 ```
 
-For the results, we calculated the closeness of the individual gene similarities against their annotation predicted counterparts. The similarity should be as close to 1 as possible (exactly same annotation). The GO terms may not be exactly the same nor overlapping, but might be close in the GO tree. Meaning that it still indicates the correct process/function/component (depending on ontology). 
+For the results, we calculated the closeness of the individual gene similarities against their annotation predicted counterparts. The similarity should be as close to 1 as possible (exactly same annotation). The GO terms may not be exactly the same nor overlapping, but might be close in the GO tree. Meaning that it still indicates the correct process/function/component (depending on ontology). Because this benchmark takes long to run too, it's results will be stored with the package. 
 
 ```{r}
+bench_results <- GAPGOM:::benchmarks$bench_results
+ontologies <- c("MF", "BP", "CC")
+
 for (ontology in ontologies) {
   dat <- data.frame(Gene = names(bench_results[[ontology]]), 
                     sim = bench_results[[ontology]])
   brplot <- ggplot(dat, aes(x=Gene, weight=sim)) + geom_bar() + coord_flip() +
-    labs(title = paste(strwrap("Similarity of custom gene versus original", 
+    labs(title = paste(strwrap(paste0(
+      "Similarities of custom genes versus originals in ", ontology, 
+      " Ontology"), 
                                width = 30), collapse = "\n")) +
     theme(plot.title = element_text(hjust = 0.5)) +
     ylab("Similarity (TopoICSim)")
   print("---")
   print(ontology)
-  print(brplot)
   print("mean:")
   print(mean(bench_results[[ontology]]))
+  print(brplot)
 }
 ```
+
+Here we can see that the scores performs like; MF < BP < CC. This presumably has to do with increasing ambiguity between these ontologies as well. From these results we can roughly say that on average, depending on ontology, the predicted annotations have a TopoICSim similarity between ~0.6 and ~0.86.
 
 ## For code reviewers
 
