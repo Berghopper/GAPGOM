@@ -6,6 +6,9 @@
 \usage{
 .topo_ic_sim_argcheck_genes(ontology, organism, genes1, genes2)
 }
+\value{
+no return value, stops code when arguments are faulty.
+}
 \description{
 This function is an internal function and should not be called by the user.
 }

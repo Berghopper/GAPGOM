@@ -4,7 +4,7 @@
 ## ORIGINAL DATA
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
-options(stringsAsFactors = F)
+options(stringsAsFactors = FALSE)
 ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
 
 # Gene ID's and annotation term type.
@@ -13,8 +13,10 @@ EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/r
 # expression data selection <--- THIS IS WHERE EXAMPLE DATA IS MADE
 # ENSG00000228630
 # rowsample <- sample(1:nrow(ExpressionData),10000)
-# ExpressionData <- unique(rbind(ExpressionData[rowsample,], ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
-# EnsemblID2GOID <- EnsemblID2GOID[EnsemblID2GOID$ensembl_gene_id %in% ExpressionData$GeneID,]
+# ExpressionData <- unique(rbind(ExpressionData[rowsample,], 
+#   ExpressionData[ExpressionData$GeneID=="ENSG00000228630",]))
+# EnsemblID2GOID <- EnsemblID2GOID[EnsemblID2GOID$ensembl_gene_id %in% 
+#   ExpressionData$GeneID,]
 
 ## Conversion to expressionset
 
@@ -29,7 +31,8 @@ expset <- ExpressionSet(expression_matrix,
 ## selection of filter
 
 # filter out everything that IS NOT a protein coding gene
-filter_vector <- expset@featureData@data[(expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+filter_vector <- expset@featureData@data[(expset@featureData@data$
+                                            GeneType=="protein_coding"),]$GeneID
 
 ## make translational data.frame (BP only)
 bp_only <- EnsemblID2GOID[(EnsemblID2GOID[ ,3] == "biological_process"), ]
@@ -45,6 +48,7 @@ result <- GAPGOM::expression_prediction(gid,
                                         "human", 
                                         "BP",
                                         id_translation_df = id_translation_df,
-                                        method = "combine", verbose = T, filter_pvals = T
+                                        method = "combine", verbose = TRUE, 
+                                        filter_pvals = TRUE
 )
 result

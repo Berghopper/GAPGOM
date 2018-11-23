@@ -6,7 +6,7 @@ testmaintopo <- function() {
              "222","8659","501","64577","223","217","4329","10840","7915")
   return(
     GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, 
-                              use_precalculation = F)
+                              use_precalculation = FALSE)
     )
 }
 

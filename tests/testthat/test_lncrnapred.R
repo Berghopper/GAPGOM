@@ -18,8 +18,8 @@ lncrnapred_test <- function() {
                                         id_translation_df = GAPGOM::id_translation_df,
                                         id_select_vector = filter_vector,
                                         method = "combine", 
-                                        verbose = T, 
-                                        filter_pvals = T)
+                                        verbose = TRUE, 
+                                        filter_pvals = TRUE)
    )
 }
 

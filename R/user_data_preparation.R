@@ -16,9 +16,10 @@
 #' ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
 #' verbose=TRUE)
 #' }
+#' @importFrom compiler cmpfun
 #' @importFrom data.table fread
 #' @export
-fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = FALSE) {
+fantom_load_raw <- cmpfun(function(filepath, verbose = FALSE) {
   old <- options(stringsAsFactors = FALSE)
   on.exit(options(old), add = TRUE)
   # first parse fantom column variables.
@@ -38,7 +39,7 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = FALSE) {
     linecount <- linecount + 1
   }
   translation_df <- as.data.frame(t(translation_df))
-  rownames(translation_df) <- 1:nrow(translation_df)
+  rownames(translation_df) <- seq_len(nrow(translation_df))
   colnames(translation_df) <- c("type","key","value")
   close(con)
   if (verbose) print("DONE")
@@ -86,8 +87,9 @@ fantom_load_raw <- compiler::cmpfun(function(filepath, verbose = FALSE) {
 #' }
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new
+#' @importFrom compiler cmpfun
 #' @export
-fantom_to_expset <- compiler::cmpfun(function(fanraw, species, filter = TRUE, 
+fantom_to_expset <- cmpfun(function(fanraw, species, filter = TRUE, 
                                               verbose = FALSE) {
   fan <- fanraw$df
   meta <- fanraw$meta
@@ -121,8 +123,12 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, species, filter = TRUE,
 #' 
 #' @section Notes:
 #' This function is an internal function and should not be called by the user.
+#' 
+#' @return output is different on a case-to-case basis
+#' 
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.fantom_filter_entrez <- compiler::cmpfun(function(fan) {
+.fantom_filter_entrez <- cmpfun(function(fan) {
   return(fan[!(
     is.na(fan$`entrezgene (genes) id associated with the transcript`) | 
       fan$`entrezgene (genes) id associated with the transcript`==""),])
@@ -151,8 +157,9 @@ fantom_to_expset <- compiler::cmpfun(function(fanraw, species, filter = TRUE,
 #' }
 #' @importFrom GEOquery gunzip
 #' @importFrom utils download.file
+#' @importFrom compiler cmpfun
 #' @export
-fantom_download <- compiler::cmpfun(function(down_dir, 
+fantom_download <- cmpfun(function(down_dir, 
                                              organism="human", 
                                              unpack = TRUE, 
                                              noprompt = FALSE) {

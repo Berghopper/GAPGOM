@@ -11,13 +11,16 @@
 #' @section Notes:
 #' Internal functions all used in topo_ic_sim_titj().
 #'
+#' @return output is different on a case-to-case basis
+#'
 #' @name dag_funcs
 #' @keywords internal
 NULL
 
 #' Common Ancestor for two GOIDs
 #' @rdname dag_funcs
-.common_ancestors <- compiler::cmpfun(function(go_id1, go_id2, ontology, 
+#' @importFrom compiler cmpfun
+.common_ancestors <- cmpfun(function(go_id1, go_id2, ontology, 
                                              organism, go_annotation, 
                                              information_content) {
   root_count <- max(information_content[information_content != Inf])
@@ -39,10 +42,11 @@ NULL
 #' Weighting subgraphs to get shortest and longest paths. Weighting edges is 
 #' done by assigning average inverse half information_content from two 
 #' corresponding nodes.
+#' @importFrom compiler cmpfun
 #' @importFrom graph edgeMatrix eWV
 #' @importFrom igraph igraph.from.graphNEL set.edge.attribute
 #' @rdname dag_funcs
-.set_edge_weight <- compiler::cmpfun(function(sub_graph, information_content) {
+.set_edge_weight <- cmpfun(function(sub_graph, information_content) {
   edge_matrix <- edgeMatrix(sub_graph)
   weighted_edge_matrix <- eWV(sub_graph, edge_matrix, useNNames = TRUE)
   weights <- unlist(
@@ -68,8 +72,9 @@ NULL
 #' Calculate weighted long path (winformation_content) between root and a 
 #' disjunctive common ancestor by topological sorting algorithm.
 #' @import igraph
+#' @importFrom compiler cmpfun
 #' @rdname dag_funcs
-.longest_path <- compiler::cmpfun(function(weighted_subgraph, 
+.longest_path <- cmpfun(function(weighted_subgraph, 
                                           last_common_ancestor, 
                                           root, 
                                           information_content) {

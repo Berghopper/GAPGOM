@@ -16,6 +16,9 @@ navigation functions.}
 .longest_path(weighted_subgraph, last_common_ancestor, root,
   information_content)
 }
+\value{
+output is different on a case-to-case basis
+}
 \description{
 These functions are internal functions and should not be called by the user.
 }

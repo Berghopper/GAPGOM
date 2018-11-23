@@ -23,7 +23,7 @@ library(kableExtra)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  error = F
+  error = FALSE
 )
 ```
 
@@ -51,19 +51,19 @@ As of v0.2.7 and up, all [`AnnotationDbi`]() IDs should be supported. However, w
 
 As of right now, the package only has 1 main dataset for expression data; The Fantom5 dataset. There are a few helper functions to make this data usable. The Fantom5 dataset is only available for the human and mouse genome. Examples of the helper functions/interfaces can be found below;
 
-```{r f5, eval=F}
+```{r f5, eval=FALSE}
 # download the fantom5 data file
 fantom_file <- fantom_download("./", organism = "mouse", 
-                               noprompt = T) # saves filename
+                               noprompt = TRUE) # saves filename
 # load the file (use fantom_file variable if doing all at once)
 ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
-verbose = T)
+verbose = TRUE)
 # remove first two rows from fantom5 data (these are seperate statistis, 
 # we just need expressionvalues)
 ft5$df <- ft5$df[3:nrow(ft5$df),]
 
 # convert the raw fantom table to an ExpressionSet
-expset <- fantom_to_expset(ft5, verbose = T)
+expset <- fantom_to_expset(ft5, verbose = TRUE)
 ```
 
 **Do note that all standard columns are neccesary when converting to an `ExpressionSet` in this way!**
@@ -81,9 +81,9 @@ Each row of expression values should have corresponding IDs, with the ID-type as
 
 Random expression value generation;
 
-```{r randvals, eval=F}
+```{r randvals, eval=FALSE}
 # select 10000 random IDs
-go_data <- GAPGOM::set_go_data("human", "BP", computeIC = F)
+go_data <- GAPGOM::set_go_data("human", "BP", computeIC = FALSE)
 random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep 
 # uniques
 
@@ -100,7 +100,7 @@ View(expressions)
 
 Converting the expression dataframe to an ExpressionSet;
 
-```{r expset, eval=F}
+```{r expset, eval=FALSE}
 expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
 rownames(expression_matrix) <- expressions$ENTREZID
 featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
@@ -274,7 +274,7 @@ The rownames also represent the gene expression row. Only the first 100 rows are
 
 The original algorithm used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison. [4]
 
-```{r, eval=F}
+```{r, eval=FALSE}
 # this block serves as a test to see if the package's algorithm matches up with the original.
 # For this it also uses the original lncRNA2Function dataset. While the original source is unavaible, there's still an intermediary version available.
 
@@ -283,11 +283,11 @@ The original algorithm used the lncRNA2Function data, to test if the results are
 # link: https://tare.medisin.ntnu.no/pred_lncRNA/
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
-options(stringsAsFactors = F)
+options(stringsAsFactors = FALSE)
 ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
 
 # Gene ID's and annotation term type.
-EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t',head=TRUE)
+EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t', head=TRUE)
 
 ## Conversion to expressionset
 
@@ -320,8 +320,8 @@ result <- GAPGOM::expression_prediction(gid,
                                        "BP",
                                        id_select_vector = filter_vector,
                                        id_translation_df = id_translation_df,
-                                       method = "pearson", verbose = T, 
-                                       filter_pvals = T)
+                                       method = "pearson", verbose = TRUE, 
+                                       filter_pvals = TRUE)
 ```
 
 ## TopoICSim
@@ -435,14 +435,14 @@ The following example uses the [pfam clan gene set](https://pfam.xfam.org/family
 
 ```{r TopoICSim}
 result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
-                                   drop=NULL, progress_bar = F)
+                                   drop=NULL, progress_bar = FALSE)
 kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 result$GeneSim
 # genelist mode
 list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 "222","8659","501","64577","223","217","4329","10840","7915")
 result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, 
-                              drop=NULL, progress_bar = F)
+                              drop=NULL, progress_bar = FALSE)
 kable(result$AllGoPairs) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 kable(result$GeneSim) %>% kable_styling() %>% scroll_box(width = "100%", height = "500px")
 mean(result$GeneSim)
@@ -465,7 +465,7 @@ Besides this, you can also define custom genes for TopoICSim. This consists of a
 ```{r, eval=FALSE}
 custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
 result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
-                                     custom_genes1 = custom, drop = NULL, verbose = T)
+                                     custom_genes1 = custom, drop = NULL, verbose = TRUE)
 ```
 
 Here we define a custom gene named "cus1" with the GO terms; "GO:0016787", "GO:0042802", "GO:0005524", it will be added to the first gene vector (218).

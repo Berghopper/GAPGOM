@@ -9,29 +9,36 @@
 #' @section Notes:
 #' These functions are internal functions and should not be called by the user.
 #'
+#' @return output is different on a case-to-case basis
+#' 
 #' @name misc_functions
 #' @keywords internal
 NULL
 
 #' @rdname misc_functions
-misc_pearson <- compiler::cmpfun(function(x, args) {
+#' @importFrom compiler cmpfun
+misc_pearson <- cmpfun(function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data)))})
 
 #' @rdname misc_functions
-misc_sobolev <- compiler::cmpfun(function(x, args) {
+#' @importFrom compiler cmpfun
+misc_sobolev <- cmpfun(function(x, args) {
   return(sobolev_metric(as.numeric(x), args$target_expression_data))})
 
 #' @rdname misc_functions
-misc_fisher <- compiler::cmpfun(function(x, args) {
+#' @importFrom compiler cmpfun
+misc_fisher <- cmpfun(function(x, args) {
   return(fisher_metric(as.numeric(x), args$target_expression_data))})
 
 #' @rdname misc_functions
-misc_kendall <- compiler::cmpfun(function(x, args) {
+#' @importFrom compiler cmpfun
+misc_kendall <- cmpfun(function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data, 
                  method = "kendall")))})
 
 #' @rdname misc_functions
-misc_spearman <- compiler::cmpfun(function(x, args) {
+#' @importFrom compiler cmpfun
+misc_spearman <- cmpfun(function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data, 
                  method = "spearman")))})
 

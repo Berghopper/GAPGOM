@@ -27,10 +27,11 @@
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_titj <- compiler::cmpfun(function(go_id1,
-                                               go_id2,
-                                               topoargs) {
+.topo_ic_sim_titj <- cmpfun(function(go_id1,
+                                     go_id2,
+                                     topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   # return 1 if the gos are the same.
@@ -123,10 +124,11 @@
 #' \strong{17}(1):296)
 #'
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_g1g2 <- compiler::cmpfun(function(gene1,
-                                               gene2,
-                                               topoargs) {
+.topo_ic_sim_g1g2 <- cmpfun(function(gene1,
+                                     gene2,
+                                     topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   if (topoargs$verbose) {
@@ -268,8 +270,9 @@
 #' \strong{17}(1):296)
 #' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_geneset <- compiler::cmpfun(function(gene_list1,
+.topo_ic_sim_geneset <- cmpfun(function(gene_list1,
                                          gene_list2,
                                          topoargs) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
@@ -287,7 +290,7 @@
     
     # make a copy of topo arguments to turn off progressbar for genelevel
     topoargs_gen <- topoargs
-    topoargs_gen$progress_bar <- F
+    topoargs_gen$progress_bar <- FALSE
     
     for (i in seq_len(nrow(unique_pairs))) {
       pair <- unique_pairs[i,]
@@ -393,8 +396,9 @@
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
 #'
+#' @importFrom compiler cmpfun
 #' @export
-topo_ic_sim_genes <- compiler::cmpfun(function(organism,
+topo_ic_sim_genes <- cmpfun(function(organism,
                               ontology,
                               genes1, 
                               genes2,
@@ -504,8 +508,9 @@ topo_ic_sim_genes <- compiler::cmpfun(function(organism,
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
+#' @importFrom compiler cmpfun
 #' @export
-topo_ic_sim_term <- compiler::cmpfun(function(organism,
+topo_ic_sim_term <- cmpfun(function(organism,
                                               ontology,
                                               go1, 
                                               go2,
@@ -514,7 +519,7 @@ topo_ic_sim_term <- compiler::cmpfun(function(organism,
                                            ontology, 
                                            go1, 
                                            go2, 
-                                           term_only=T,
+                                           term_only = TRUE,
                                            go_data = go_data)
   return(.topo_ic_sim_titj(go1, go2, topoargs))
 })

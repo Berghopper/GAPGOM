@@ -52,8 +52,9 @@
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
 #' @importFrom stats phyper p.adjust na.omit
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.enrichment_analysis <- compiler::cmpfun(function(
+.enrichment_analysis <- cmpfun(function(
                                 ordered_score_df,
                                 id_select_vector,
                                 id_translation_df,
@@ -71,7 +72,7 @@
   extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
   # List of top n (cutoff) genes (Ensembl ID)
-  list_top_genes <- ordered_score_df[c(1:enrichment_cutoff), 1]
+  list_top_genes <- ordered_score_df[c(seq_len(enrichment_cutoff)), 1]
   
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more

@@ -58,8 +58,9 @@
 #' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.prepare_variables_topoicsim <- function(organism, 
+.prepare_variables_topoicsim <- cmpfun(function(organism, 
                                          ontology, 
                                          gene_list1 = NULL, 
                                          gene_list2 = NULL,
@@ -107,7 +108,8 @@
   if (is.null(topoargs$weighted_dag)) {
     xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
                          BP = toTable(GOBPPARENTS), CC = toTable(GOCCPARENTS))
-    topoargs$weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 1:2]))
+    topoargs$weighted_dag <- ftM2graphNEL(as.matrix(xx_parents[, 
+                                                               c(seq_len(2))]))
   }
   # go_annotation
   if (is.null(topoargs$go_annotation)) {
@@ -177,7 +179,7 @@
   }
   
   return(topoargs)
-}
+})
 
 
 #' GAPGOM - set_go_data()
@@ -210,10 +212,13 @@
 #' # set go data for human, MF ontology.
 #' go_data <- GAPGOM::set_go_data("human", "MF")
 #' 
+#' @import org.Hs.eg.db
+#' @import org.Mm.eg.db
 #' @importFrom GOSemSim godata
 #' @importFrom AnnotationDbi keytypes
+#' @importFrom compiler cmpfun
 #' @export
-set_go_data <- compiler::cmpfun(function(organism, ontology, 
+set_go_data <- cmpfun(function(organism, ontology, 
                                          computeIC = TRUE, keytype="ENTREZID") {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
@@ -269,8 +274,9 @@ set_go_data <- compiler::cmpfun(function(organism, ontology,
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.prepare_score_matrix_topoicsim <- compiler::cmpfun(function(vec1, vec2, 
+.prepare_score_matrix_topoicsim <- cmpfun(function(vec1, vec2, 
                                                              sparse = FALSE,
                                                              old_scores = 
                                                                FALSE) {
@@ -310,8 +316,9 @@ set_go_data <- compiler::cmpfun(function(organism, ontology,
 #' @param score_matrix score matrix for topoclsim
 #' 
 #' @return Same matrix with correct sets set to 1.
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.set_identical_items <- compiler::cmpfun(function(score_matrix) {
+.set_identical_items <- cmpfun(function(score_matrix) {
   # set all matching names of matrix to 1 (Same genes).
   matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
   for (row in which(!is.na(matched_by_row[seq_along(matched_by_row)]))) {
@@ -338,8 +345,9 @@ set_go_data <- compiler::cmpfun(function(organism, ontology,
 #' 
 #' @import data.table
 #' @importFrom plyr .
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.unique_combos <- compiler::cmpfun(function(v1, v2) {
+.unique_combos <- cmpfun(function(v1, v2) {
   intermediate <- unique(CJ(v1, v2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
   return(intermediate[V1 != V2])
 })
@@ -363,8 +371,9 @@ set_go_data <- compiler::cmpfun(function(organism, ontology,
 #' @return The score dataframe with ensmbl ID's
 #' 
 #' @importFrom stats na.omit
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.prepare_score_df <- compiler::cmpfun(function(original_ids, score, gene_id) {
+.prepare_score_df <- cmpfun(function(original_ids, score, gene_id) {
   # score_df is the 'score' (correlation/metric) dataframe against target gene.
   # combine the dataframe if combine is selected, otherwise just add regular 
   # score.

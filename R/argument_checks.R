@@ -7,8 +7,11 @@
 #' This function checks arguments for the topoicsim gene variant. This function
 #' is temporary and will be replaced with other checks later on.
 #' 
+#' @return no return value, stops code when arguments are faulty.
+#' 
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_argcheck_genes <- compiler::cmpfun(function(ontology, organism, 
+.topo_ic_sim_argcheck_genes <- cmpfun(function(ontology, organism, 
                                                          genes1, genes2) {
   # set ontology and organism
   ontology <- match.arg(ontology, c("MF", "BP", "CC"))

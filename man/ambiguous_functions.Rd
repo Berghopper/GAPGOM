@@ -55,6 +55,9 @@
 
 .score_combined(args)
 }
+\value{
+output is different on a case-to-case basis
+}
 \description{
 These functions are ambiguous/standardized functions that help make the
 enrichment analysis steps more streamlined. Most measures have their own

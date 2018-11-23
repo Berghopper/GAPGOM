@@ -30,7 +30,7 @@ knitr::opts_chunk$set(
 
 ### Neccesary libraries
 
-```{r load_libs, warning = F, message = F, include = T}
+```{r load_libs, warning = FALSE, message = FALSE, include = TRUE}
 library(GAPGOM)
 library(profvis)
 library(GO.db)
@@ -232,7 +232,8 @@ p <- profvis::profvis({GAPGOM::expression_prediction(gid,
                                         "BP",
                                         id_translation_df = GAPGOM::id_translation_df,
                                         id_select_vector = filter_vector,
-                                        method = "combine", verbose = T, filter_pvals = T
+                                        method = "combine", verbose = TRUE, 
+                                        filter_pvals = TRUE
                        )})
 time <- max(p$x$message$prof$time)*10
 mem <- max(p$x$message$prof$memalloc)
@@ -316,7 +317,7 @@ colnames(times_term_df) <- c("server", "laptop", "n")
 times_term_df_melted <- melt(times_term_df, id="n")
 colnames(times_term_df_melted) <- c("n", "machine", "milliseconds")
 ggplot(times_term_df_melted, aes(x=machine, y=milliseconds, colour=machine)) + 
-  geom_boxplot(notch=F) + 
+  geom_boxplot(notch = FALSE) + 
   scale_y_continuous(breaks=pretty(times_term_df_melted$milliseconds, n = 5)) + 
   labs(title = paste(strwrap("Speed of term algorithm", width = 20), collapse = "\n")) + 
   theme(plot.title = element_text(hjust = 0.5))
@@ -333,7 +334,7 @@ colnames(mems_term_df) <- c("server", "laptop", "n")
 mems_term_df_melted <- melt(times_term_df, id="n")
 colnames(mems_term_df_melted) <- c("n", "machine", "RAM")
 ggplot(mems_term_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
-  geom_boxplot(notch=F) + 
+  geom_boxplot(notch = FALSE) + 
   scale_y_continuous(breaks=pretty(mems_term_df_melted$RAM, n = 5)) + 
   labs(title = paste(strwrap("RAM usage for gene algorithm", width = 20), collapse = "\n")) + 
   theme(plot.title = element_text(hjust = 0.5))
@@ -384,7 +385,7 @@ times_gene_df_melted <- melt(times_gene_df, id="n")
 times_gene_df_melted$value <- times_gene_df_melted$value/1000 
 colnames(times_gene_df_melted) <- c("n", "machine", "seconds")
 ggplot(times_gene_df_melted, aes(x=machine, y=seconds, colour=machine)) + 
-  geom_boxplot(notch=F) + 
+  geom_boxplot(notch = FALSE) + 
   labs(title = paste(strwrap("Speed of gene algorithm", width = 20), collapse = "\n")) + 
   theme(plot.title = element_text(hjust = 0.5))
 ```
@@ -400,7 +401,7 @@ colnames(mems_gene_df) <- c("server", "laptop", "n")
 mems_gene_df_melted <- melt(mems_gene_df, id="n")
 colnames(mems_gene_df_melted) <- c("n", "machine", "RAM")
 ggplot(mems_gene_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
-  geom_boxplot(notch=F) + 
+  geom_boxplot(notch = FALSE) + 
   scale_y_continuous(breaks=pretty(mems_gene_df_melted$RAM, n = 5)) + 
   labs(title = paste(strwrap("RAM usage for gene algorithm", width = 20), collapse = "\n")) + 
   theme(plot.title = element_text(hjust = 0.5))
@@ -462,7 +463,7 @@ colnames(mems_geneset_df) <- c("server", "laptop", "n")
 mems_geneset_df_melted <- melt(mems_geneset_df, id="n")
 colnames(mems_geneset_df_melted) <- c("Genes in geneset", "machine", "RAM")
 ggplot(mems_geneset_df_melted, aes(x=machine, y=RAM, colour=machine)) + 
-  geom_boxplot(notch=F) + 
+  geom_boxplot(notch = FALSE) + 
   scale_y_continuous(breaks=pretty(mems_geneset_df_melted$RAM, n = 5)) + 
   labs(title = paste(strwrap("RAM usage for geneset algorithm", width = 20), collapse = "\n")) + 
   theme(plot.title = element_text(hjust = 0.5))
@@ -492,7 +493,7 @@ In the following benchmark, lncRNApred will be tested. We will use the Glycolosi
 
 ```{r}
 ## set stringsasfactors to false to ensure data is loaded properly.
-options(stringsAsFactors = F)
+options(stringsAsFactors = FALSE)
 
 ## load data
 # 
@@ -544,7 +545,7 @@ for (ontology in ontologies) {
   print("Prediction finished! Calculating sims now")
   
   ## compare custom genes to original genes
-  tmp_go_data <- set_go_data("human", ontology, computeIC = T, 
+  tmp_go_data <- set_go_data("human", ontology, computeIC = TRUE, 
                              keytype = "SYMBOL")
   bench_results[[ontology]] <- mapply(
     function(gos, name) {
@@ -559,7 +560,7 @@ for (ontology in ontologies) {
       return(GAPGOM::topo_ic_sim_genes("human", ontology, c(), name_orig, 
                                    custom_genes1 = custom_gene, 
                                    idtype = "SYMBOL", 
-                                   progress_bar = F, go_data = tmp_go_data)$GeneSim)
+                                   progress_bar = FALSE, go_data = tmp_go_data)$GeneSim)
     }, gos = predicted_annotations, name = names(predicted_annotations)
   )
 }

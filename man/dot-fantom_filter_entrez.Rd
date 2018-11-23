@@ -9,6 +9,9 @@
 \arguments{
 \item{fan}{fantom5 data.table/data.frame object}
 }
+\value{
+output is different on a case-to-case basis
+}
 \description{
 filter on entrez id with raw fantom5 matrix and only keep rows with entrez 
 ids.

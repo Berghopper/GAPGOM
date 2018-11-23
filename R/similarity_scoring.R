@@ -38,8 +38,9 @@
 #'                                               GAPGOM::expset)
 #'
 #' @import Biobase
+#' @importFrom compiler cmpfun
 #' @export
-expression_semantic_scoring <- function(gene_id,
+expression_semantic_scoring <- cmpfun(function(gene_id,
                                         expression_set,
                                         method = "combine") {
   old <- options(stringsAsFactors = FALSE, warn=-1)
@@ -70,10 +71,11 @@ expression_semantic_scoring <- function(gene_id,
          }
   )
   return(scores)
-}
+})
 
 #' @rdname ambiguous_functions
-.ambiguous_scorecalc <- compiler::cmpfun(function(args, expression_data, applyfunc) {
+#' @importFrom compiler cmpfun
+.ambiguous_scorecalc <- cmpfun(function(args, expression_data, applyfunc) {
   # check if the expression_data has any 0 values in it and filter them.
   expression_data <- expression_data[!(apply(expression_data, 1,
                                           function(x) {all(x==0)})),]
@@ -91,7 +93,8 @@ expression_semantic_scoring <- function(gene_id,
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-.score_pearson <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_pearson <- cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_pearson)
   score_df <- .ambiguous_method_origin(score_df, "pearson")
   return(score_df)
@@ -99,7 +102,8 @@ expression_semantic_scoring <- function(gene_id,
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-.score_spearman <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_spearman <- cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_spearman)
   score_df <- .ambiguous_method_origin(score_df, "spearman")
   return(score_df)
@@ -107,28 +111,32 @@ expression_semantic_scoring <- function(gene_id,
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-.score_kendall <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_kendall <- cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_kendall)
   score_df <- .ambiguous_method_origin(score_df, "kendall")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
-.score_fisher <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_fisher <- cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_fisher)
   score_df <- .ambiguous_method_origin(score_df, "fisher")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
-.score_sobolev <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_sobolev <- cmpfun(function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data, misc_sobolev)
   score_df <- .ambiguous_method_origin(score_df, "sobolev")
   return(score_df)
 })
 
 #' @rdname ambiguous_functions
-.score_combined <- compiler::cmpfun(function(args) {
+#' @importFrom compiler cmpfun
+.score_combined <- cmpfun(function(args) {
   # Run enrichment for each method
   score_methods <- c(.score_pearson, .score_spearman, .score_kendall, 
                        .score_sobolev, .score_fisher)

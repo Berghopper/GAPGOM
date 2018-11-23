@@ -24,6 +24,9 @@ misc_spearman(x, args)
 
 \item{args}{internal arguments, used for target expression datas}
 }
+\value{
+output is different on a case-to-case basis
+}
 \description{
 These functions are misc. functions that are mostly used in applies. They
 are defined here probably because they are used often.

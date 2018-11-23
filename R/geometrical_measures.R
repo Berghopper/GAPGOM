@@ -34,18 +34,20 @@ NULL
 
 #' @rdname geometrical_measures
 #' @importFrom stats fft
-sobolev_metric <- compiler::cmpfun(function(x, y) {
+#' @importFrom compiler cmpfun
+sobolev_metric <- cmpfun(function(x, y) {
   x1 <- x^2/(sum(x^2))
   y1 <- y^2/(sum(y^2))
   z1 <- x1 - y1
   FT <- fft(z1)
-  w <- 2 * pi * (1:length(FT))/(length(FT))
+  w <- 2 * pi * (seq_len(length(FT)))/(length(FT))
   s <- sum((1 + w) * abs(FT)^2)^(1/2)
   return(s)
 })
 
 #' @rdname geometrical_measures
-fisher_metric <- compiler::cmpfun(function(x, y) {
+#' @importFrom compiler cmpfun
+fisher_metric <- cmpfun(function(x, y) {
   x1 <- x^2/(sum(x^2))
   y1 <- y^2/(sum(y^2))
   t <- x1 * y1

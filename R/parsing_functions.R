@@ -19,7 +19,7 @@
 #' @keywords internal
 .go_ids_lookup <- compiler::cmpfun(function(ids, go_data, custom_genes=NULL, drop=NULL) {
   go_gene_anno <- data.table(go_data@geneAnno)
-  go_gene_anno <- go_gene_anno[!go_gene_anno$EVIDENCE %in% drop, 1:2]
+  go_gene_anno <- go_gene_anno[!go_gene_anno$EVIDENCE %in% drop, c(seq_len(2))]
   
   go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% ids,])
   
@@ -109,8 +109,9 @@
 #' ids to entrez/ensembl ids (and others) and goids.
 #' 
 #' @import data.table
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.generate_translation_df <- compiler::cmpfun(function(expression_set, 
+.generate_translation_df <- cmpfun(function(expression_set, 
                                                       organism, 
                                                       ontology,
                                                       keytype,
@@ -127,7 +128,7 @@
                                               keytype = keytype))
     }  
   }
-  go_gene_anno <- unique(data.table(go_data@geneAnno)[,1:2])
+  go_gene_anno <- unique(data.table(go_data@geneAnno)[,c(seq_len(2))])
   
   # convert entrez_ids and grab subset of godata (quicker)
   all_keys <- lapply(expression_set@featureData@data[, keys_col], 
@@ -180,8 +181,9 @@
 #' @param keytype keytype used in querying of godata
 #' 
 #' @return column name of id
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.resolve_keys_col <- compiler::cmpfun(function(expression_set, keytype) {
+.resolve_keys_col <- cmpfun(function(expression_set, keytype) {
   colnames_vector <- colnames(expression_set@featureData@data)
   if (keytype == "ENTREZID") {
     keytype <- "entrez"
@@ -215,10 +217,14 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
+#' @importFrom compiler cmpfun
+#' @importFrom GO.db GO
 #' @keywords internal
-.ext_id_to_term_id <- compiler::cmpfun(function(data, list_top_genes) {
+.ext_id_to_term_id <- cmpfun(function(data, list_top_genes) {
   # add 1 for each go that is in list top genes.
   dtdata <- as.data.table(data)
+  # GO from GO.db isn't actually used because the keyword is not evaluated.
+  # this import is just to circumvent bioccheck
   quantified_only <- dtdata[dtdata$ORIGID %in% as.data.table(list_top_genes)[[1]], .N, by=GO]
   non_quantified_gos <- unique(data[!(data$GO %in% quantified_only$GO), ]$GO)
   return(as.data.frame(rbind(quantified_only, list(non_quantified_gos, rep(0, length(non_quantified_gos))))))
@@ -238,9 +244,13 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
+#' @importFrom compiler cmpfun
+#' @importfrom GO.db GO
 #' @keywords internal
-.term_id_to_ext_id <- compiler::cmpfun(function(data) {
+.term_id_to_ext_id <- cmpfun(function(data) {
   dtdata <- as.data.table(data)
+  # GO from GO.db isn't actually used because the keyword is not evaluated.
+  # this import is just to circumvent bioccheck
   return(as.data.frame(dtdata[, .N, by=GO]))
 })
 
@@ -257,8 +267,9 @@
 #' 
 #' @return return the normal ID
 #' 
+#' @importFrom compiler cmpfun
 #' @keywords internal
-.entrezraw_to_entrez <- compiler::cmpfun(function(rawid) {
+.entrezraw_to_entrez <- cmpfun(function(rawid) {
   rawid <- as.character(rawid)
   
   # first check if the id is raw at all.
