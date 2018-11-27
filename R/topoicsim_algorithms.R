@@ -399,20 +399,20 @@
 #' @importFrom compiler cmpfun
 #' @export
 topo_ic_sim_genes <- cmpfun(function(organism,
-                              ontology,
-                              genes1, 
-                              genes2,
-                              custom_genes1 = NULL,
-                              custom_genes2 = NULL,
-                              verbose = FALSE,
-                              progress_bar = TRUE,
-                              garbage_collection = FALSE,
-                              use_precalculation = FALSE, 
-                              drop = NULL,
-                              all_go_pairs = NULL,
-                              idtype = "ENTREZID",
-                              go_data = NULL
-                              ) {
+                                     ontology,
+                                     genes1,
+                                     genes2,
+                                     custom_genes1 = NULL,
+                                     custom_genes2 = NULL,
+                                     verbose = FALSE,
+                                     progress_bar = TRUE,
+                                     garbage_collection = FALSE,
+                                     use_precalculation = FALSE,
+                                     drop = NULL,
+                                     all_go_pairs = NULL,
+                                     idtype = "ENTREZID",
+                                     go_data = NULL
+                                     ) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -423,8 +423,28 @@ topo_ic_sim_genes <- cmpfun(function(organism,
             upcoming versions. Turning option off...")
   }
   
-  .topo_ic_sim_argcheck_genes(ontology, organism, genes1, genes2)
+  if (!(.check_organism(organism) &&
+        .check_ontology(ontology) &&
+        .check_ifclass(genes1, "character", "genes1") &&
+        .check_ifclass(genes2, "character", "genes2") &&
+        .check_custom_gene(custom_genes1) &&
+        .check_custom_gene(custom_genes2) &&
+        .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &&
+        .check_ifclass(progress_bar, "logical", "progress_bar", 
+                       accept_null = FALSE) &&
+        .check_ifclass(garbage_collection, "logical", "garbage_collection", 
+                       accept_null = FALSE) &&
+        .check_ifclass(use_precalculation, "logical", "use_precalculation", 
+                       accept_null = FALSE) &&
+        .check_ifclass(drop, "character", "drop") &&
+        .check_ifclass(all_go_pairs, "matrix", all_go_pairs) &&
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE) &&
+        .check_idtype(idtype, organism))
+  ) {
+    stop("Error: one or more arguments are faulty!")
+  }
   # if everything is ok, start preparing...
+  
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
                                            genes1, 
@@ -439,6 +459,7 @@ topo_ic_sim_genes <- cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
+  
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
@@ -511,10 +532,18 @@ topo_ic_sim_genes <- cmpfun(function(organism,
 #' @importFrom compiler cmpfun
 #' @export
 topo_ic_sim_term <- cmpfun(function(organism,
-                                              ontology,
-                                              go1, 
-                                              go2,
-                                              go_data = NULL) {
+                                    ontology,
+                                    go1, 
+                                    go2,
+                                    go_data = NULL) {
+  if (!(.check_organism(organism) &&
+        .check_ontology(ontology) &&
+        .check_ifclass(go1, "character", "go1", accept_null = FALSE) &&
+        .check_ifclass(go2, "character", "go2", accept_null = FALSE) &&
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE))
+  ) {
+    stop("Error: one or more arguments are faulty!")
+  }
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
                                            go1, 

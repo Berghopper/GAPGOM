@@ -23,6 +23,16 @@ lncrnapred_test <- function() {
    )
 }
 
-test_that("expression_prediction_function is working", {
-  expect_equal(lncrnapred_test(), lncrnapred_baseresult)
+test_that("expression_prediction_function", {
+  expect_equal(lncrnapred_test(), gapgom_tests$lncrnapred_baseresult)
+})
+
+sim_scoring <- function() {
+  gid <- "ENSG00000228630"
+  return(GAPGOM::expression_semantic_scoring(gid,
+                                             GAPGOM::expset))
+}
+
+test_that("similarity scoring", {
+  expect_equal(sim_scoring(), gapgom_tests$sem_scoring)
 })

@@ -98,6 +98,30 @@ expression_prediction <- cmpfun(function(gene_id,
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
+  # check inputs
+  if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &&
+        .check_ifclass(expression_set, "ExpressionSet", "expression_set",
+                       match_case = TRUE, accept_null = FALSE) &&
+        .check_organism(organism) &&
+        .check_ontology(ontology) &&
+        .check_ifclass(enrichment_cutoff, "numeric", "enrichment_cutoff", 
+                       accept_null = FALSE) &&
+        .check_method(method) &&
+        .check_ifclass(significance, "numeric", "significance", 
+                       accept_null = FALSE) &&
+        .check_ifclass(go_amount, "numeric", "go_amount", 
+                       accept_null = FALSE) &&
+        .check_ifclass(filter_pvals, "logical", "filter_pvals", 
+                       accept_null = FALSE) &&
+        .check_ifclass(idtype, "character", "idtype", accept_null = FALSE) &&
+        .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &&
+        .check_ifclass(id_select_vector, "character", "id_select_vector") &&
+        .check_ifclass(id_translation_df, "data.frame", "id_translation_df") &&
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE)
+  )) {
+    stop("Error: one or more arguments are faulty!")
+  }
+  
   # prepare the data with some special operations/vars that are needed later
   
   gene_id <- as.character(gene_id)
@@ -160,12 +184,7 @@ expression_prediction <- cmpfun(function(gene_id,
     "kendall" = .predict_kendall(args),
     "fisher" = .predict_fisher(args),
     "sobolev" = .predict_sobolev(args),
-    "combine" = .predict_combined(args),
-    function() {
-      cat("Selected method; \"", method, "\" does not exist! Refer to the ",
-          "help page for options.", sep = "")
-      return(NULL)
-    }
+    "combine" = .predict_combined(args)
   )
   if (length(enrichment_result) > 0 && nrow(enrichment_result) > 0) {
     # number the rownames and return the enrichment results.

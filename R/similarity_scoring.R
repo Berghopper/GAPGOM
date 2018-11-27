@@ -47,6 +47,15 @@ expression_semantic_scoring <- cmpfun(function(gene_id,
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
+  # check inputs
+  if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &&
+        .check_ifclass(expression_set, "ExpressionSet", "expression_set",
+                       match_case = TRUE, accept_null = FALSE) &&
+        .check_method(method)
+  )) {
+    stop("Error: one or more arguments are faulty!")
+  }
+  
   # prepare the data with some special operations/vars that are needed later
   gene_id <- as.character(gene_id)
   # Target expression data where gene id matches

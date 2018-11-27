@@ -3,10 +3,7 @@
 # variable requests from package for resaving/updating
 # Part of actual data generation are commented
 freq_go_pairs <- GAPGOM:::freq_go_pairs # see freq_go_pairs.R
-lncrnapred_baseresult <- GAPGOM:::lncrnapred_baseresult # documented example was used for the result
-maintopo_baseresult <- GAPGOM:::maintopo_baseresult # documented example was used for the result
-genetopo_baseresult <- GAPGOM:::genetopo_baseresult # documented example was used for the result
-termtopo_baseresult <- GAPGOM:::termtopo_baseresult # documented example was used for the result
+gapgom_tests <- GAPGOM:::gapgom_tests # documented examples are used / code in tests
 benchmarks <- GAPGOM:::benchmarks # see below
 
 #####
@@ -127,4 +124,4 @@ benchmarks <- GAPGOM:::benchmarks # see below
 
 #####
 
-save(freq_go_pairs, lncrnapred_baseresult, maintopo_baseresult, genetopo_baseresult, termtopo_baseresult, benchmarks, file = "/media/casper/USB_ccpeters/Repositories/Personal/GAPGOM/R/sysdata.rda", compress = "xz", compression_level = 9)
+save(freq_go_pairs, gapgom_tests, benchmarks, file = "/media/casper/USB_ccpeters/Repositories/Personal/GAPGOM/R/sysdata.rda", compress = "xz", compression_level = 9)

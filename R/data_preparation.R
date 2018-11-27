@@ -244,7 +244,7 @@ set_go_data <- cmpfun(function(organism, ontology,
                                    "\"!"))
                     ))
   # load correct library for GO data to check/show keytypes
-  eval(parse(text=paste0("library(\"",species,"\")")))
+  # eval(parse(text=paste0("library(\"",species,"\")")))
   if (!(keytype %in% keytypes(eval(parse(text=species))))) {
     stop(paste0("FATAL; SPECIFIED KEYTYPE; \"",
                 keytype,
