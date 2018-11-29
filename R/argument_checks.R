@@ -2,18 +2,32 @@
 
 ### OTHER CHECKS / GLOBAL CHECKS
 
-.check_ifclass <- function(obj, 
-               classname, 
-               objname, 
-               match_case = FALSE, 
-               accept_null = TRUE) {
-  obj_classname <- class(obj)[1]
-  if (!match_case) {
-    obj_classname <- tolower(obj_classname)
-    classname <- tolower(classname)
-  }
-  
-  if(obj_classname!=classname) {
+#' GAPGOM internal - Global argument checks 
+#' 
+#' These functions are internal functions and should not be called by the user.
+#' 
+#' These check make sure that user input is correct for both TopoICSim and 
+#' lncRNApred. They mainly include very generalistic checks.
+#'  
+#' @section Notes:
+#' Internal functions used in both algorithms.
+#'
+#' @return output is different on a case-to-case basis, but is a boolean 
+#' determining if the input is correct.
+#'
+#' @name glb_checks
+#' @keywords internal
+NULL
+
+#' Checks if object is the given classtype. prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom methods is
+#' @importFrom compiler cmpfun
+.check_ifclass <- cmpfun(function(obj, 
+                                 classname, 
+                                 objname,
+                                 accept_null = TRUE) {
+  if(!is(obj, classname)) {
     if(is.null(obj) && accept_null) {
       return(TRUE)
     }
@@ -21,10 +35,14 @@
     return(FALSE)
   }
   return(TRUE)
-}
+})
 
-.check_gos <- function(gos) {
-  if(class(gos)!="character") {
+#' Checks if given Go strings are correct.
+#' @rdname glb_checks
+#' @importFrom methods is
+#' @importFrom compiler cmpfun
+.check_gos <- cmpfun(function(gos) {
+  if(!is(gos, "character")) {
     message("GOs should be character class!")
     return(FALSE)
   }
@@ -35,9 +53,12 @@
   }
   message("One or multiple GOs are not correct!")
   return(FALSE)
-}
+})
 
-.check_custom_gene <- function(cus_gen) {
+#' Checks if a custom gene is correctly defined. prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom compiler cmpfun
+.check_custom_gene <- cmpfun(function(cus_gen) {
   if(.check_ifclass(cus_gen, "list", "custom_gene")) {
     if(!is.null(names(cus_gen))) {
       if(.check_gos(unlist(cus_gen, FALSE, FALSE))) {
@@ -51,9 +72,12 @@
   message("One of the custom genes is not a list, is missing names or has 
           incorrect gos!")
   return(FALSE)
-}
+})
 
-.check_idtype <- function(idtype, organism) {
+#' Checks if idtype is correct and prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom compiler cmpfun
+.check_idtype <- cmpfun(function(idtype, organism) {
   species <- .organism_to_species_lib(organism)
   if (!is.null(species)) {
     if (idtype %in% keytypes(eval(parse(text=species)))) {
@@ -63,17 +87,23 @@
   message(paste0("idtype is incorrect! Pick one of the following; ", 
                  paste0(keytypes(eval(parse(text=species))), collapse = ", ")))
   return(FALSE)
-}
+})
 
-.check_organism <- function(organism) {
+#' Checks if organism can be parsed. prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom compiler cmpfun
+.check_organism <- cmpfun(function(organism) {
   if(is.null(.organism_to_species_lib(organism))) {
     message("Incorrectly specified organism!")
     return(FALSE)
   }
   return(TRUE)
-}
+})
 
-.check_ontology <- function(ontology) {
+#' Checks if ontology can be parsed. prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom compiler cmpfun
+.check_ontology <- cmpfun(function(ontology) {
   ontologies <- c("MF", "BP", "CC")
   if(toupper(ontology) %in% ontologies) {
     return(TRUE)
@@ -84,9 +114,12 @@
                                 paste0(ontologies, collapse="\", \""), 
                                 "\""))))
   return(FALSE)
-}
+})
 
-.check_method <- function(method) {
+#' Checks if method can be parsed. prints message if incorrect.
+#' @rdname glb_checks
+#' @importFrom compiler cmpfun
+.check_method <- cmpfun(function(method) {
   methods <- c("pearson", "spearman", "kendall", "fisher", "sobolev", "combine")
   if(tolower(method) %in% methods) {
     return(TRUE)
@@ -96,4 +129,4 @@
                                 paste0(methods, collapse="\", \""), 
                                 "\""))))
   return(FALSE)
-}
+})

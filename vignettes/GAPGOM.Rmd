@@ -48,7 +48,7 @@ Before installing, the package has quite a few dependencies in both cran and Bio
 ```{r eval=F}
 ### NEEDED (depends)
 
-install.packages(c("plyr", "data.table", "igraph"))
+install.packages(c("plyr", "dplyr", "data.table", "igraph"))
 
 if (!requireNamespace("BiocManager"))
     install.packages("BiocManager")
@@ -144,8 +144,8 @@ expset <- ExpressionSet(expression_matrix,
 
 # To see how it is structured;
 View(expset)
-View(expset@assayData$exprs) # where expressionvalues are stored.
-View(expset@featureData@data) # where other information is stored.
+View(assayData(expset)[["exprs"]]) # where expressionvalues are stored.
+View(pData(featureData(expset))) # where other information is stored.
 ```
 
 ## lncRNApred (expression similarity)
@@ -335,7 +335,7 @@ expset <- ExpressionSet(expression_matrix,
 ## selection of filter
 
 # keep everything that is a protein coding gene
-filter_vector <- expset@featureData@data[(expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+filter_vector <- pData(featureData(expset))[(pData(featureData(expset))$GeneType=="protein_coding"),]$GeneID
 
 ## make translational data.frame (BP only)
 bp_only <- EnsemblID2GOID[(EnsemblID2GOID[ ,3] == "biological_process"), ]

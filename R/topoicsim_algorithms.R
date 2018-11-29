@@ -221,12 +221,14 @@
   m <- length(gos1)
   n <- length(gos2)
   sim <- max(
-    sum(sapply(seq_len(m), function(x) {
+    sum(vapply(seq_len(m), function(x) {
       max(scores[x, ], na.rm = TRUE)
-  }))/m, 
-    sum(sapply(seq_len(n), function(x) {
+  }, numeric(1))
+  )/m, 
+    sum(vapply(seq_len(n), function(x) {
       max(scores[, x], na.rm = TRUE)
-  }))/n)
+  }, numeric(1))
+  )/n)
   sim <- round(sim, digits = 3)
   # return final score
   return(list(GeneSim = sim, 
@@ -437,8 +439,9 @@ topo_ic_sim_genes <- cmpfun(function(organism,
         .check_ifclass(use_precalculation, "logical", "use_precalculation", 
                        accept_null = FALSE) &&
         .check_ifclass(drop, "character", "drop") &&
-        .check_ifclass(all_go_pairs, "matrix", all_go_pairs) &&
-        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE) &&
+        (.check_ifclass(all_go_pairs, "matrix", all_go_pairs) ||
+         .check_ifclass(all_go_pairs, "Matrix", all_go_pairs)) &&
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data") &&
         .check_idtype(idtype, organism))
   ) {
     stop("Error: one or more arguments are faulty!")
@@ -540,7 +543,7 @@ topo_ic_sim_term <- cmpfun(function(organism,
         .check_ontology(ontology) &&
         .check_ifclass(go1, "character", "go1", accept_null = FALSE) &&
         .check_ifclass(go2, "character", "go2", accept_null = FALSE) &&
-        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE))
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data"))
   ) {
     stop("Error: one or more arguments are faulty!")
   }

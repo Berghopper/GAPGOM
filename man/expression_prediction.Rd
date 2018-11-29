@@ -88,9 +88,11 @@ annotation to calculate similarity scores between GO terms,
 # to fully grasp what's going on with making of the filter etc. (Biobase 
 # ExpressionSet)
 
+library(Biobase)
+
 # keep everything that is a protein coding gene
-filter_vector <- GAPGOM::expset@featureData@data[(
-GAPGOM::expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+filter_vector <- pData(featureData(GAPGOM::expset))[(
+pData(featureData(GAPGOM::expset))$GeneType=="protein_coding"),]$GeneID
 # set gid and run.
 gid <- "ENSG00000228630"
 

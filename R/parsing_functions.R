@@ -109,6 +109,7 @@
 #' ids to entrez/ensembl ids (and others) and goids.
 #' 
 #' @import data.table
+#' @importFrom Biobase featureData pData assayData
 #' @importFrom compiler cmpfun
 #' @keywords internal
 .generate_translation_df <- cmpfun(function(expression_set, 
@@ -131,7 +132,7 @@
   go_gene_anno <- unique(data.table(go_data@geneAnno)[,c(seq_len(2))])
   
   # convert entrez_ids and grab subset of godata (quicker)
-  all_keys <- lapply(expression_set@featureData@data[, keys_col], 
+  all_keys <- lapply(pData(featureData(expression_set))[, keys_col], 
                      .entrezraw_to_entrez)
   all_keys <- unique(unlist(all_keys, FALSE, FALSE))
   # grab correct go data
@@ -142,10 +143,8 @@
   passed_ids <- list()
   id_go_df <- data.frame()
   
-  for (i in seq_len(nrow(expression_set@featureData@data))) {
-    rawid <- as.character(expression_set@
-                            featureData@
-                            data[i, keys_col])
+  for (i in seq_len(nrow(pData(featureData(expression_set))))) {
+    rawid <- as.character(pData(featureData(expression_set))[i, keys_col])
     ids <- .entrezraw_to_entrez(rawid)
     # test if id has already occurred earlier
     goids <- passed_ids[[rawid]]
@@ -159,7 +158,7 @@
     # check if an output exists, if so return.
     if (length(goids) != 0){
       id_go_df <- rbind(CJ(ORIGID=rownames(
-        expression_set@assayData$exprs)[i], 
+        assayData(expression_set)[["exprs"]])[i], 
         ID=rawid, GO=goids), id_go_df)
     }
   }
@@ -181,10 +180,12 @@
 #' @param keytype keytype used in querying of godata
 #' 
 #' @return column name of id
+#'
+#' @importFrom Biobase featureData pData assayData
 #' @importFrom compiler cmpfun
 #' @keywords internal
 .resolve_keys_col <- cmpfun(function(expression_set, keytype) {
-  colnames_vector <- colnames(expression_set@featureData@data)
+  colnames_vector <- colnames(pData(featureData(expression_set)))
   if (keytype == "ENTREZID") {
     keytype <- "entrez"
   }
@@ -245,7 +246,7 @@
 #' 
 #' @import data.table
 #' @importFrom compiler cmpfun
-#' @importfrom GO.db GO
+#' @importFrom GO.db GO
 #' @keywords internal
 .term_id_to_ext_id <- cmpfun(function(data) {
   dtdata <- as.data.table(data)

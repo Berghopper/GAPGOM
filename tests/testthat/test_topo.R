@@ -10,7 +10,7 @@ test_that("topoicsim term level", {
 test_that("topoicsim gene level", {
   expect_equal(GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
                                          use_precalculation = FALSE,
-                                         drop=NULL, progress_bar = F),
+                                         drop=NULL, progress_bar = FALSE),
                gapgom_tests$genetopo_baseresult)
 })
 
@@ -19,7 +19,7 @@ testgenesettopo <- function() {
              "222","8659","501","64577","223","217","4329","10840","7915")
   return(
     GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1,
-                              use_precalculation = FALSE, 
+                              use_precalculation = TRUE, 
                               progress_bar = FALSE)
   )
 }

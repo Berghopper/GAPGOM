@@ -60,9 +60,11 @@
 #' # to fully grasp what's going on with making of the filter etc. (Biobase 
 #' # ExpressionSet)
 #' 
+#' library(Biobase)
+#' 
 #' # keep everything that is a protein coding gene
-#' filter_vector <- GAPGOM::expset@featureData@data[(
-#' GAPGOM::expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+#' filter_vector <- pData(featureData(GAPGOM::expset))[(
+#' pData(featureData(GAPGOM::expset))$GeneType=="protein_coding"),]$GeneID
 #' # set gid and run.
 #' gid <- "ENSG00000228630"
 #' 
@@ -101,7 +103,7 @@ expression_prediction <- cmpfun(function(gene_id,
   # check inputs
   if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &&
         .check_ifclass(expression_set, "ExpressionSet", "expression_set",
-                       match_case = TRUE, accept_null = FALSE) &&
+                       accept_null = FALSE) &&
         .check_organism(organism) &&
         .check_ontology(ontology) &&
         .check_ifclass(enrichment_cutoff, "numeric", "enrichment_cutoff", 
@@ -117,7 +119,7 @@ expression_prediction <- cmpfun(function(gene_id,
         .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &&
         .check_ifclass(id_select_vector, "character", "id_select_vector") &&
         .check_ifclass(id_translation_df, "data.frame", "id_translation_df") &&
-        .check_ifclass(go_data, "GOSemSimDATA", "go_data", match_case = TRUE)
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data")
   )) {
     stop("Error: one or more arguments are faulty!")
   }
@@ -127,12 +129,12 @@ expression_prediction <- cmpfun(function(gene_id,
   gene_id <- as.character(gene_id)
   # check if selection vector is defined, if not, include everything.
   if (is.null(id_select_vector)) {
-    id_select_vector <- rownames(expression_set@assayData$exprs)
+    id_select_vector <- rownames(assayData(expression_set)[["exprs"]])
   }
   
   id_select_vector
-  expression_data_sorted <- expression_set@assayData$exprs[(rownames(
-    expression_set@assayData$exprs) %in% id_select_vector),]
+  expression_data_sorted <- assayData(expression_set)[["exprs"]][(rownames(
+    assayData(expression_set)[["exprs"]]) %in% id_select_vector),]
   expression_data_sorted_ids <- rownames(expression_data_sorted)
   
   # check if expression_data sorted has anything at all
@@ -141,7 +143,7 @@ expression_prediction <- cmpfun(function(gene_id,
   }
 
   # Target expression data where gene id matches
-  target_expression_data <- expression_set@assayData$exprs[gene_id,]
+  target_expression_data <- assayData(expression_set)[["exprs"]][gene_id,]
   
   # Generate the translation df using gosemsim.
   if (verbose) {
@@ -190,7 +192,7 @@ expression_prediction <- cmpfun(function(gene_id,
     # number the rownames and return the enrichment results.
     rownames(enrichment_result) <- c(seq_len(nrow(enrichment_result)))
     # set all factors to strings.
-    factor_index <- sapply(enrichment_result, is.factor)
+    factor_index <- vapply(enrichment_result, is.factor, logical(1))
     enrichment_result[factor_index] <- lapply(enrichment_result[factor_index], 
                                               as.character)
     if (verbose) {
@@ -330,7 +332,9 @@ NULL
 })
 
 #' @rdname ambiguous_functions
+#' @importFrom magrittr %>%
 #' @importFrom compiler cmpfun
+#' @importFrom plyr ddply
 .predict_combined <- cmpfun(function(args) {
   # Run enrichment for each method
   predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, 

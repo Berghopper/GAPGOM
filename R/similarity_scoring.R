@@ -50,7 +50,7 @@ expression_semantic_scoring <- cmpfun(function(gene_id,
   # check inputs
   if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &&
         .check_ifclass(expression_set, "ExpressionSet", "expression_set",
-                       match_case = TRUE, accept_null = FALSE) &&
+                       accept_null = FALSE) &&
         .check_method(method)
   )) {
     stop("Error: one or more arguments are faulty!")
@@ -59,12 +59,12 @@ expression_semantic_scoring <- cmpfun(function(gene_id,
   # prepare the data with some special operations/vars that are needed later
   gene_id <- as.character(gene_id)
   # Target expression data where gene id matches
-  target_expression_data <- expression_set@assayData$exprs[gene_id,]
+  target_expression_data <- assayData(expression_set)[["exprs"]][gene_id,]
   
   # make args list for ambiguous functions
   args <- list(
     "gene_id" = gene_id,
-    "expression_data" = expression_set@assayData$exprs,
+    "expression_data" = assayData(expression_set)[["exprs"]],
     "target_expression_data" = target_expression_data)
   scores <- switch(method,
          "pearson" =  .score_pearson(args),

@@ -10,9 +10,9 @@
 #' @format An ExpressionSet containing 1001 rows of the lncRNA2Function 
 #' expression dataset. 
 #' Annotation data can be found under;
-#' GAPGOM::ft5_example_data@featureData@data
+#' pData(featureData(GAPGOM::expset))
 #' and expression values under;
-#' GAPGOM::ft5_example_data@assayData$exprs
+#' assayData(GAPGOM::expset)[["exprs"]]
 #'
 #' @source \url{https://tare.medisin.ntnu.no/pred_lncRNA/}
 #' @references [1]. Jiang Q et al.: \strong{LncRNA2Function: a comprehensive 

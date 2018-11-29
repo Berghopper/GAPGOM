@@ -112,17 +112,17 @@
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[order(quantified_ext_id_to_term_id$GO), 2]
 
 
-  #			              GeneList | Genome
-  #		                ------------------
-  #	In Anno group 	  |   n1   |   n2  |
-  #	------------------------------------
-  #	Not in Anno group |   n3   |   n4  |
-  #	------------------------------------
-  #	Where, GeneList is the number of protein-coding genes that co-expressed
+  #                       GeneList | Genome
+  #                     ------------------
+  # In Anno group     |   n1   |   n2  |
+  # ------------------------------------
+  # Not in Anno group |   n3   |   n4  |
+  # ------------------------------------
+  # Where, GeneList is the number of protein-coding genes that co-expressed
   # with lncRNA, Genome is the number of all protein coding-genes,
-  #	In Anno group is the number of protein-coding genes that were both
+  # In Anno group is the number of protein-coding genes that were both
   # co-expressed with lncRNA and annotated in the Term, and Not in Anno group
-  #	is the number of protein-coding genes that were co-expressed with lncRNA
+  # is the number of protein-coding genes that were co-expressed with lncRNA
   # but were not annotated in the Term
 
   n1 <- quantified_ext_id_to_term_id

@@ -75,9 +75,9 @@ fantom_load_raw <- cmpfun(function(filepath, verbose = FALSE) {
 #' @param verbose Switch to TRUE for extra messages. Default=FALSE
 #'
 #' @return The resulting ExpressionSet contains the original data. The 
-#' expressiondata can be found under ExpressionSet@assayData$exprs
+#' expressiondata can be found under assayData(ExpressionSet)[["exprs"]]
 #' Other information (first 6 info columns) can be found under;
-#' ExpressionSet@featureData@data
+#' pData(featureData(ExpressionSet))
 #' 
 #' @examples 
 #' \dontrun{

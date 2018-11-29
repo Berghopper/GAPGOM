@@ -20,9 +20,9 @@ algorithms in this library need the entrez IDs for translation.}
 }
 \value{
 The resulting ExpressionSet contains the original data. The 
-expressiondata can be found under ExpressionSet@assayData$exprs
+expressiondata can be found under assayData(ExpressionSet)[["exprs"]]
 Other information (first 6 info columns) can be found under;
-ExpressionSet@featureData@data
+pData(featureData(ExpressionSet))
 }
 \description{
 Convert raw data.table/data.frame fantom5 object to a proper ExpressionSet.

@@ -41,4 +41,3 @@ misc_kendall <- cmpfun(function(x, args) {
 misc_spearman <- cmpfun(function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data, 
                  method = "spearman")))})
-
