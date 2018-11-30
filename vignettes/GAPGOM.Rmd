@@ -528,7 +528,7 @@ sessionInfo()
 
 ## References
 
-- [1] Ehsani R, Drablos F: [UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
+- [1] Ehsani R, Drablos F: [ACCEPTED, UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
 - [2] Villmann T: **Sobolev metrics for learning of functional data - mathematical and theoretical aspects**. In: *Machine Learning Reports.* Edited by Villmann T, Schleif F-M, vol. 1. Leipzig, Grmany: Medical Department, University of Leipzig; 2007: 1-13.
 - [3] Lebanon G: **Learning riemannian metrics.** In: *Proceedings of the Nineteenth conference on Uncertainty in Artificial Intelligence; Acapulco, Mexico.* Morgan Kaufmann Publishers Inc. 2003: 362-369
 - [4] Jian Q: **LncRNA2Function: a comprehensive resource for functional investigation of human lncRNAs based on RNA-seq data.**  In: *BMC Genomics* 2015. DOI: [10.1186/1471-2164-16-S3-S2](https://doi.org/10.1186/1471-2164-16-S3-S2)

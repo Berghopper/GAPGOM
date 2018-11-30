@@ -206,7 +206,7 @@ fantom_download <- cmpfun(function(down_dir,
   download.file(url, full_filename, "auto")
   if (unpack) {
     gunzip(full_filename, overwrite = TRUE)
-    full_filename <- substr(full_filename, 1, length(full_filename)-3)
+    # full_filename <- substr(full_filename, 1, length(full_filename)-3)
   }
   return(full_filename)
 })
