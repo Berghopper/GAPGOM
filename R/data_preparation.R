@@ -113,7 +113,9 @@
   }
   # go_annotation
   if (is.null(topoargs$go_annotation)) {
-    topoargs$go_annotation <- switch(ontology, MF = GOMFANCESTOR, BP = GOBPANCESTOR,
+    topoargs$go_annotation <- switch(ontology, 
+                                     MF = GOMFANCESTOR, 
+                                     BP = GOBPANCESTOR,
                                      CC = GOCCANCESTOR)
   }
   # root
@@ -153,7 +155,9 @@
         topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
                                                                  gene_list2)), 
                                                         go_data, 
-                                                        custom_genes = c(custom_genes1, custom_genes2),
+                                                        custom_genes = c(
+                                                          custom_genes1, 
+                                                          custom_genes2),
                                                         drop = drop) 
       }
     }

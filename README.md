@@ -16,4 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 # ABOUT #
 
-GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package containing various tools and algorithms for semantic distance/comparison calculations and various other measures needed to predict annotation of gene functions of an unkown gene. This is done with comparing them to other known genes (guilt by association).
+GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package with tools and algorithms for estimating correlation of gene expression enriched terms in gene sets, and semantic distance between sets of gene ontology (GO) terms.
+This package has been made for predicting the annotation of un-annotated gene(s), in particular with respect to GO, and testing such predictions. 
+The prediction is done by comparing expression patterns between a query gene and a library of annotated genes, and annotate the query gene by enriched terms from the set of genes with similar expression pattern (often described as "guilt by association").
+
+For more info, read the package vignette after building and installing the package (This will later be available on Bioconductor).

@@ -32,14 +32,21 @@ knitr::opts_chunk$set(
 When using GAPGOM, please cite the following;
 
 - Ehsani R, Drablos F: **TopoICSim: a new semantic similarity measure based on gene ontology.** *BMC Bioinformatics* 2016, **17**(1):296. DOI: [https://doi.org/10.1186/s12859-016-1160-0](https://doi.org/10.1186/s12859-016-1160-0)
-- Ehsani R, Drablos F: [UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
+- Ehsani R, Drablos F: **Measures of co-expression for improved function prediction of long non-coding RNAs**. *BMC Bioinformatics* 2018. Accepted.
 
 ## Introduction
 
-GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package containing various tools and algorithms for semantic distance/comparison calculations and various other measures. This package has been specifically made to predict annotation of gene functions of unkown gene(s). This is done by comparing them to other known genes (guilt by association), and basing analysis on correlated data. As well as making use of the GO ( [Gene Ontology](http://www.geneontology.org/) ) consortium via the [`GOSemSim`](https://bioconductor.org/packages/release/bioc/html/GOSemSim.html) package. GO consists of three main Ontologies; molecular function (MF), biological process (BP) and celllar component (CC).
+GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package with tools and algorithms for estimating correlation of gene expression enriched terms in gene sets, and semantic distance between sets of gene ontology (GO) terms.
+This package has been made for predicting the annotation of un-annotated gene(s), in particular with respect to GO, and testing such predictions. 
+The prediction is done by comparing expression patterns between a query gene and a library of annotated genes, and annotate the query gene by enriched terms from the set of genes with similar expression pattern (often described as "guilt by association").
 
-In GAPGOM, two main semantic measurement algorithms are available; [TopoICSim](https://doi.org/10.1186/s12859-016-1160-0) and [lncRNApred](). TopoICSim is GO topology based, while lncRNApred is based on expression value semantic distances.
-The main interface for expression data as of right now is the [Fantom5 data](http://fantom.gsc.riken.jp/5/), using Bioconductors [`ExpressionSet`](https://www.bioconductor.org/packages/3.7/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) class. All algorithms are dependent on the GO consortium and thus use GOSemSim for loading GO data.
+For correlation of gene expression, GAPGOM is introducing [LNCRNA2GOA]() which is a novel tool.
+The main interface for expression data is currently the [Fantom5 data](http://fantom.gsc.riken.jp/5/), using Bioconductors [`ExpressionSet`](https://www.bioconductor.org/packages/3.7/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) class.
+
+For semantic similarity of GO terms (in particular for testing predictions), the package is using [TopoICSim](https://doi.org/10.1186/s12859-016-1160-0).
+It makes use of GO data via the [GOSemSim](https://bioconductor.org/packages/release/bioc/html/GOSemSim.html) package with the `godata()` interface.
+
+GO consists of three main Ontologies; molecular function (MF), biological process (BP) and celllar component (CC).
 
 ## Installation
 
@@ -78,11 +85,15 @@ BiocManager::valid()              # checks for out of date packages
 
 ### ID support
 
-As of v0.2.7 and up, all [`AnnotationDbi`]() IDs should be supported. However, we recommend usage of `EntrezID`s because this is the most widely supported ID in this and other packages. If you find issues in regards to ID support, please notify this issue on the package repository. If you have/want to convert IDs manually, the [`BiomaRt`](https://www.bioconductor.org/packages/release/bioc/html/biomaRt.html) package is recommended. However, translating IDs to other types is lossy and doesn't always translate well.
+As of v0.2.7 and up, all [`AnnotationDbi`]() IDs should be supported. However, we recommend usage of `EntrezID`s because this is the most widely supported ID in this and other packages. If you find issues with respect to ID support, please notify this issue on the package repository. If you want to (or have to) convert IDs manually, the [`BiomaRt`](https://www.bioconductor.org/packages/release/bioc/html/biomaRt.html) package is recommended. However, translating IDs to other types is lossy and does not always translate well.
 
-### FANTOM5
+### Expression data (FANTOM5)
 
-As of right now, the package only has 1 main dataset for expression data; The Fantom5 dataset. There are a few helper functions to make this data usable. The Fantom5 dataset is only available for the human and mouse genome. Examples of the helper functions/interfaces can be found below;
+As of right now, the package has one main dataset interface for expression data; The Fantom5 dataset.
+For other datasets, an `ExpressionSet` has to be manually made as described later in this chapter.
+There are a few helper functions to make this data usable.
+The Fantom5 dataset is only available for the human and mouse genome.
+Examples of helper functions/interfaces can be found below;
 
 ```{r f5, eval=FALSE}
 # download the fantom5 data file
@@ -103,14 +114,14 @@ expset <- fantom_to_expset(ft5, verbose = TRUE)
 
 ### Manually specifying an `ExpressionSet`
 
-Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. I will give an example with randomly generated expression values and IDs. In some cases if you want something specific, defining it this way can actually be better!
+Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. We will give an example with randomly generated expression values and IDs. In some cases if you want something specific, defining it this way can actually be better (More control over extra data that goes into the object/better interoperability between p)!
 
 Minimal requirement for an `ExpressionSet`;
 
 - expression values
 - Unique IDs of a certain type. AnnotationDbi keys are the only IDs that are supported right now.
 
-Each row of expression values should have corresponding IDs, with the ID-type as its columnname.
+**Each row of expression values should have corresponding IDs, with the ID-type as its columnname.**
 
 Random expression value generation;
 
@@ -148,11 +159,14 @@ View(assayData(expset)[["exprs"]]) # where expressionvalues are stored.
 View(pData(featureData(expset))) # where other information is stored.
 ```
 
-## lncRNApred (expression similarity)
+## LNCRNA2GOA (expression similarity)
 
 ### Background
 
-The lncRNApred (long non-coding RNA prediction) or `expression_prediction()` uses various methods/measures to determine similar genes; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. These calculate scores between expressionvalue sets given a refrence gene. After this, these scores get enriched by an enrichment function, and will be sorted by significance before being returned. You can also try find all significant similar genes by using the `combined` method. The Sobolev and Fisher metrics are non-standard/specific to this package, all the others are standard methods from R's `cor()` function. The non-standard methods can be seen under this paragraph (quoted from paper [1], references edited);
+The LNCRNA2GOA (long non-coding RNA to GO Annotation) or `expression_prediction()` uses various methods/measures to determine similar genes with similar expression pattern; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. 
+This calculates scores between expressionvalue sets given a query gene.
+These scores are used to identify genes for the enrichment analysis, which will be sorted by significance before being returned.
+It is also possible to find similar expression patterns by using the `combined` method. The Sobolev and Fisher metrics are non-standard/specific to this package (at least in the context of this type of analysis), all the others are standard methods from the R `cor()` function. Details of the novel methods are described below (quoted from paper [1], references edited).
 
 #### Sobolev metric
 
@@ -220,7 +234,7 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 <p style="margin:0;display:inline;float:left">$d(x,y) = acos(\sum_{i=1}^{n+1}\sqrt{x_iy_i})$</p> <p style="margin:0;display:inline;float:right">(12)</p>
 
 </br></br>
-**The lncRNApred method can also be used on other novel genes besides lncRNAs.**
+**The LNCRNA2GOA method can also be used on other novel genes besides lncRNAs.**
 
 ### Example
 
@@ -268,12 +282,12 @@ The description of the GO term.
 - `used_method`
 Used scoring method for getting the result.
 
-Besides this, there's an optional parameter for different GO labeling/annotation; `id_translation_df`. This dataframe should contain the following; 
+Besides this, there is an optional parameter for different GO labeling/annotation; `id_translation_df`. This dataframe should contain the following; 
 - rownames \to rownames of the expression set
 - first column \to ID (e.g. EntrezID). EntrezID should be the same as in the Fantom5 dataset.
 - second colum \to GO IDs.
 
-This can also drastically improves calculations times as most of the time is spent querying for this translation.
+This can also drastically improve calculation time as most of the time is spent on querying for this translation.
 
 #### Only scores
 
@@ -297,15 +311,15 @@ We can see that this function returns a different dataframe;
 - `original_ids`
 The identifier of the gene expression row
 - `score`
-The semantic similarity score/correlation calculated by one of the methods.
+The similarity score/correlation calculated by one of the methods.
 - `used_method`
 The used method used to calculate the score.
 
-The rownames also represent the gene expression row. Only the first 100 rows are show, otherwise the table would be quite big. Enrichment and also the GO annotation/translation needs to be done manually after this step. However, this should be quite doable with a bit of help from `GOSemSim`.
+The rownames also represent the gene expression row. Only the first 100 rows are shown, otherwise the table would be quite big. Enrichment and GO annotation/translation needs to be done manually after this step. However, this should be quite doable with a bit of help from `GOSemSim`.
 
 #### Original dataset
 
-The original algorithm used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison. [4]
+The original publication used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison. [4]
 
 ```{r, eval=FALSE}
 # this block serves as a test to see if the package's algorithm matches up with the original.
@@ -361,7 +375,9 @@ result <- GAPGOM::expression_prediction(gid,
 
 ### Background
 
-TopoICSim or Topological Information Content Similarity, is a method to measure the similarity between two GO terms given the information content and topology of the GO DAG tree. Unlike other similar measures, it considers both the shortest **and** longest DAG paths between two terms. Not just the longest or shortest path(s). The paths along the GO DAG tree get weighted with the information content between two terms.
+TopoICSim or Topological Information Content Similarity, is a method to measure the similarity between two GO terms given the information content and topology of the GO DAG tree. 
+Unlike other similar measures, it considers both the shortest **and** longest DAG paths between two terms, not just the longest or shortest path(s). 
+The paths along the GO DAG tree get weighted with the information content between two terms.
 
 For the information content the following forumla is used;
 
@@ -485,7 +501,7 @@ Here we can see the output of TopoICsim, it is a list containg 2 items;
 
 - `AllGoPairs`
 
-The $n\times m$ matrix of GO terms including their similarities. Some values might be NA because these were non-occuring pairs. You can add `AllGoPairs` to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in occuring pairs).
+The $n\times m$ matrix of GO terms including their similarities. Some values might be NA because these were non-occuring pairs. You can add `AllGoPairs` to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in occurring pairs).
 
 - `GeneSim`
 
@@ -510,7 +526,7 @@ With TopoICSim there is a pre-calculated score matrix available, this can be tur
 
 ## Parrallel processing and big data
 
-As of right now, parallel processing is not supported. The reason why the other algorithms aren't parallelized yet, is because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide up the work with TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work. The `all_go_pairs` object in the result can then be combined together with other results.
+As of right now, parallel processing is not supported. The other algorithms aren't parallelized yet, because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide the work in TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work. The `all_go_pairs` object in the result can then be combined together with other results.
 
 ## Performance and benchmarks
 
@@ -518,7 +534,7 @@ The performance of this package is well tested in the [Benchmarks vignette](benc
 
 ## Contact and support
 
-For questions, contact, support use the [Bioconductor git repository]() or contact us via the [Bioconductor forums]().
+For questions, contact, or support use the [(Bioconductor) git repository](https://github.com/Berghopper/GAPGOM/) or contact us via the [Bioconductor forums]().
 
 ## SessionInfo
 
@@ -528,8 +544,8 @@ sessionInfo()
 
 ## References
 
-- [1] Ehsani R, Drablos F: [ACCEPTED, UNPUBLISHED] **Measures of co-expression for improved function prediction of long non-cofing RNAs**, 2018.
-- [2] Villmann T: **Sobolev metrics for learning of functional data - mathematical and theoretical aspects**. In: *Machine Learning Reports.* Edited by Villmann T, Schleif F-M, vol. 1. Leipzig, Grmany: Medical Department, University of Leipzig; 2007: 1-13.
+- [1] Ehsani R, Drablos F: **Measures of co-expression for improved function prediction of long non-coding RNAs**. *BMC Bioinformatics* 2018. Accepted.
+- [2] Villmann T: **Sobolev metrics for learning of functional data - mathematical and theoretical aspects**. In: *Machine Learning Reports.* Edited by Villmann T, Schleif F-M, vol. 1. Leipzig, Germany: Medical Department, University of Leipzig; 2007: 1-13.
 - [3] Lebanon G: **Learning riemannian metrics.** In: *Proceedings of the Nineteenth conference on Uncertainty in Artificial Intelligence; Acapulco, Mexico.* Morgan Kaufmann Publishers Inc. 2003: 362-369
 - [4] Jian Q: **LncRNA2Function: a comprehensive resource for functional investigation of human lncRNAs based on RNA-seq data.**  In: *BMC Genomics* 2015. DOI: [10.1186/1471-2164-16-S3-S2](https://doi.org/10.1186/1471-2164-16-S3-S2)
 - [5] Benabderrahmane S, Smail-Tabbone, Poch O, Napoli A, Devignes MD. **IntelliGO: a new vector-based semantic similarity measure including annotation origin.** In: *BMC Bioinformatics*. 2010;11:588.

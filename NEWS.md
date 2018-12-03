@@ -10,7 +10,7 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
-## [0.4.0 - Unreleased]
+## [0.99.0 - Unreleased]
 
 ---
 
@@ -18,26 +18,28 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 
 ### Added
 
-- Installation chapter to main vignette
-- Extra tests
-- Basic user input checks
+- Installation chapter to main vignette.
+- Extra tests.
+- Basic user input checks.
 - Tests for checking precalculated matrices versions.
 
 ### Changed
 
-- `apply` functions
+- `apply` functions.
 - How test results are stored -> they are now stored in a list instead of seperately.
 
 ### Removed
 
-- All global assignments
+- All global assignments.
+- Class accessors (where possible).
 
 ### Fixed
 
-- Precalculated topoicsim matrix
-- Compliance with R CMD check
-- Compliance with R CMD BiocCheck
-- Dependency issues
+- Precalculated topoicsim matrix.
+- Compliance with R CMD check.
+- Compliance with R CMD BiocCheck.
+- Dependency issues.
+- Download function of fantom data.
 
 ## [0.3.0 - Vignette Benchy] - 2018-11-22
 

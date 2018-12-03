@@ -1,5 +1,6 @@
 Meta
 doc
+*.build.timestamp
 *.log
 *.DS_Store
 *.project

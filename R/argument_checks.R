@@ -24,9 +24,9 @@ NULL
 #' @importFrom methods is
 #' @importFrom compiler cmpfun
 .check_ifclass <- cmpfun(function(obj, 
-                                 classname, 
-                                 objname,
-                                 accept_null = TRUE) {
+                                  classname, 
+                                  objname,
+                                  accept_null = TRUE) {
   if(!is(obj, classname)) {
     if(is.null(obj) && accept_null) {
       return(TRUE)
