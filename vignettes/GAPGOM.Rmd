@@ -25,6 +25,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   error = FALSE
 )
+library(GAPGOM)
 ```
 
 ## Citation
@@ -36,21 +37,21 @@ When using GAPGOM, please cite the following;
 
 ## Introduction
 
-GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package with tools and algorithms for estimating correlation of gene expression enriched terms in gene sets, and semantic distance between sets of gene ontology (GO) terms.
+GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package with tools and algorithms for estimating correlation of gene expression, enriched terms in gene sets, and semantic distance between sets of gene ontology (GO) terms.
 This package has been made for predicting the annotation of un-annotated gene(s), in particular with respect to GO, and testing such predictions. 
 The prediction is done by comparing expression patterns between a query gene and a library of annotated genes, and annotate the query gene by enriched terms from the set of genes with similar expression pattern (often described as "guilt by association").
 
 For correlation of gene expression, GAPGOM is introducing [LNCRNA2GOA]() which is a novel tool.
-The main interface for expression data is currently the [Fantom5 data](http://fantom.gsc.riken.jp/5/), using Bioconductors [`ExpressionSet`](https://www.bioconductor.org/packages/3.7/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) class.
+The main interface for expression data is currently the [Fantom5 data](http://fantom.gsc.riken.jp/5/), using Bioconductor's [`ExpressionSet`](https://www.bioconductor.org/packages/3.7/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf) class.
 
 For semantic similarity of GO terms (in particular for testing predictions), the package is using [TopoICSim](https://doi.org/10.1186/s12859-016-1160-0).
 It makes use of GO data via the [GOSemSim](https://bioconductor.org/packages/release/bioc/html/GOSemSim.html) package with the `godata()` interface.
 
-GO consists of three main Ontologies; molecular function (MF), biological process (BP) and celllar component (CC).
+GO consists of three main Ontologies; molecular function (MF), biological process (BP) and cellular component (CC).
 
 ## Installation
 
-Before installing, the package has quite a few dependencies in both cran and Bioconductor. You can run the following block of code (prerably line-by-line because of prompts) to install these and the package itself.
+Before installing, the package has quite a few dependencies in both cran and Bioconductor. You can run the following block of code (preferably line-by-line because of prompts) to install these and the package itself.
 
 ```{r eval=F}
 ### NEEDED (depends)
@@ -110,18 +111,18 @@ ft5$df <- ft5$df[3:nrow(ft5$df),]
 expset <- fantom_to_expset(ft5, verbose = TRUE)
 ```
 
-**Do note that all standard columns are neccesary when converting to an `ExpressionSet` in this way!**
+**Do note that all standard columns are necessary when converting to an `ExpressionSet` in this way!**
 
 ### Manually specifying an `ExpressionSet`
 
-Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. We will give an example with randomly generated expression values and IDs. In some cases if you want something specific, defining it this way can actually be better (More control over extra data that goes into the object/better interoperability between p)!
+Because loading expression data right now is a bit limited, this paragraph will describe how to convert expression data to an `ExpressionSet` object. We will give an example with randomly selected expression values and IDs. In some cases if you want something specific, defining it this way can actually be better (More control over extra data that goes into the object/better interoperability between packages).
 
 Minimal requirement for an `ExpressionSet`;
 
 - expression values
 - Unique IDs of a certain type. AnnotationDbi keys are the only IDs that are supported right now.
 
-**Each row of expression values should have corresponding IDs, with the ID-type as its columnname.**
+**Each row of expression values should have corresponding IDs, with the ID-type as its column name.**
 
 Random expression value generation;
 
@@ -164,22 +165,26 @@ View(pData(featureData(expset))) # where other information is stored.
 ### Background
 
 The LNCRNA2GOA (long non-coding RNA to GO Annotation) or `expression_prediction()` uses various methods/measures to determine similar genes with similar expression pattern; `pearson`, `spearman`, `kendall`, `sobolev` and `fisher`. 
-This calculates scores between expressionvalue sets given a query gene.
+This calculates scores between expression value sets given a query gene.
 These scores are used to identify genes for the enrichment analysis, which will be sorted by significance before being returned.
-It is also possible to find similar expression patterns by using the `combined` method. The Sobolev and Fisher metrics are non-standard/specific to this package (at least in the context of this type of analysis), all the others are standard methods from the R `cor()` function. Details of the novel methods are described below (quoted from paper [1], references edited).
+It is also possible to find similar expression patterns by using the `combined` method. The Sobolev and Fisher metrics are so far unique to this package (at least in the context of this type of analysis), all the others are standard methods from the R `cor()` function. Details of the novel methods are described below (quoted from paper [1], references edited).
 
 #### Sobolev metric
 
 In this section, we use definitions and notations as in [2]. We start with the usual p-inner product. Let $f$, $g$ be real-valued functions (in this case $f$ and $g$ values are the expression vectors of two genes $f$ and $g$):
 
 </br>
-<p style="margin:0;display:inline;float:left">$\langle f,g\rangle_{p} = (\sum_{k=1}^{n}\mid f_k.g_k\mid^p)^\frac{1}{p}$</p> <p style="margin:0;display:inline;float:right">(2)</p>
+<p style="margin:0;display:inline;float:left">
+$\langle f,g\rangle_{p} = (\sum_{k=1}^{n}\mid f_k.g_k\mid^p)^\frac{1}{p}$
+</p> <p style="margin:0;display:inline;float:right">(2)</p>
 
 </br></br>
 By this notation, Sobolev inner product, norm and meter of degree $k$ respectively can be defined by:
 
 
-<p style="margin:0;display:inline;float:left">$\langle f,g\rangle_{p,a}^{S} = \langle f,g\rangle_p+\alpha\langle D^kf,D^kg\rangle_p$</p> <p style="margin:0;display:inline;float:right">(3)</p>
+<p style="margin:0;display:inline;float:left">
+$\langle f,g\rangle_{p,a}^{S} = \langle f,g\rangle_p+\alpha\langle D^kf,D^kg\rangle_p$
+</p> <p style="margin:0;display:inline;float:right">(3)</p>
 
 </br></br></br>
 <p style="margin:0;display:inline;float:left">$\mid\mid f\mid\mid_{p,k,\alpha}^S = \sqrt{\langle f,f\rangle_{p,\alpha}^S}$</p> <p style="margin:0;display:inline;float:right">(4)</p>
@@ -210,7 +215,7 @@ In this section we use definitions and notations such as in [3]. To define Fishe
 <p style="margin:0;display:inline;float:left">$P_n=\{x\in R^{n+1}:\forall i, x_n \ge0,\sum_{i=1}^{n+1}xi=1\}$</p> <p style="margin:0;display:inline;float:right">(8)</p>
 
 </br></br>
-The coordinates $\{x_i\}$ describe the probability of observing different outcomes in a single experiment (or expressino value of a gene in $i$th cell type). The Fisher information metric on $P_n$ can be defined by
+The coordinates $\{x_i\}$ describe the probability of observing different outcomes in a single experiment (or expression value of a gene in $i$th cell type). The Fisher information metric on $P_n$ can be defined by
 
 </br>
 <p style="margin:0;display:inline;float:left">$Jij = \sum_{k=1}^{n+1}\frac{1}{x_k}\frac{\partial x_k}{\partial x_i}\frac{\partial x_k}{\partial x_j}$</p> <p style="margin:0;display:inline;float:right">(9)</p>
@@ -228,7 +233,7 @@ The transformation $T: P_n\to S_n^+$ defined by
 <p style="margin:0;display:inline;float:left">$T(x)=(\sqrt{x_1}, \dots, \sqrt{x_n+1})$</p> <p style="margin:0;display:inline;float:right">(11)</p>
 
 </br></br>
-pulls back the Euclidean metric on the surface of the sphere to the Fisher information on the multinomial simplex. Actually, the geodesic distance for $x,y \in P_n$ under the Fisher information metric may be defined by measuring the length og the great circle on $S_n^+$ between $T(x)$ and $T(y)$
+pulls back the Euclidean metric on the surface of the sphere to the Fisher information on the multinomial simplex. Actually, the geodesic distance for $x,y \in P_n$ under the Fisher information metric may be defined by measuring the length of the great circle on $S_n^+$ between $T(x)$ and $T(y)$
 
 </br>
 <p style="margin:0;display:inline;float:left">$d(x,y) = acos(\sum_{i=1}^{n+1}\sqrt{x_iy_i})$</p> <p style="margin:0;display:inline;float:right">(12)</p>
@@ -240,11 +245,11 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 
 #### Scores + Enrichment
 
-The following example is an arbitrary use-case. Meaning that, this is just an example and does not (neccesarily) imply a certain question/real life use-case.
+The following example is an arbitrary use-case. Meaning that this is just an example and does not (necessarily) imply a certain question/real life use-case.
 
 ```{r lncRNApred}
 # Example with default dataset, take a look at the data documentation
-# to fully grasp what's going on with making of the filter etc. (Biobase 
+# to fully grasp what's going on with the making of the filter etc. (Biobase 
 # ExpressionSet)
  
 # keep everything that is a protein coding gene
@@ -283,9 +288,10 @@ The description of the GO term.
 Used scoring method for getting the result.
 
 Besides this, there is an optional parameter for different GO labeling/annotation; `id_translation_df`. This dataframe should contain the following; 
-- rownames \to rownames of the expression set
-- first column \to ID (e.g. EntrezID). EntrezID should be the same as in the Fantom5 dataset.
-- second colum \to GO IDs.
+
+- rownames $\to$ rownames of the expression set
+- first column $\to$ Gene ID (e.g. EntrezID). Gene should be the same as in the expression dataset.
+- second colum $\to$ GO IDs.
 
 This can also drastically improve calculation time as most of the time is spent on querying for this translation.
 
@@ -319,7 +325,7 @@ The rownames also represent the gene expression row. Only the first 100 rows are
 
 #### Original dataset
 
-The original publication used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison. [4]
+The original publication used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison [4].
 
 ```{r, eval=FALSE}
 # this block serves as a test to see if the package's algorithm matches up with the original.
@@ -400,7 +406,7 @@ Here $\forall$ $s$, $i\le s<j$, $\exists\xi_s\in \Sigma$, $\exists\tau_s\in R$, 
 <p style="margin:0;display:inline;float:left">$\mathcal{A}(t_i,t_j)=\underset{P}{\cup}P(t_i,t_j)$</p> <p style="margin:0;display:inline;float:right">(24)</p>
 
 </br></br>
-We use Inverse Information Content (IIC) values to define shortest and longest paths for two given terms $t_i,t_j$ as show in (25-27).
+We use Inverse Information Content (IIC) values to define shortest and longest paths for two given terms $t_i,t_j$ as shown in (25-27).
 
 </br>
 <p style="margin:0;display:inline;float:left">$SP(t_i,t_j) = \underset{P\in A(t_i,t_j)}{argminIIC(P)}$</p> <p style="margin:0;display:inline;float:right">(25)</p>
@@ -476,7 +482,7 @@ Besides all this, there's also an algorithm for the geneset level, you can calcu
 </br></br></br>
 (13) is equal to (14) in the specific case of comparing the geneset to itself.
 
-All forumulas/explanations are quoted from the paper (references edited). [6]
+All forumulas/explanations are quoted from the paper (references edited) [6].
 
 ### Examples
 
@@ -501,7 +507,7 @@ Here we can see the output of TopoICsim, it is a list containg 2 items;
 
 - `AllGoPairs`
 
-The $n\times m$ matrix of GO terms including their similarities. Some values might be NA because these were non-occuring pairs. You can add `AllGoPairs` to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in occurring pairs).
+The $n\times m$ matrix of GO terms, including their similarities. Some values might be NA because these were non-occuring pairs. You can add `AllGoPairs` to the parameters next time you run TopoICSim, to possibly speed up computations (they will be used as pre-calculated scores to fill in occurring pairs).
 
 - `GeneSim`
 
@@ -522,11 +528,12 @@ If you want to just have a custom gene, you can define an empty vector.
 
 #### Other notes.
 
-With TopoICSim there is a pre-calculated score matrix available, this can be turned on/off. The scores might become deprecated however, as soon as one of the org.DB packages gets an update. For this reason, we advise to most keep this option off. You can also pre-calculate some GO's yourself using the custom genes. all_go_pairs can then be used as a precalculated score matrix.
+With TopoICSim there is a pre-calculated score matrix available, this can be turned on/off. The scores might become deprecated however, as soon as one of the org.DB packages gets an update. For this reason, we advise mostly to keep this option off. You can also pre-calculate some GO's yourself using the custom genes. all_go_pairs can then be used as a precalculated score matrix.
 
 ## Parrallel processing and big data
 
-As of right now, parallel processing is not supported. The other algorithms aren't parallelized yet, because of implementation difficulty regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide the work in TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be arbitrarily be able to generate using the hidden `GAPGOM:::.unique_combos` function. No support is offered however in regards to trying to make this work. The `all_go_pairs` object in the result can then be combined together with other results.
+As of right now, parallel processing is not supported. The other algorithms aren't parallelized yet, because of implementation difficulties regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide the work in TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be able to generate using the hidden `GAPGOM:::.unique_combos` function. The `all_go_pairs` object in the result can then be combined together with other results.
+No support is offered however in regards to trying to make this work.
 
 ## Performance and benchmarks
 
