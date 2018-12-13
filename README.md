@@ -1,10 +1,10 @@
-# Authors #
+# Authors
 
 * Finn Drabløs
 * Rezvan Ehsani
 * Casper Peters @Berghopper
 
-# LICENSE #
+# LICENSE
 
 Copyright (c) [2018] [Finn Drabløs, Rezvan Ehsani, Casper Peters] under the MIT license.
 
@@ -14,7 +14,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# ABOUT #
+# ABOUT
 
 GAPGOM (novel **G**ene **A**nnotation **P**rediction and other **GO** **M**etrics) is an R package with tools and algorithms for estimating correlation of gene expression enriched terms in gene sets, and semantic distance between sets of gene ontology (GO) terms.
 This package has been made for predicting the annotation of un-annotated gene(s), in particular with respect to GO, and testing such predictions. 
@@ -22,27 +22,27 @@ The prediction is done by comparing expression patterns between a query gene and
 
 For more info, read the package vignette after building and installing the package (This will later be available on Bioconductor).
 
-# Issues # 
+# Issues
 
 To let us help you better, please conform with the following rules so bug-squashing/issue tracking becomes easier and faster:
 
-## Submitting an issue ##
+## Submitting an issue
 
 - Make sure your issue is not a duplicate, and try search if your issue exists first.
 - Please include a reproducable example, along with this, include your `sessionInfo()`.
 - Feature requests should start with a header; `## FR ##` so it's easier to mark it as such.
 
-## Commenting on existing issues ##
+## Commenting on existing issues
 
 Please only comment if you have valuable information to add/can add to further discussion of the problem. Bumping issues with e.g. "+1" isn't allowed.
 
-# Pull requests #
+# Pull requests
 
 - Only send PRs if it falls within the atomic scope of this project.
 
 - Please keep them small and managable :). Also please make sure your PR version complies with all of Bioconductors package submission guidelines.
 
-# Feature roadplan #
+# Feature roadplan
 
 Here the roadplan of features is described with any upcoming/planned features. ETA's will not be provided, already implemented features will be ticked off. Only major features will be listed here, for further details on package development, instead, refer to the [NEWS.md](NEWS.md) file.
 
