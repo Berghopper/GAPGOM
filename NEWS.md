@@ -10,7 +10,7 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
-## [0.99.0 - Unreleased]
+## [1.0.0 - Unreleased]
 
 ---
 
@@ -22,11 +22,14 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Extra tests.
 - Basic user input checks.
 - Tests for checking precalculated matrices versions.
+- Package added to Bioconductor*
 
 ### Changed
 
 - `apply` functions.
 - How test results are stored -> they are now stored in a list instead of seperately.
+- Examples, tests and vignette calculations to make sure they don't last too long.
+- Readme, more verbose.
 
 ### Removed
 

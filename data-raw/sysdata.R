@@ -124,4 +124,4 @@ benchmarks <- GAPGOM:::benchmarks # see below
 
 #####
 
-save(freq_go_pairs, gapgom_tests, benchmarks, file = "/media/casper/USB_ccpeters/Repositories/Personal/GAPGOM/R/sysdata.rda", compress = "xz", compression_level = 9)
+save(freq_go_pairs, gapgom_tests, benchmarks, file = "/run/media/casper/USB_ccpeters/Repositories/Personal/GAPGOM/R/sysdata.rda", compress = "xz", compression_level = 9)

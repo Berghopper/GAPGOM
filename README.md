@@ -21,3 +21,39 @@ This package has been made for predicting the annotation of un-annotated gene(s)
 The prediction is done by comparing expression patterns between a query gene and a library of annotated genes, and annotate the query gene by enriched terms from the set of genes with similar expression pattern (often described as "guilt by association").
 
 For more info, read the package vignette after building and installing the package (This will later be available on Bioconductor).
+
+# Issues # 
+
+To let us help you better, please conform with the following rules so bug-squashing/issue tracking becomes easier and faster:
+
+## Submitting an issue ##
+
+- Make sure your issue is not a duplicate, and try search if your issue exists first.
+- Please include a reproducable example, along with this, include your `sessionInfo()`.
+- Feature requests should start with a header; `## FR ##` so it's easier to mark it as such.
+
+## Commenting on existing issues ##
+
+Please only comment if you have valuable information to add/can add to further discussion of the problem. Bumping issues with e.g. "+1" isn't allowed.
+
+# Pull requests #
+
+- Only send PRs if it falls within the atomic scope of this project.
+
+- Please keep them small and managable :). Also please make sure your PR version complies with all of Bioconductors package submission guidelines.
+
+# Feature roadplan #
+
+Here the roadplan of features is described with any upcoming/planned features. ETA's will not be provided, already implemented features will be ticked off. Only major features will be listed here, for further details on package development, instead, refer to the [NEWS.md](NEWS.md) file.
+
+Note: list is subject to changes and is not necessarily definetive.
+
+- [x] Implement GO Annotation Prediction.
+- [x] Implement the TopoICSim algorithm.
+- [x] Optimization and refactors of original algorithms.
+- [x] Adding benchmarks and discussion vignettes of both algorithms.
+- [x] Adding documentation and mostly comply with package conventions.
+- [] Become part of the Bioconductor repository.
+- [] Add geneset analysis for scoring expression similarities.
+- [] Add chromosomal distance correlations on top of regular scoring.
+- [] Along with the previously two mentioned GREAT-like features, include Enrichr into the pipeline.

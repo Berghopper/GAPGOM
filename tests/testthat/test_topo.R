@@ -16,9 +16,10 @@ test_that("topoicsim gene level", {
 
 testgenesettopo <- function() {
   list1 <- c("126133","221","218","216","8854","220","219","160428","224",
-             "222","8659","501","64577","223","217","4329","10840","7915")
+             "222","8659","501","64577","223","217","4329","10840","7915",
+             "5832")
   return(
-    GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1,
+    GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:5], list1[1:5],
                               use_precalculation = TRUE, 
                               progress_bar = FALSE)
   )

@@ -59,6 +59,7 @@
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
 #' @importFrom compiler cmpfun
+#' @importFrom utils sessionInfo
 #' @keywords internal
 .prepare_variables_topoicsim <- cmpfun(function(organism, 
                                          ontology, 
@@ -132,7 +133,9 @@
     topoargs$progress_bar <- progress_bar
     topoargs$garbage_collection <- garbage_collection
     
-    if (is.null(topoargs$selected_freq_go_pairs)) {
+    # precalculated values
+    if (is.null(topoargs$selected_freq_go_pairs) && 
+        topoargs$use_precalculation) {
       if (keytype == "ENTREZID") {
         tmpkeytype <- "ENTREZ"
       } else {
@@ -141,6 +144,37 @@
       topoargs$selected_freq_go_pairs <- freq_go_pairs[[paste0(tmpkeytype, "_", 
                                                                ontology, "_", 
                                                                organism)]]
+      # check if precalculated matrix is up to date (Human)
+      err_msg_both <- paste0("WARNING:\n",
+                        "Precalculated matrix is out of date (\"%s\")! It", 
+                        " will be updated in upcoming versions (please refer ",
+                        "to the github issue page and report this error if it ",
+                        "is not present yet; ",
+                        "https://github.com/Berghopper/GAPGOM/issues). \n\nOr ", 
+                        "you may possibly have outdated packages, ",
+                        "please check if your version of \"%s\" is lower than ",
+                        "in the precalculated matrix: (%s). ",
+                        "Turning option off...")
+      
+      if (organism == "human") {
+        if (freq_go_pairs$
+            sessioninfo$otherPkgs$org.Hs.eg.db$Version != 
+            sessionInfo()$otherPkgs$org.Hs.eg.db$Version) {
+          topoargs$use_precalculation <- FALSE
+          message(sprintf(err_msg_both, "org.Hs.eg.db", "org.Hs.eg.db", 
+                          freq_go_pairs$
+                            sessioninfo$otherPkgs$org.Hs.eg.db$Version))
+        }
+      } else {
+        if (freq_go_pairs$
+            sessioninfo$otherPkgs$org.Mm.eg.db$Version != 
+            sessionInfo()$otherPkgs$org.Mm.eg.db$Version) {
+          topoargs$use_precalculation <- FALSE
+          message(sprintf(err_msg_both, "org.Mm.eg.db", "org.Mm.eg.db", 
+                          freq_go_pairs$
+                            sessioninfo$otherPkgs$org.Mm.eg.db$Version))
+        }  
+      }
     }
     # translation_to_goids
     if (is.null(topoargs$translation_to_goids)) {

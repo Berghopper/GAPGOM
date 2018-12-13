@@ -383,16 +383,19 @@
 #' 
 #' @examples
 #' # single gene mode
-#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", drop = NULL)
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501")
+#' 
 #' # genelist mode
 #' list1 <- c("126133","221","218","216","8854","220","219","160428","224",
-#' "222","8659","501","64577","223","217","4329","10840","7915")
-#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1, list1, drop = NULL)
+#' "222","8659","501","64577","223","217","4329","10840","7915","5832")
+#' # ONLY A PART OF THE GENELIST IS USED BECAUSE OF R CHECK TIME CONTRAINTS
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:5], 
+#'                                                    list1[1:5])
 #'
 #' # with custom gene
 #' custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
 #' result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501", 
-#'                                     custom_genes1 = custom, drop = NULL)
+#'                                     custom_genes1 = custom)
 #'
 #' @references [1] Ehsani R, Drablos F: \strong{TopoICSim: a new semantic
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
@@ -419,12 +422,6 @@ topo_ic_sim_genes <- cmpfun(function(organism,
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
-  if (use_precalculation) {
-    use_precalculation <- FALSE
-    message("Precalculated matrix is out of date! It will be updated in
-            upcoming versions. Turning option off...")
-  }
-  
   if (!(.check_organism(organism) &&
         .check_ontology(ontology) &&
         .check_ifclass(genes1, "character", "genes1") &&
@@ -447,7 +444,6 @@ topo_ic_sim_genes <- cmpfun(function(organism,
     stop("Error: one or more arguments are faulty!")
   }
   # if everything is ok, start preparing...
-  
   topoargs <- .prepare_variables_topoicsim(organism, 
                                            ontology, 
                                            genes1, 
@@ -462,7 +458,6 @@ topo_ic_sim_genes <- cmpfun(function(organism,
                                            all_go_pairs, 
                                            keytype = idtype,
                                            go_data = go_data)
-  
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
