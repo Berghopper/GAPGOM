@@ -54,32 +54,11 @@ GO consists of three main Ontologies; molecular function (MF), biological proces
 Before installing, the package has quite a few dependencies in both cran and Bioconductor. You can run the following block of code (preferably line-by-line because of prompts) to install these and the package itself.
 
 ```{r eval=F}
-### NEEDED (depends)
-
-install.packages(c("plyr", "dplyr", "data.table", "igraph"))
+### NEEDED (depends, suggests)
 
 if (!requireNamespace("BiocManager"))
     install.packages("BiocManager")
-BiocManager::install()
-
-BiocManager::install(c("graph", "RBGL", "GO.db", "org.Hs.eg.db", "org.Mm.eg.db", "GOSim", "GOSemSim", "GEOquery", "AnnotationDbi", "Biobase"))
-
-### ADDITIONAL (suggests)
-
-install.packages(c("testthat", "pryr", "knitr", "rmarkdown", "prettydoc", "ggplot2", "kableExtra", "profvis", "reshape2"))
-
-BiocManager::install(c("org.Ag.eg.db", "org.At.tair.db", "org.Bt.eg.db", "org.Ce.eg.db", "org.Cf.eg.db", "org.Dm.eg.db", "org.Dr.eg.db", "org.EcK12.eg.db", "org.EcSakai.eg.db", "org.Gg.eg.db", "org.Mmu.eg.db", "org.Pf.plasmo.db", "org.Pt.eg.db", "org.Rn.eg.db", "org.Sc.sgd.db", "org.Ss.eg.db", "org.Xl.eg.db"))
-
-### DEVELOPER (run these seperate) R 3.6 required!
-
-install.packages(c("devtools", "roxygen2", "stringr", "stringi", "microbenchmark", "R.utils"))
-if (!requireNamespace("BiocManager", quietly=TRUE))
-    install.packages("BiocManager")
-BiocManager::install(version = "devel")
-BiocManager::valid()              # checks for out of date packages
-
-### PACKAGE INSTALL - unavailable for now. Use install.packages + tar.gz instead
-# BiocManager::install("GAPGOM")
+BiocManager::install("GAPGOM", dependencies = TRUE)
 ```
 
 ## Expression data interfaces
@@ -126,10 +105,12 @@ Minimal requirement for an `ExpressionSet`;
 
 Random expression value generation;
 
-```{r randvals, eval=FALSE}
-# select 10000 random IDs
+```{r randvals}
+# select x random IDs
+x_entries <- 10000
+
 go_data <- GAPGOM::set_go_data("human", "BP", computeIC = FALSE)
-random_ids <- unique(sample(go_data@geneAnno$ENTREZID, 10000)) # and only keep 
+random_ids <- unique(sample(go_data@geneAnno$ENTREZID, x_entries)) # and only keep 
 # uniques
 
 # make general dataframe. 
@@ -138,14 +119,14 @@ colnames(expressions) <- "ENTREZID"
 expressions$ID
 
 # n expression values depending on the amount of unique IDs that are present
-expressionvalues <- abs(rnorm(length(random_ids)*6))*10000
+expressionvalues <- abs(rnorm(length(random_ids)*6))*x_entries
 expressions[,2:7] <- expressionvalues
-View(expressions)
+head(expressions)
 ```
 
 Converting the expression dataframe to an ExpressionSet;
 
-```{r expset, eval=FALSE}
+```{r expset}
 expression_matrix <- as.matrix(expressions[,2:ncol(expressions)])
 rownames(expression_matrix) <- expressions$ENTREZID
 featuredat <- as.data.frame(expressions$ENTREZID) # And everything else besides expressionvalues (preferably you don't even need to include the IDs themselves here!)
@@ -155,9 +136,9 @@ expset <- ExpressionSet(expression_matrix,
                         data=featuredat))
 
 # To see how it is structured;
-View(expset)
-View(assayData(expset)[["exprs"]]) # where expressionvalues are stored.
-View(pData(featureData(expset))) # where other information is stored.
+head(expset)
+head(assayData(expset)[["exprs"]]) # where expressionvalues are stored.
+head(pData(featureData(expset))) # where other information is stored.
 ```
 
 ## LNCRNA2GOA (expression similarity)
@@ -253,8 +234,8 @@ The following example is an arbitrary use-case. Meaning that this is just an exa
 # ExpressionSet)
  
 # keep everything that is a protein coding gene
-filter_vector <- GAPGOM::expset@featureData@data[(
-  GAPGOM::expset@featureData@data$GeneType=="protein_coding"),]$GeneID
+filter_vector <- fData(GAPGOM::expset)[(
+  fData(GAPGOM::expset)$GeneType=="protein_coding"),]$GeneID
 # set gid and run.
 gid <- "ENSG00000228630"
 
@@ -325,57 +306,12 @@ The rownames also represent the gene expression row. Only the first 100 rows are
 
 #### Original dataset
 
-The original publication used the lncRNA2Function data, to test if the results are the same, this block of code was prepared for comparison [4].
+The original publication used the lncRNA2Function data [4], to test if the results are the same, a small script has been made to reproduce the same results and is located at the package install directory under `scripts`. The `script` folder also contains the two original scripts for the algorithm, but not neccesarily its data. The data (along with the scripts) can be found on the following websites:
 
-```{r, eval=FALSE}
-# this block serves as a test to see if the package's algorithm matches up with the original.
-# For this it also uses the original lncRNA2Function dataset. While the original source is unavaible, there's still an intermediary version available.
+- [http://tare.medisin.ntnu.no/pred_lncRNA/](http://tare.medisin.ntnu.no/pred_lncRNA/)
 
-## ORIGINAL DATA
+- [https://tare.medisin.ntnu.no/TopoICSim/](https://tare.medisin.ntnu.no/TopoICSim/)
 
-# link: https://tare.medisin.ntnu.no/pred_lncRNA/
-
-# expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
-options(stringsAsFactors = FALSE)
-ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
-
-# Gene ID's and annotation term type.
-EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t', head=TRUE)
-
-## Conversion to expressionset
-
-expression_matrix <- as.matrix(ExpressionData[,4:ncol(ExpressionData)])
-rownames(expression_matrix) <- ExpressionData$GeneID
-featuredat <- as.data.frame(ExpressionData[,1:3])
-rownames(featuredat) <- ExpressionData$GeneID
-expset <- ExpressionSet(expression_matrix, 
-                        featureData = new("AnnotatedDataFrame", 
-                        data=featuredat))
-
-## selection of filter
-
-# keep everything that is a protein coding gene
-filter_vector <- pData(featureData(expset))[(pData(featureData(expset))$GeneType=="protein_coding"),]$GeneID
-
-## make translational data.frame (BP only)
-bp_only <- EnsemblID2GOID[(EnsemblID2GOID[ ,3] == "biological_process"), ]
-id_translation_df <- bp_only[,1:2]
-colnames(id_translation_df) <- c("ORIGID","GO")
-
-## algorithm run
-
-# set gid and run.
-gid <- "ENSG00000228630"
-
-result <- GAPGOM::expression_prediction(gid, 
-                                       expset,
-                                       "human", 
-                                       "BP",
-                                       id_select_vector = filter_vector,
-                                       id_translation_df = id_translation_df,
-                                       method = "pearson", verbose = TRUE, 
-                                       filter_pvals = TRUE)
-```
 
 ## TopoICSim
 
@@ -518,14 +454,15 @@ The gene/geneset similarities depending on your input. Can be 1 number, or a mat
 
 Besides this, you can also define custom genes for TopoICSim. This consists of an arbitrary amount of GO terms. The custom genes have to individually defined in a named list.
 
-```{r, eval=FALSE}
+```{r}
 custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
 result <- GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
                                      custom_genes1 = custom, drop = NULL, verbose = TRUE)
+result
 ```
 
 Here we define a custom gene named "cus1" with the GO terms; "GO:0016787", "GO:0042802", "GO:0005524", it will be added to the first gene vector (218).
-If you want to just have a custom gene, you can define an empty vector.
+If you want to **only** have a custom gene, you can define an empty vector with `c()` for the respective vector.
 
 #### Other notes.
 
