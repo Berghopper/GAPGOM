@@ -19,10 +19,8 @@ NULL
 
 #' Common Ancestor for two GOIDs
 #' @rdname dag_funcs
-#' @importFrom compiler cmpfun
-.common_ancestors <- cmpfun(function(go_id1, go_id2, ontology, 
-                                             organism, go_annotation, 
-                                             information_content) {
+.common_ancestors <- function(go_id1, go_id2, ontology, organism, go_annotation, 
+  information_content) {
   root_count <- max(information_content[information_content != Inf])
   information_content["all"] = 0
   p1 <- information_content[go_id1]/root_count
@@ -37,16 +35,15 @@ NULL
   # always intersect all GOIDs, even if they are the same.
   common_ancestor <- intersect(ancestor1, ancestor2)
   return(common_ancestor)
-})
+}
 
 #' Weighting subgraphs to get shortest and longest paths. Weighting edges is 
 #' done by assigning average inverse half information_content from two 
 #' corresponding nodes.
-#' @importFrom compiler cmpfun
 #' @importFrom graph edgeMatrix eWV
 #' @importFrom igraph igraph.from.graphNEL set.edge.attribute
 #' @rdname dag_funcs
-.set_edge_weight <- cmpfun(function(sub_graph, information_content) {
+.set_edge_weight <- function(sub_graph, information_content) {
   edge_matrix <- edgeMatrix(sub_graph)
   weighted_edge_matrix <- eWV(sub_graph, edge_matrix, useNNames = TRUE)
   weights <- unlist(
@@ -67,17 +64,14 @@ NULL
                                    name = "weight", 
                                    value = weights)
     return(sub_igraph)
-})
+}
 
 #' Calculate weighted long path (winformation_content) between root and a 
 #' disjunctive common ancestor by topological sorting algorithm.
 #' @import igraph
-#' @importFrom compiler cmpfun
 #' @rdname dag_funcs
-.longest_path <- cmpfun(function(weighted_subgraph, 
-                                          last_common_ancestor, 
-                                          root, 
-                                          information_content) {
+.longest_path <- function(weighted_subgraph, last_common_ancestor, root, 
+  information_content) {
   tsg <- topological.sort(weighted_subgraph)
   # Set root path attributes Root distance
   V(weighted_subgraph)[tsg[1]]$rdist <- 0
@@ -111,4 +105,4 @@ NULL
   if (!is.na(information_content_lca) & information_content_lca != 0)
     lpl <- lpl + (1/(2 * information_content_lca))
   return(lpl * L)
-})
+}

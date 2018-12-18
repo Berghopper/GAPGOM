@@ -79,23 +79,12 @@
 #'                                         filter_pvals = TRUE
 #' )
 #' @importFrom plyr ddply .
-#' @importFrom compiler cmpfun
 #' @import Biobase
 #' @export
-expression_prediction <- cmpfun(function(gene_id,
-                                expression_set,
-                                organism,
-                                ontology,
-                                enrichment_cutoff = 250,
-                                method = "combine",
-                                significance = 0.05,
-                                go_amount = 5,
-                                filter_pvals = FALSE,
-                                idtype = "ENTREZID",
-                                verbose = FALSE,
-                                id_select_vector = NULL,
-                                id_translation_df = NULL,
-                                go_data = NULL) {
+expression_prediction <- function(gene_id, expression_set, organism, ontology,
+  enrichment_cutoff = 250, method = "combine", significance = 0.05,
+  go_amount = 5, filter_pvals = FALSE, idtype = "ENTREZID", verbose = FALSE,
+  id_select_vector = NULL, id_translation_df = NULL, go_data = NULL) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -203,7 +192,7 @@ expression_prediction <- cmpfun(function(gene_id,
   } else {
     message("Could not find any similar genes!")
   }
-})
+}
 
 #' GAPGOM internal - Ambiguous/prediction functions
 #'
@@ -222,30 +211,27 @@ expression_prediction <- cmpfun(function(gene_id,
 NULL
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.ambiguous_score_rev_sort <- cmpfun(function(score_df) {
+.ambiguous_score_rev_sort <- function(score_df) {
   # reverse sorts the score column
   if (length(score_df) == 0) {
     return(NULL)
   } else {
     return(score_df[rev(order(score_df[, 2])), ]) 
   }
-})
+}
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.ambiguous_score_sort <- cmpfun(function(score_df) {
+.ambiguous_score_sort <- function(score_df) {
   # sorts the score column
   if (length(score_df) == 0) {
     return(NULL)
   } else {
     return(score_df[order(score_df[, 2]), ])
   }
-})
+}
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.ambiguous_enrichment <- cmpfun(function(args, ordered_score_df) {
+.ambiguous_enrichment <- function(args, ordered_score_df) {
   # run the enrichment analysis function.
   enrichment_result <- .enrichment_analysis(
     ordered_score_df,
@@ -259,83 +245,75 @@ NULL
     args$go_amount
   )
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.ambiguous_method_origin <- cmpfun(function(df, 
-                                                      methodname) {
+.ambiguous_method_origin <- function(df, methodname) {
   # add used_method column
   if (length(df) != 0) {
     df[, "used_method"] <- rep(
       methodname, nrow(df))
   }
   return(df)
-})
+}
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-#' @importFrom compiler cmpfun
-.predict_pearson <- cmpfun(function(args) {
+.predict_pearson <- function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_pearson)
   enrichment_result <- .ambiguous_enrichment(args,
                                              .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "pearson")
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-#' @importFrom compiler cmpfun
-.predict_spearman <- cmpfun(function(args) {
+.predict_spearman <- function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_spearman)
   enrichment_result <- .ambiguous_enrichment(args,
                                              .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "spearman")
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
 #' @importFrom stats cor
-#' @importFrom compiler cmpfun
-.predict_kendall <- cmpfun(function(args) {
+.predict_kendall <- function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_kendall)
   enrichment_result <- .ambiguous_enrichment(args,
                                              .ambiguous_score_rev_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "kendall")
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.predict_fisher <- cmpfun(function(args) {
+.predict_fisher <- function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_fisher)
   enrichment_result <- .ambiguous_enrichment(args,
                                              .ambiguous_score_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "fisher")
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
-#' @importFrom compiler cmpfun
-.predict_sobolev <- cmpfun(function(args) {
+.predict_sobolev <- function(args) {
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_sobolev)
   enrichment_result <- .ambiguous_enrichment(args,
                                              .ambiguous_score_sort(score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "sobolev")
   return(enrichment_result)
-})
+}
 
 #' @rdname ambiguous_functions
 #' @importFrom magrittr %>%
-#' @importFrom compiler cmpfun
 #' @importFrom plyr ddply
-.predict_combined <- cmpfun(function(args) {
+.predict_combined <- function(args) {
   # Run enrichment for each method
   predict_methods <- c(.predict_pearson, .predict_spearman, .predict_kendall, 
                        .predict_sobolev, .predict_fisher)
@@ -357,4 +335,4 @@ NULL
   enrichment_result <- combined_enrichment[order(
     as.numeric(combined_enrichment$FDR)), ]
   return(enrichment_result)
-})
+}

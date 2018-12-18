@@ -16,28 +16,23 @@
 NULL
 
 #' @rdname misc_functions
-#' @importFrom compiler cmpfun
-misc_pearson <- cmpfun(function(x, args) {
-  return(abs(cor(as.numeric(x), args$target_expression_data)))})
+misc_pearson <- function(x, args) {
+  return(abs(cor(as.numeric(x), args$target_expression_data)))}
 
 #' @rdname misc_functions
-#' @importFrom compiler cmpfun
-misc_sobolev <- cmpfun(function(x, args) {
-  return(sobolev_metric(as.numeric(x), args$target_expression_data))})
+misc_sobolev <- function(x, args) {
+  return(sobolev_metric(as.numeric(x), args$target_expression_data))}
 
 #' @rdname misc_functions
-#' @importFrom compiler cmpfun
-misc_fisher <- cmpfun(function(x, args) {
-  return(fisher_metric(as.numeric(x), args$target_expression_data))})
+misc_fisher <- function(x, args) {
+  return(fisher_metric(as.numeric(x), args$target_expression_data))}
 
 #' @rdname misc_functions
-#' @importFrom compiler cmpfun
-misc_kendall <- cmpfun(function(x, args) {
+misc_kendall <- function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data, 
-                 method = "kendall")))})
+                 method = "kendall")))}
 
 #' @rdname misc_functions
-#' @importFrom compiler cmpfun
-misc_spearman <- cmpfun(function(x, args) {
+misc_spearman <- function(x, args) {
   return(abs(cor(as.numeric(x), args$target_expression_data, 
-                 method = "spearman")))})
+                 method = "spearman")))}

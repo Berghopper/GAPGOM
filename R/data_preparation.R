@@ -58,25 +58,24 @@
 #' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
 #' @importFrom AnnotationDbi toTable
 #' @importFrom graph ftM2graphNEL
-#' @importFrom compiler cmpfun
 #' @importFrom utils sessionInfo
 #' @keywords internal
-.prepare_variables_topoicsim <- cmpfun(function(organism, 
-                                         ontology, 
-                                         gene_list1 = NULL, 
-                                         gene_list2 = NULL,
-                                         custom_genes1 = NULL,
-                                         custom_genes2 = NULL,
-                                         drop = NULL,
-                                         verbose = FALSE,
-                                         progress_bar = NULL, 
-                                         use_precalculation = TRUE,
-                                         garbage_collection = NULL,
-                                         all_go_pairs = NULL,
-                                         topoargs = list(),
-                                         term_only = FALSE,
-                                         keytype = "ENTREZID",
-                                         go_data = NULL) {
+.prepare_variables_topoicsim <- function(organism, 
+  ontology, 
+  gene_list1 = NULL, 
+  gene_list2 = NULL,
+  custom_genes1 = NULL,
+  custom_genes2 = NULL,
+  drop = NULL,
+  verbose = FALSE,
+  progress_bar = NULL, 
+  use_precalculation = TRUE,
+  garbage_collection = NULL,
+  all_go_pairs = NULL,
+  topoargs = list(),
+  term_only = FALSE,
+  keytype = "ENTREZID",
+  go_data = NULL) {
   # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology
@@ -217,7 +216,7 @@
   }
   
   return(topoargs)
-})
+}
 
 
 #' GAPGOM - set_go_data()
@@ -254,10 +253,9 @@
 #' @import org.Mm.eg.db
 #' @importFrom GOSemSim godata
 #' @importFrom AnnotationDbi keytypes
-#' @importFrom compiler cmpfun
 #' @export
-set_go_data <- cmpfun(function(organism, ontology, 
-                                         computeIC = TRUE, keytype="ENTREZID") {
+set_go_data <- function(organism, ontology, computeIC = TRUE,
+  keytype="ENTREZID") {
   species <- switch(organism, human = "org.Hs.eg.db",
                     fly = "org.Dm.eg.db",
                     mouse = "org.Mm.eg.db",
@@ -284,14 +282,13 @@ set_go_data <- cmpfun(function(organism, ontology,
   # load correct library for GO data to check/show keytypes
   # eval(parse(text=paste0("library(\"",species,"\")")))
   if (!(keytype %in% keytypes(eval(parse(text=species))))) {
-    stop(paste0("FATAL; SPECIFIED KEYTYPE; \"",
-                keytype,
-                "\" IS NOT AVAILABLE. AVAILABLE KEYTYPES;\n"), 
+    stop("FATAL; SPECIFIED KEYTYPE; \"", keytype,
+                "\" IS NOT AVAILABLE. AVAILABLE KEYTYPES;\n", 
          paste0(keytypes(eval(parse(text=species))), collapse = ", "))
   }
   return(godata(species, ont = ontology, computeIC = computeIC, keytype = 
                   keytype))
-})
+}
 
 ###TOPOICSIM FUNCTIONS
 
@@ -312,12 +309,9 @@ set_go_data <- cmpfun(function(organism, ontology,
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.prepare_score_matrix_topoicsim <- cmpfun(function(vec1, vec2, 
-                                                             sparse = FALSE,
-                                                             old_scores = 
-                                                               FALSE) {
+.prepare_score_matrix_topoicsim <- function(vec1, vec2, sparse = FALSE, 
+  old_scores = FALSE) {
   if (sparse) {
     score_matrix <- Matrix(nrow = length(vec1), 
          ncol = length(vec2), 
@@ -330,17 +324,29 @@ set_go_data <- cmpfun(function(organism, ontology,
                              vec1, vec2))
     }
   score_matrix <- .set_identical_items(score_matrix)
-  # View(score_matrix)
+  
   if (old_scores) {
-    for (row in rownames(old_scores)) {
-      for (col in colnames(old_scores)) {
-        score_matrix <- .set_values(row, col, score_matrix, 
-                                    old_scores[row, col]) 
-      }
-    }
+    ### Add old scores (only intersecting)
+    
+    # first check which rownames/colnames intersect
+    intersecting_rn <- rownames(old_scores)[rownames(old_scores) %in%
+                                              rownames(score_matrix)]
+    intersecting_cn <- colnames(old_scores)[colnames(old_scores)
+                                            %in% colnames(score_matrix)]
+    # also do this for the transposed old score matrix (to get all intersecting
+    # pairs)
+    intersecting_rn_t <- rownames(t(old_scores))[rownames(t(old_scores)) %in%
+                                                   rownames(score_matrix)]
+    intersecting_cn_t <- colnames(t(old_scores))[colnames(t(old_scores)) %in%
+                                                   colnames(score_matrix)]
+    # set values
+    score_matrix[intersecting_rn, intersecting_cn] <- old_scores[
+      intersecting_rn, intersecting_cn]
+    score_matrix[intersecting_rn_t, intersecting_cn_t] <- t(old_scores)[
+      intersecting_rn_t, intersecting_cn_t]
   }
   return(score_matrix)
-})
+}
 
 #' GAPGOM internal - .set_identical_items()
 #'
@@ -354,17 +360,16 @@ set_go_data <- cmpfun(function(organism, ontology,
 #' @param score_matrix score matrix for topoclsim
 #' 
 #' @return Same matrix with correct sets set to 1.
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.set_identical_items <- cmpfun(function(score_matrix) {
+.set_identical_items <- function(score_matrix) {
   # set all matching names of matrix to 1 (Same genes).
   matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
-  for (row in which(!is.na(matched_by_row[seq_along(matched_by_row)]))) {
-      col <- matched_by_row[row]
-      score_matrix[row, col] <- 1.0
+  for (row in which(!is.na(matched_by_row))) {
+    col <- matched_by_row[row]
+    score_matrix[row, col] <- 1.0
   }
   return(score_matrix)
-})
+}
 
 #' GAPGOM internal - .unique_combos()
 #'
@@ -383,12 +388,11 @@ set_go_data <- cmpfun(function(organism, ontology,
 #' 
 #' @import data.table
 #' @importFrom plyr .
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.unique_combos <- cmpfun(function(v1, v2) {
+.unique_combos <- function(v1, v2) {
   intermediate <- unique(CJ(v1, v2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
   return(intermediate[V1 != V2])
-})
+}
 
 ### LNCRNAPRED FUNCTIONS
 
@@ -409,9 +413,8 @@ set_go_data <- cmpfun(function(organism, ontology,
 #' @return The score dataframe with ensmbl ID's
 #' 
 #' @importFrom stats na.omit
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.prepare_score_df <- cmpfun(function(original_ids, score, gene_id) {
+.prepare_score_df <- function(original_ids, score, gene_id) {
   # score_df is the 'score' (correlation/metric) dataframe against target gene.
   # combine the dataframe if combine is selected, otherwise just add regular 
   # score.
@@ -420,4 +423,4 @@ set_go_data <- cmpfun(function(organism, ontology,
   # filter gene ID's (Select everything except the chosen gene).
   score_df <- score_df[(score_df[, 1] != gene_id), ]
   return(score_df)
-})
+}

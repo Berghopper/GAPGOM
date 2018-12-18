@@ -17,7 +17,7 @@
 #' goids.
 #' @import data.table
 #' @keywords internal
-.go_ids_lookup <- compiler::cmpfun(function(ids, go_data, custom_genes=NULL, drop=NULL) {
+.go_ids_lookup <- function(ids, go_data, custom_genes=NULL, drop=NULL) {
   go_gene_anno <- data.table(go_data@geneAnno)
   go_gene_anno <- go_gene_anno[!go_gene_anno$EVIDENCE %in% drop, c(seq_len(2))]
   
@@ -47,7 +47,7 @@
   }
   go_df <- unique(as.data.frame(go_df))
   return(go_df)
-})
+}
 
 #' GAPGOM internal - .set_values()
 #'
@@ -65,7 +65,7 @@
 #' 
 #' @return return the matrix with newly set items.
 #' @keywords internal
-.set_values <- compiler::cmpfun(function(item1, item2, the_matrix, value) {
+.set_values <- function(item1, item2, the_matrix, value) {
   # set opposite pair to the same value if it exists
   if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
     the_matrix[item1, item2] <- value
@@ -74,7 +74,7 @@
     the_matrix[item2, item1] <- value 
   }
   return(the_matrix)
-})
+}
 
 ### LNCRNAPRED FUNCTIONS
 
@@ -110,14 +110,9 @@
 #' 
 #' @import data.table
 #' @importFrom Biobase featureData pData assayData
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.generate_translation_df <- cmpfun(function(expression_set, 
-                                                      organism, 
-                                                      ontology,
-                                                      keytype,
-                                                      verbose = FALSE,
-                                                      go_data = NULL) {
+.generate_translation_df <- function(expression_set, organism, ontology, 
+  keytype, verbose = FALSE, go_data = NULL) {
   keys_col <- .resolve_keys_col(expression_set, keytype)
   if (is.null(go_data)) {
     if (verbose) {
@@ -165,7 +160,7 @@
   # bind the results, filter uniques and return.
   id_go_df <- unique(as.data.frame(id_go_df))
   return(id_go_df)
-})
+}
 
 #' GAPGOM internal - .resolve_keys_col() 
 #'
@@ -182,9 +177,8 @@
 #' @return column name of id
 #'
 #' @importFrom Biobase featureData pData assayData
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.resolve_keys_col <- cmpfun(function(expression_set, keytype) {
+.resolve_keys_col <- function(expression_set, keytype) {
   colnames_vector <- colnames(pData(featureData(expression_set)))
   if (keytype == "ENTREZID") {
     keytype <- "entrez"
@@ -201,7 +195,7 @@
   } else {
     return(regex_result)
   }
-})
+}
 
 #' GAPGOM internal - .ext_id_to_term_id()
 #'
@@ -218,10 +212,9 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
-#' @importFrom compiler cmpfun
 #' @importFrom GO.db GO
 #' @keywords internal
-.ext_id_to_term_id <- cmpfun(function(data, list_top_genes) {
+.ext_id_to_term_id <- function(data, list_top_genes) {
   # add 1 for each go that is in list top genes.
   dtdata <- as.data.table(data)
   # GO from GO.db isn't actually used because the keyword is not evaluated.
@@ -229,7 +222,7 @@
   quantified_only <- dtdata[dtdata$ORIGID %in% as.data.table(list_top_genes)[[1]], .N, by=GO]
   non_quantified_gos <- unique(data[!(data$GO %in% quantified_only$GO), ]$GO)
   return(as.data.frame(rbind(quantified_only, list(non_quantified_gos, rep(0, length(non_quantified_gos))))))
-})
+}
 
 #' GAPGOM internal - .term_id_to_ext_id()
 #'
@@ -245,15 +238,14 @@
 #' @return return the quantified matrix
 #' 
 #' @import data.table
-#' @importFrom compiler cmpfun
 #' @importFrom GO.db GO
 #' @keywords internal
-.term_id_to_ext_id <- cmpfun(function(data) {
+.term_id_to_ext_id <- function(data) {
   dtdata <- as.data.table(data)
   # GO from GO.db isn't actually used because the keyword is not evaluated.
   # this import is just to circumvent bioccheck
   return(as.data.frame(dtdata[, .N, by=GO]))
-})
+}
 
 #' GAPGOM internal - .entrezraw_to_entrez()
 #'
@@ -268,9 +260,8 @@
 #' 
 #' @return return the normal ID
 #' 
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.entrezraw_to_entrez <- cmpfun(function(rawid) {
+.entrezraw_to_entrez <- function(rawid) {
   rawid <- as.character(rawid)
   
   # first check if the id is raw at all.
@@ -289,7 +280,7 @@
     ids <- rawid
   }
   return(ids)
-})
+}
 
 .organism_to_species_lib <- function(organism) {
   return(switch(tolower(organism), human = "org.Hs.eg.db",
@@ -311,6 +302,5 @@
            rhesus = "org.Mmu.eg.db",
            pig = "org.Ss.eg.db",
            xenopus = "org.Xl.eg.db",
-           message(paste0("Error, invalid organism; \"" , organism , 
-                          "\"!"))))
+           message("Error, invalid organism; \"", organism , "\"!")))
   }

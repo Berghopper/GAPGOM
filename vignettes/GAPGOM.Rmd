@@ -466,12 +466,13 @@ If you want to **only** have a custom gene, you can define an empty vector with 
 
 #### Other notes.
 
-With TopoICSim there is a pre-calculated score matrix available, this can be turned on/off. The scores might become deprecated however, as soon as one of the `org.DB` packages gets an update. For this reason, we advise mostly to keep this option off. You can also pre-calculate some GO's yourself using the custom genes. `all_go_pairs` can then be used as a precalculated score matrix.
+With TopoICSim there is a pre-calculated score matrix available, this can be turned on/off. The scores might become deprecated however, as soon as one of the `org.DB` packages gets an update. For this reason, we advise mostly to keep this option off. You can also pre-calculate some GO's yourself using the custom genes. `all_go_pairs` can then be used as a precalculated score matrix, only intersecting/present GO terms will be used.
 
 ## Parrallel processing and big data
 
-As of right now, parallel processing is not supported. The other algorithms aren't parallelized yet, because of implementation difficulties regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide the work in TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be able to generate using the hidden `GAPGOM:::.unique_combos` function. The `all_go_pairs` object in the result can then be combined together with other results.
+As of right now, parallel processing is not supported. The other algorithms aren't parallelized yet, because of implementation difficulties regarding the amount and type of dependencies that the algorithms rely on. Possibly, in the future, parallel processing will be supported. It might however be possible to divide the work in TopoICSim (on gene pair level). It runs for each unique pair of genes, which you may be able to generate using the hidden `GAPGOM:::.unique_combos` function. The `All_go_pairs` object in the result can then be combined together with other results.
 No support is offered however in regards to trying to make this work.
+Tip: The `all_go_pairs` argument in `topo_ic_sim_genes()` doesn't automatically create a new, bigger matrix, it only uses the overlapping or present GO terms of the analysis based on the input genes.
 
 ## Performance and benchmarks
 

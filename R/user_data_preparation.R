@@ -16,10 +16,9 @@
 #' ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
 #' verbose=TRUE)
 #' }
-#' @importFrom compiler cmpfun
 #' @importFrom data.table fread
 #' @export
-fantom_load_raw <- cmpfun(function(filepath, verbose = FALSE) {
+fantom_load_raw <- function(filepath, verbose = FALSE) {
   old <- options(stringsAsFactors = FALSE)
   on.exit(options(old), add = TRUE)
   # first parse fantom column variables.
@@ -56,7 +55,7 @@ fantom_load_raw <- cmpfun(function(filepath, verbose = FALSE) {
   return(list(df=fan, 
               meta=translation_df[translation_df$type!="ColumnVariables" | 
                                     translation_df$type!=0,]))
-})
+}
 
 #' GAPGOM - fantom_to_expset()
 #'
@@ -87,10 +86,8 @@ fantom_load_raw <- cmpfun(function(filepath, verbose = FALSE) {
 #' }
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new
-#' @importFrom compiler cmpfun
 #' @export
-fantom_to_expset <- cmpfun(function(fanraw, species, filter = TRUE, 
-                                              verbose = FALSE) {
+fantom_to_expset <- function(fanraw, species, filter = TRUE, verbose = FALSE) {
   fan <- fanraw$df
   meta <- fanraw$meta
   if (filter) {
@@ -112,7 +109,7 @@ fantom_to_expset <- cmpfun(function(fanraw, species, filter = TRUE,
   # issue #6
   if (verbose) print("DONE")
   return(expset)
-})
+}
 
 #' GAPGOM internal - .fantom_filter_entrez()
 #'
@@ -126,13 +123,12 @@ fantom_to_expset <- cmpfun(function(fanraw, species, filter = TRUE,
 #' 
 #' @return output is different on a case-to-case basis
 #' 
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.fantom_filter_entrez <- cmpfun(function(fan) {
+.fantom_filter_entrez <- function(fan) {
   return(fan[!(
     is.na(fan$`entrezgene (genes) id associated with the transcript`) | 
       fan$`entrezgene (genes) id associated with the transcript`==""),])
-})
+}
 
 #' GAPGOM - fantom_download()
 #'
@@ -157,12 +153,9 @@ fantom_to_expset <- cmpfun(function(fanraw, species, filter = TRUE,
 #' }
 #' @importFrom GEOquery gunzip
 #' @importFrom utils download.file
-#' @importFrom compiler cmpfun
 #' @export
-fantom_download <- cmpfun(function(down_dir, 
-                                             organism="human", 
-                                             unpack = TRUE, 
-                                             noprompt = FALSE) {
+fantom_download <- function(down_dir, organism="human", unpack = TRUE,
+  noprompt = FALSE) {
   baseurl <- "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/"
   url <- switch(organism, 
                 "human" = paste0(
@@ -173,8 +166,8 @@ fantom_download <- cmpfun(function(down_dir,
                   baseurl,
                   "mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt.gz"
                 ), 
-                stop(paste0("INCORRECT ORGANISM; \"", organism, "\" 
-                                  SELECTED! --> INVALID OPTION"))
+                stop("INCORRECT ORGANISM; \"", organism, "\" ",
+                  "SELECTED! --> INVALID OPTION")
   )
   filename <- strsplit(url, "/")[[1]][length(strsplit(url, "/")[[1]])]
   full_filename <- paste0(down_dir,"/",filename)
@@ -183,8 +176,8 @@ fantom_download <- cmpfun(function(down_dir,
     rawsize <- switch(organism, 
                       "human"=c(792, 2200), 
                       "mouse"=c(437, 1200), 
-                      stop(paste0("INCORRECT ORGANISM; \"", organism, "\" 
-                                  SELECTED! --> INVALID OPTION")))
+                      stop("INCORRECT ORGANISM; \"", organism, "\" ",
+                        "SELECTED! --> INVALID OPTION"))
     size_selector <- 1
     if (unpack) {
       size_selector <- 2
@@ -209,4 +202,4 @@ fantom_download <- cmpfun(function(down_dir,
     # full_filename <- substr(full_filename, 1, length(full_filename)-3)
   }
   return(full_filename)
-})
+}

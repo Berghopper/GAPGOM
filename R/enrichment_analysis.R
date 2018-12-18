@@ -52,18 +52,10 @@
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
 #' @importFrom stats phyper p.adjust na.omit
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.enrichment_analysis <- cmpfun(function(
-                                ordered_score_df,
-                                id_select_vector,
-                                id_translation_df,
-                                organism,
-                                ontology,
-                                enrichment_cutoff,
-                                significance,
-                                filter_pvals,
-                                go_amount) {
+.enrichment_analysis <- function(ordered_score_df, id_select_vector, 
+  id_translation_df, organism, ontology, enrichment_cutoff, significance,
+  filter_pvals, go_amount) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   # extracted_genes -> Extracted genes with correct gene ontology.
@@ -180,4 +172,4 @@
   }
   
   return(enrichment_dataframe)
-})
+}

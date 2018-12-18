@@ -27,11 +27,8 @@
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_titj <- cmpfun(function(go_id1,
-                                     go_id2,
-                                     topoargs) {
+.topo_ic_sim_titj <- function(go_id1, go_id2, topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   # return 1 if the gos are the same.
@@ -93,7 +90,7 @@
   } else {
       return(0)
   }
-})
+}
 
 #' GAPGOM internal - .topo_ic_sim_g1g2()
 #'
@@ -124,15 +121,12 @@
 #' \strong{17}(1):296)
 #'
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_g1g2 <- cmpfun(function(gene1,
-                                     gene2,
-                                     topoargs) {
+.topo_ic_sim_g1g2 <- function(gene1, gene2, topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   if (topoargs$verbose) {
-    message(paste0("\nWorking on genepair; ", gene1, ", ", gene2))
+    message("\nWorking on genepair; ", gene1, ", ", gene2)
   }
   # get goids for both genes
   if (gene1 %in% names(topoargs$custom_genes1)) {
@@ -173,7 +167,7 @@
     go1 <- pair[[1]]
     go2 <- pair[[2]]
     if (topoargs$verbose) {
-      message(paste0("Working on gopair; ", go1, ", ", go2))
+      message("Working on gopair; ", go1, ", ", go2)
     }
     # if this is not the case (row is not present), then run topo_ic_sim 
     # between 2 terms.
@@ -233,7 +227,7 @@
   # return final score
   return(list(GeneSim = sim, 
               AllGoPairs = topoargs$all_go_pairs))
-})
+}
 
 #' GAPGOM internal - .topo_ic_sim()
 #'
@@ -272,11 +266,8 @@
 #' \strong{17}(1):296)
 #' 
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @importFrom compiler cmpfun
 #' @keywords internal
-.topo_ic_sim_geneset <- cmpfun(function(gene_list1,
-                                         gene_list2,
-                                         topoargs) {
+.topo_ic_sim_geneset <- function(gene_list1, gene_list2, topoargs) {
     old <- options(stringsAsFactors = FALSE, warn = -1)
     on.exit(options(old), add = TRUE)
     
@@ -314,7 +305,7 @@
     }
     return(list(GeneSim=score_matrix, 
                 AllGoPairs = topoargs$all_go_pairs))
-})
+}
 
 #' GAPGOM - topo_ic_sim_genes()
 #'
@@ -401,23 +392,11 @@
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
 #'
-#' @importFrom compiler cmpfun
 #' @export
-topo_ic_sim_genes <- cmpfun(function(organism,
-                                     ontology,
-                                     genes1,
-                                     genes2,
-                                     custom_genes1 = NULL,
-                                     custom_genes2 = NULL,
-                                     verbose = FALSE,
-                                     progress_bar = TRUE,
-                                     garbage_collection = FALSE,
-                                     use_precalculation = FALSE,
-                                     drop = NULL,
-                                     all_go_pairs = NULL,
-                                     idtype = "ENTREZID",
-                                     go_data = NULL
-                                     ) {
+topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
+  custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE,
+  progress_bar = TRUE, garbage_collection = FALSE, use_precalculation = FALSE,
+  drop = NULL, all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -484,7 +463,7 @@ topo_ic_sim_genes <- cmpfun(function(organism,
   }
   if (verbose) {message(Sys.time()-starttime)}
   return(result)
-})
+}
 
 #' GAPGOM - topo_ic_sim_term()
 #' 
@@ -527,13 +506,9 @@ topo_ic_sim_genes <- cmpfun(function(organism,
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
-#' @importFrom compiler cmpfun
 #' @export
-topo_ic_sim_term <- cmpfun(function(organism,
-                                    ontology,
-                                    go1, 
-                                    go2,
-                                    go_data = NULL) {
+topo_ic_sim_term <- function(organism, ontology, go1, go2,
+  go_data = NULL) {
   if (!(.check_organism(organism) &&
         .check_ontology(ontology) &&
         .check_ifclass(go1, "character", "go1", accept_null = FALSE) &&
@@ -549,4 +524,4 @@ topo_ic_sim_term <- cmpfun(function(organism,
                                            term_only = TRUE,
                                            go_data = go_data)
   return(.topo_ic_sim_titj(go1, go2, topoargs))
-})
+}
