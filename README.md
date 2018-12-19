@@ -57,3 +57,4 @@ Note: list is subject to changes and is not necessarily definetive.
 - [] Add geneset analysis for scoring expression similarities.
 - [] Add chromosomal distance correlations on top of regular scoring.
 - [] Along with the previously two mentioned GREAT-like features, include Enrichr into the pipeline.
+- [] Added AnnotationHub intergration so more annotation data can be used.
