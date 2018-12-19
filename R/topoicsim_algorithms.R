@@ -121,6 +121,7 @@
 #' \strong{17}(1):296)
 #'
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom matrixStats rowMaxs colMaxs
 #' @keywords internal
 .topo_ic_sim_g1g2 <- function(gene1, gene2, topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
@@ -214,15 +215,13 @@
   scores <- sqrt(scores)
   m <- length(gos1)
   n <- length(gos2)
+  
   sim <- max(
-    sum(vapply(seq_len(m), function(x) {
-      max(scores[x, ], na.rm = TRUE)
-  }, numeric(1))
-  )/m, 
-    sum(vapply(seq_len(n), function(x) {
-      max(scores[, x], na.rm = TRUE)
-  }, numeric(1))
-  )/n)
+    sum(rowMaxs(scores, rows = seq_len(m), na.rm = TRUE)
+    )/m,
+    sum(colMaxs(scores, cols = seq_len(n), na.rm = TRUE)
+    )/n)
+  
   sim <- round(sim, digits = 3)
   # return final score
   return(list(GeneSim = sim, 

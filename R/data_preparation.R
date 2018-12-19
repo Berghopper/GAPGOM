@@ -60,22 +60,11 @@
 #' @importFrom graph ftM2graphNEL
 #' @importFrom utils sessionInfo
 #' @keywords internal
-.prepare_variables_topoicsim <- function(organism, 
-  ontology, 
-  gene_list1 = NULL, 
-  gene_list2 = NULL,
-  custom_genes1 = NULL,
-  custom_genes2 = NULL,
-  drop = NULL,
-  verbose = FALSE,
-  progress_bar = NULL, 
-  use_precalculation = TRUE,
-  garbage_collection = NULL,
-  all_go_pairs = NULL,
-  topoargs = list(),
-  term_only = FALSE,
-  keytype = "ENTREZID",
-  go_data = NULL) {
+.prepare_variables_topoicsim <- function(organism, ontology, gene_list1 = NULL, 
+  gene_list2 = NULL, custom_genes1 = NULL, custom_genes2 = NULL, drop = NULL,
+  verbose = FALSE, progress_bar = NULL, use_precalculation = TRUE,
+  garbage_collection = NULL, all_go_pairs = NULL, topoargs = list(),
+  term_only = FALSE, keytype = "ENTREZID", go_data = NULL) {
   # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology

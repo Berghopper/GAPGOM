@@ -1,8 +1,8 @@
 Package: GAPGOM
 Type: Package
 Title: GAPGOM (novel Gene Annotation Prediction and other GO Metrics)
-Version: 0.99.5
-https://github.com/Bioconductor/Contributions/issues/947Authors@R: c(
+Version: 0.99.6
+Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
     person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
@@ -16,7 +16,6 @@ Imports:
   utils,
   methods,
   Matrix,
-  compiler,
   plyr,
   magrittr,
   data.table,
@@ -29,7 +28,8 @@ Imports:
   GOSemSim,
   GEOquery,
   AnnotationDbi,
-  Biobase
+  Biobase,
+  matrixStats
 Suggests:
   org.Dm.eg.db,
   org.Rn.eg.db,
