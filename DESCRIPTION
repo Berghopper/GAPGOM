@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: GAPGOM (novel Gene Annotation Prediction and other GO Metrics)
-Version: 0.99.7
+Version: 0.99.8
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
     person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
@@ -29,6 +29,7 @@ Imports:
   GEOquery,
   AnnotationDbi,
   Biobase,
+  BiocFileCache,
   matrixStats
 Suggests:
   org.Dm.eg.db,

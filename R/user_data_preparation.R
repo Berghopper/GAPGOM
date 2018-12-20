@@ -135,9 +135,9 @@ fantom_to_expset <- function(fanraw, species, filter = TRUE, verbose = FALSE) {
 #' Downloads and unpacks fantom5 data of either human or mouse.
 #'
 #' This function downloads the whole fantom5 dataset and unpacks it. automatic
-#' unpacking can be turned off
+#' unpacking can be turned off. The file is downloaded to a special caching
+#' directory, which will be returned on exit.
 #'
-#' @param down_dir The folder/directory to download the fantom5 file to.
 #' @param organism Either "mouse" or "human". FANTOM5 only has these two as
 #' fully annotated+tpm normalized datasets. 
 #' @param unpack Default=TRUE, if set to TRUE, file will be unpacked 
@@ -154,8 +154,7 @@ fantom_to_expset <- function(fanraw, species, filter = TRUE, verbose = FALSE) {
 #' @importFrom GEOquery gunzip
 #' @importFrom BiocFileCache BiocFileCache bfcrpath
 #' @export
-fantom_download <- function(down_dir, organism="human", unpack = TRUE,
-  noprompt = FALSE) {
+fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
   baseurl <- "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/"
   url <- switch(organism, 
                 "human" = paste0(
@@ -170,7 +169,6 @@ fantom_download <- function(down_dir, organism="human", unpack = TRUE,
                   "SELECTED! --> INVALID OPTION")
   )
   filename <- strsplit(url, "/")[[1]][length(strsplit(url, "/")[[1]])]
-  full_filename <- paste0(down_dir,"/",filename)
   # check for user prompt if selected
   if(!noprompt) {
     rawsize <- switch(organism, 
@@ -197,10 +195,11 @@ fantom_download <- function(down_dir, organism="human", unpack = TRUE,
     }
   }
   bfc <- BiocFileCache(ask = FALSE)
-  bfcrpath(bfc, url)
+  full_filename <- bfcrpath(bfc, url)
+  # full_filename <- paste0(down_dir,"/",filename)
   if (unpack) {
     gunzip(full_filename, overwrite = TRUE)
-    # full_filename <- substr(full_filename, 1, length(full_filename)-3)
+    full_filename <- substr(full_filename, 1, length(full_filename)-3)
   }
   return(full_filename)
 }

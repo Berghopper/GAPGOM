@@ -4,12 +4,9 @@
 \alias{fantom_download}
 \title{GAPGOM - fantom_download()}
 \usage{
-fantom_download(down_dir, organism = "human", unpack = TRUE,
-  noprompt = FALSE)
+fantom_download(organism = "human", unpack = TRUE, noprompt = FALSE)
 }
 \arguments{
-\item{down_dir}{The folder/directory to download the fantom5 file to.}
-
 \item{organism}{Either "mouse" or "human". FANTOM5 only has these two as
 fully annotated+tpm normalized datasets.}
 
@@ -27,7 +24,8 @@ Downloads and unpacks fantom5 data of either human or mouse.
 }
 \details{
 This function downloads the whole fantom5 dataset and unpacks it. automatic
-unpacking can be turned off
+unpacking can be turned off. The file is downloaded to a special caching
+directory, which will be returned on exit.
 }
 \examples{
 \dontrun{

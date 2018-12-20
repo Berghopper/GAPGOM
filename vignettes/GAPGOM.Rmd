@@ -323,10 +323,10 @@ The paths along the GO DAG tree get weighted with the information content betwee
 
 For the information content the following forumla is used;
 
-<p style="margin:0;display:inline;float:left">$IC(t) = -logp(t)$</p> <p style="margin:0;display:inline;float:right">(1)</p>
+<p style="margin:0;display:inline;float:left">$IC(t) = -log(p(t))$</p> <p style="margin:0;display:inline;float:right">(1)</p>
 
 </br></br>
-Where $t$ is the (GO) term. The IC is calculated by GOSemSim.
+Where $t$ is the (GO) term. The IC is calculated by GOSemSim, and based on the frequency of the specific go term ($p(t)$).
 
 </br>
 A GO tree can be described as a triplet $\Lambda=(G,\Sigma,R)$, where $G$ is the set of GO terms, $\Sigma$ is the set of hierarchical relations between GO terms (mostly defined as *is_a* or *part_of*) [5], and $R$ is a triplet $(t_i, t_j, \xi)$, where $t_i,t_j\in G$ and $\xi\in R$ and $t_i\xi t_j$. The $\xi$ relationship is an oriented child-parent relation. Top level node of the GO rDAG is the Root, which is a direct parent of the MF, BP and CC nodes. These nodes are called aspect-specific roots and we refer to them as root in the following. 
