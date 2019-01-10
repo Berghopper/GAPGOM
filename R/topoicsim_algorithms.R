@@ -37,7 +37,7 @@
                                                         topoargs$organism,
                                         topoargs$go_annotation, topoargs$IC)
   D_ti_tj_x <- NULL
-  if (length(common_ancestors) != 0 && !is.na(common_ancestors)) {
+  if (length(common_ancestors) != 0 && !any(is.na(common_ancestors))) {
     # prepare subgraphs from two GO terms go_id1 and go_id2
     sg1 <- subGraph(c(get(go_id1, topoargs$go_annotation), go_id1),
                     topoargs$weighted_dag)

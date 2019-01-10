@@ -104,8 +104,8 @@
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[order(quantified_ext_id_to_term_id$GO), 2]
 
 
-  #                       GeneList | Genome
-  #                     ------------------
+  #                   GeneList | Genome
+  #                   ------------------
   # In Anno group     |   n1   |   n2  |
   # ------------------------------------
   # Not in Anno group |   n3   |   n4  |
