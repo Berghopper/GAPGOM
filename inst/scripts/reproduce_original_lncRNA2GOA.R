@@ -7,10 +7,10 @@
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
 options(stringsAsFactors = FALSE)
-ExpressionData = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
+ExpressionData <- read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt', sep='\t', head=TRUE)
 
 # Gene ID's and annotation term type.
-EnsemblID2GOID = read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t', head=TRUE)
+EnsemblID2GOID <- read.table('/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt', sep='\t', head=TRUE)
 
 ## Conversion to expressionset
 

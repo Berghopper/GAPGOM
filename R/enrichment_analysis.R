@@ -101,7 +101,8 @@
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(
       quantified_ext_id_to_term_id[, 1] %in% list_of_gos), ]
   # now order the thing so go's correspond with others
-  quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[order(quantified_ext_id_to_term_id$GO), 2]
+  quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[
+    order(quantified_ext_id_to_term_id$GO), 2]
 
 
   #                   GeneList | Genome

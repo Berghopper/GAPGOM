@@ -149,7 +149,7 @@ fantom_to_expset <- function(fanraw, species, filter = TRUE, verbose = FALSE) {
 #' 
 #' @examples
 #' \dontrun{
-#' fantom_file <- fantom_download("./", organism = "mouse", noprompt = TRUE)
+#' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
 #' }
 #' @importFrom GEOquery gunzip
 #' @importFrom BiocFileCache BiocFileCache bfcrpath
@@ -196,10 +196,14 @@ fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
   }
   bfc <- BiocFileCache(ask = FALSE)
   full_filename <- bfcrpath(bfc, url)
+  # assign("bfc", bfc, .GlobalEnv)
+  # assign("full_filename", full_filename, .GlobalEnv)
+  
   # full_filename <- paste0(down_dir,"/",filename)
   if (unpack) {
-    gunzip(full_filename, overwrite = TRUE)
-    full_filename <- substr(full_filename, 1, length(full_filename)-3)
+    gunzip(full_filename, overwrite = TRUE, remove = FALSE)
+    full_filename <- substr(as.character(full_filename), 1, 
+                            nchar(as.character(full_filename))-3)
   }
   return(full_filename)
 }
