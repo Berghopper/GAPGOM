@@ -72,6 +72,10 @@ NULL
 #' @rdname dag_funcs
 .longest_path <- function(weighted_subgraph, last_common_ancestor, root, 
   information_content) {
+  # set internal igraph functions to null to appease R CMD check
+  to <- NULL
+  nei <- NULL
+  
   tsg <- topological.sort(weighted_subgraph)
   # Set root path attributes Root distance
   V(weighted_subgraph)[tsg[1]]$rdist <- 0
