@@ -23,8 +23,6 @@ This function loads raw fantom5 data and returns the resulting data.table/
 data.frame object.
 }
 \examples{
-\dontrun{
-ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
-verbose=TRUE)
-}
+fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
+ft5 <- fantom_load_raw(fantom_file, verbose=TRUE)
 }

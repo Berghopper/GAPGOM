@@ -12,10 +12,8 @@
 #' time very large!)
 #' 
 #' @examples 
-#' \dontrun{
-#' ft5 <- fantom_load_raw("./hg19.cage_peak_phase1and2combined_counts.osc.txt", 
-#' verbose=TRUE)
-#' }
+#' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
+#' ft5 <- fantom_load_raw(fantom_file, verbose=TRUE)
 #' @importFrom data.table fread
 #' @export
 fantom_load_raw <- function(filepath, verbose = FALSE) {
@@ -31,8 +29,8 @@ fantom_load_raw <- function(filepath, verbose = FALSE) {
     if (!startsWith(line, "#")) {
       break
     } else {
-      filtered_line <- sapply(strsplit(line, "##|\\[|\\]|\\="), 
-                              function(x){x[!x ==""]})
+      filtered_line <- vapply(strsplit(line, "##|\\[|\\]|\\="), 
+                              function(x){x[!x ==""]}, character(3))
       translation_df <- data.frame(translation_df, filtered_line)
     }
     linecount <- linecount + 1
@@ -48,8 +46,8 @@ fantom_load_raw <- function(filepath, verbose = FALSE) {
   if (verbose) print("DONE")
   if (verbose) print("formatting column names...")
   # and touch up column names
-  colnames(fan) <- sapply(colnames(fan), function(x){
-    translation_df[translation_df$key==x,]$value})
+  colnames(fan) <- vapply(colnames(fan), function(x){
+    translation_df[translation_df$key==x,]$value}, character(1))
   if (verbose) print("DONE")
   # return df+leftover metadata (header variables).
   return(list(df=fan, 
@@ -79,11 +77,9 @@ fantom_load_raw <- function(filepath, verbose = FALSE) {
 #' pData(featureData(ExpressionSet))
 #' 
 #' @examples 
-#' \dontrun{
-#' ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
-#' verbose = TRUE)
-#' expset <- fantom_to_expset(ft5, verbose = TRUE)
-#' }
+#' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
+#' ft5 <- fantom_load_raw(fantom_file, verbose = TRUE)
+#' expset <- fantom_to_expset(ft5, "mouse", verbose = TRUE)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new
 #' @export
@@ -148,11 +144,10 @@ fantom_to_expset <- function(fanraw, species, filter = TRUE, verbose = FALSE) {
 #' @return The resulting filename/location of the file or NULL if cancelled.
 #' 
 #' @examples
-#' \dontrun{
 #' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
-#' }
+#' 
 #' @importFrom GEOquery gunzip
-#' @importFrom BiocFileCache BiocFileCache bfcrpath
+#' @importFrom BiocFileCache BiocFileCache bfcrpath bfcquery bfcnew
 #' @export
 fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
   baseurl <- "http://fantom.gsc.riken.jp/5/datafiles/latest/extra/CAGE_peaks/"
@@ -172,8 +167,8 @@ fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
   # check for user prompt if selected
   if(!noprompt) {
     rawsize <- switch(organism, 
-                      "human"=c(792, 2200), 
-                      "mouse"=c(437, 1200), 
+                      "human"=c(792, 792+2200), 
+                      "mouse"=c(437, 437+1200), 
                       stop("INCORRECT ORGANISM; \"", organism, "\" ",
                         "SELECTED! --> INVALID OPTION"))
     size_selector <- 1
@@ -183,8 +178,8 @@ fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
     size <- rawsize[size_selector]
     cat(paste0(
       "Are you sure you want to download the \"", 
-      filename, "\" fantom5 file?\nFINAL SIZE; ",size,"MB\n",
-      "Answer \"yes\" or \"y\": "))
+      filename, "\" fantom5 file?\nFINAL SIZE (might include multiple files); ",
+      size, "MB\n" , "Answer \"yes\" or \"y\": "))
     answer <- tolower(readline())
     if (answer == "y"|answer == "yes") {
       print("Starting download!")
@@ -196,14 +191,16 @@ fantom_download <- function(organism="human", unpack = TRUE, noprompt = FALSE) {
   }
   bfc <- BiocFileCache(ask = FALSE)
   full_filename <- bfcrpath(bfc, url)
-  # assign("bfc", bfc, .GlobalEnv)
-  # assign("full_filename", full_filename, .GlobalEnv)
   
-  # full_filename <- paste0(down_dir,"/",filename)
   if (unpack) {
-    gunzip(full_filename, overwrite = TRUE, remove = FALSE)
-    full_filename <- substr(as.character(full_filename), 1, 
-                            nchar(as.character(full_filename))-3)
+    # check if unpacked is already in the bioc file cache
+    rname <- basename(tools::file_path_sans_ext(full_filename))
+    if (!nrow(bfcquery(bfc, query = rname, field = "rname"))) {
+    # unpack to bfcnew(bfc, rname) if not available
+      gunzip(full_filename, overwrite = TRUE, remove = FALSE)
+      bfcnew(bfc, rname)
+    }
+    full_filename <- tools::file_path_sans_ext(full_filename)
   }
-  return(full_filename)
+  return(as.character(full_filename))
 }

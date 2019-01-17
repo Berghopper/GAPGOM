@@ -33,9 +33,7 @@ This ExpressionSet is then returned.
 This function only accepts the RLE normalized data!
 }
 \examples{
-\dontrun{
-ft5 <- fantom_load_raw("./mm9.cage_peak_phase1and2combined_tpm_ann.osc.txt", 
-verbose = TRUE)
-expset <- fantom_to_expset(ft5, verbose = TRUE)
-}
+fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
+ft5 <- fantom_load_raw(fantom_file, verbose = TRUE)
+expset <- fantom_to_expset(ft5, "mouse", verbose = TRUE)
 }

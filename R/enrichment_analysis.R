@@ -127,7 +127,8 @@
   # now bind into 1 df.
   qterm_id_to_ext_id <- cbind(qterm_id_to_ext_id, n1, n2, n3, n4)
   # select quantification values to at least be 5 for goID quantification.
-  qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= go_amount), ]
+  qterm_id_to_ext_id <- qterm_id_to_ext_id[(qterm_id_to_ext_id[, 2] >= 
+                                              go_amount), ]
 
   # select last 4 columns (n1,n2,n3,n4)
   args.df <- qterm_id_to_ext_id[, c(3:6)]

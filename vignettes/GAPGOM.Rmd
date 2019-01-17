@@ -312,6 +312,7 @@ The original publication used the lncRNA2Function data [4], to test if the resul
 
 - [https://tare.medisin.ntnu.no/TopoICSim/](https://tare.medisin.ntnu.no/TopoICSim/)
 
+Besides this, the scripts folder also contains a proof-of-concept script for potentially doing the analysis on unannotated transcripts (by finding the closest gene). This is eventually meant as a sort of substitute to the famous [GREAT](http://great.stanford.edu/public/html/) tool.
 
 ## TopoICSim
 

@@ -198,7 +198,8 @@
         }
       }
       scores <- .set_values(go1, go2, scores, score)
-      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, score)
+      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
+                                           score)
     }
   }
   if (topoargs$progress_bar) {
@@ -450,14 +451,14 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     if (verbose) {
       result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)
     } else {
-      result <- suppressMessages(.topo_ic_sim_g1g2(genes1, genes2, topoargs))    
+      result <- suppressMessages(.topo_ic_sim_g1g2(genes1, genes2, topoargs))
     }
   } else {
     # multi gene topo
     if (verbose) {
       result <- .topo_ic_sim_geneset(genes1, genes2, topoargs)
     } else {
-      result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))    
+      result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))
     }
   }
   if (verbose) {message(Sys.time()-starttime)}

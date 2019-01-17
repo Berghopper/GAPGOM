@@ -138,7 +138,7 @@
                         " will be updated in upcoming versions (please refer ",
                         "to the github issue page and report this error if it ",
                         "is not present yet; ",
-                        "https://github.com/Berghopper/GAPGOM/issues). \n\nOr ", 
+                        "https://github.com/Berghopper/GAPGOM/issues). \n\nOr ",
                         "you may possibly have outdated packages, ",
                         "please check if your version of \"%s\" is lower than ",
                         "in the precalculated matrix: (%s). ",
@@ -188,8 +188,8 @@
         go_unique_list <- unique(c(topoargs$translation_to_goids$GO,
                                  unlist(custom_genes1, FALSE, FALSE),
                                  unlist(custom_genes2, FALSE, FALSE)))
-        topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list, 
-                                                                 go_unique_list) 
+        topoargs$all_go_pairs <- .prepare_score_matrix_topoicsim(go_unique_list,
+                                                                 go_unique_list)
       }
     } else {
       go_unique_list <- unique(c(rownames(topoargs$all_go_pairs), 

@@ -72,7 +72,8 @@ expression_semantic_scoring <- function(gene_id, expression_set,
          "sobolev" = .score_sobolev(args),
          "combine" = .score_combined(args),
          function() {
-           cat("Selected method; \"", method, "\" does not exist! Refer to the ",
+           cat("Selected method; \"", method, 
+               "\" does not exist! Refer to the ",
                "help page for options.", sep = "")
            return(NULL)
          }

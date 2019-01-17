@@ -28,7 +28,6 @@ unpacking can be turned off. The file is downloaded to a special caching
 directory, which will be returned on exit.
 }
 \examples{
-\dontrun{
-fantom_file <- fantom_download("./", organism = "mouse", noprompt = TRUE)
-}
+fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
+
 }

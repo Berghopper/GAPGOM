@@ -17,8 +17,9 @@ library(GenomicRanges)
 # STEP 1 LOAD DATA
 
 # Load table with basic info about genes etc (http://pheweb.sph.umich.edu:5000/pheno/20001_1044)
+# (Only first 50 used.)
 
-geneset_table <- read.csv("~/Downloads/Prostate_UKBiobank_PheWeb_hg19.txt", sep="\t", strip.white = T)
+geneset_table <- read.csv("~/Downloads/Prostate_UKBiobank_PheWeb_hg19.txt", sep="\t", strip.white = TRUE)
 # preloaded here:
 geneset_table <- data.frame(list(Position = c("17:46,805,705", "8:128,077,146", 
 "10:51,549,496", "17:36,101,156", "11:69,010,651", "11:2,229,782", 
@@ -81,10 +82,10 @@ ensembl_to_go <- '/run/media/casper/USB_ccpeters/internship_thesis/data/rezvan_l
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
 options(stringsAsFactors = FALSE)
-ExpressionData <- read.table(expression_vals, sep='\t', head=TRUE)
+ExpressionData <- read.table(expression_vals, sep = '\t', head = TRUE)
 
 # Gene ID's and annotation term type.
-EnsemblID2GOID <- read.table(ensembl_to_go, sep='\t', head=TRUE)
+EnsemblID2GOID <- read.table(ensembl_to_go, sep = '\t', head = TRUE)
 
 ## Conversion to expressionset
 
@@ -113,11 +114,24 @@ colnames(id_translation_df) <- c("ORIGID","GO")
 # GENOME BED FILE: (hg19, Ensembl genes track, BED format)
 # ENSEMBL TRANSCRIPTS TO GENES: (hg19, ensemblToGeneName table, Ensembl genes track)
 
-# Horribly ugly oneliner to generate snp bed ### POLISH UP ###
-# lapply(lapply(sapply(as.character(geneset_table$Position), function(x) {strsplit(x, ":")}), function(x) {c(x[1],rep(gsub(",", "", unlist(x[2], F, F)),2))}), function(x) {print(x)})
-genome_bed <- import("/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/hg19.bed")
-snp_bed <- import("/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/snp_hg19.bed")
-transcript_to_gene <- read.csv("/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/hg19_transcript_to_genename.txt", sep="\t")
+# commented code to generate snp bed.
+# tmp_var <- lapply(
+#             sapply(
+#               as.character(geneset_table$Position), function(x) {strsplit(x, ":")} # split chromosome and position
+#               ), function(x) {c(paste0("chr",x[1]),rep(gsub(",", "", unlist(x[2], FALSE, FALSE)),2))}) # format chromosome number and replicate position 
+# for (i in seq_len(length(tmp_var))) {
+#   string <- tmp_var[[i]]
+#   # edit string to be seperated by tabs and write to file "snp_hg19.bed"
+#   write(paste0(string, collapse = "\t"), "blah.txt", sep = "\t", append = TRUE)
+# }
+
+genome_bed_file <- "/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/hg19.bed"
+snp_bed_file <- "/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/snp_hg19.bed"
+transcript_to_gene_file <- "/run/media/casper/USB_ccpeters/internship_thesis/data/chromosome positions/hg19_transcript_to_genename.txt"
+
+genome_bed <- import(genome_bed_file)
+snp_bed <- import(snp_bed_file)
+transcript_to_gene <- read.csv(transcript_to_gene_file, sep="\t")
 
 # FUNCTION DEFINTIONS FOR CALCULATIONS
 
@@ -125,7 +139,9 @@ symbol_to_ensembl <- function(geneset) {
   # convert the genenames to ensembl genes
   gene_list <- as.character(geneset)
   mart <- useMart(biomart = "ensembl", dataset = "hsapiens_gene_ensembl")
-  convertion_table <- getBM(attributes <- c("hgnc_symbol", "ensembl_gene_id"), filters = "hgnc_symbol", values = gene_list, bmHeader = T, mart = mart)
+  convertion_table <- getBM(attributes <- c("hgnc_symbol", "ensembl_gene_id"), 
+                            filters = "hgnc_symbol", values = gene_list, 
+                            bmHeader = TRUE, mart = mart)
   colnames(convertion_table) <- c("hgnc_symbol","ensembl_gene_id")
   convertion_table$ensembl_gene_id <- as.character(
     convertion_table$ensembl_gene_id)
@@ -165,7 +181,7 @@ enrichr_and_lncrna2goa <- function(geneset, convertion_table,
                                         "human", 
                                         "BP", 
                                         idtype = "ENSEMBL", 
-                                        verbose = T, 
+                                        verbose = TRUE, 
                                         id_select_vector = filter_vector, 
                                         id_translation_df = id_translation_df)
     gene_enrichments[[gene]] <- enrichment
@@ -222,7 +238,7 @@ enrichr_and_lncrna2goa <- function(geneset, convertion_table,
                     FALSE, FALSE) %in% 
       unlist(strsplit(convertion_table$`lncRNA2GOA Annotation`, ";")[i], 
              FALSE, FALSE)
-    convertion_table[i, "GO ratio"] <- length(boolvec[boolvec==T])
+    convertion_table[i, "GO ratio"] <- length(boolvec[boolvec==TRUE])
   }
   
   return(convertion_table)

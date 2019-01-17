@@ -263,7 +263,8 @@ NULL
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_pearson)
   enrichment_result <- .ambiguous_enrichment(args,
-                                             .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(
+                                               score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "pearson")
   return(enrichment_result)
 }
@@ -274,7 +275,8 @@ NULL
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_spearman)
   enrichment_result <- .ambiguous_enrichment(args,
-                                             .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(
+                                               score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "spearman")
   return(enrichment_result)
 }
@@ -285,7 +287,8 @@ NULL
   score_df <- .ambiguous_scorecalc(args, args$expression_data_sorted, 
                                    misc_kendall)
   enrichment_result <- .ambiguous_enrichment(args,
-                                             .ambiguous_score_rev_sort(score_df))
+                                             .ambiguous_score_rev_sort(
+                                               score_df))
   enrichment_result <- .ambiguous_method_origin(enrichment_result, "kendall")
   return(enrichment_result)
 }

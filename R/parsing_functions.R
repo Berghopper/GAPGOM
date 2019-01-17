@@ -219,9 +219,12 @@
   dtdata <- as.data.table(data)
   # GO from GO.db isn't actually used because the keyword is not evaluated.
   # this import is just to circumvent bioccheck
-  quantified_only <- dtdata[dtdata$ORIGID %in% as.data.table(list_top_genes)[[1]], .N, by=GO]
+  quantified_only <- dtdata[dtdata$ORIGID %in% 
+                              as.data.table(list_top_genes)[[1]], .N, by=GO]
   non_quantified_gos <- unique(data[!(data$GO %in% quantified_only$GO), ]$GO)
-  return(as.data.frame(rbind(quantified_only, list(non_quantified_gos, rep(0, length(non_quantified_gos))))))
+  return(as.data.frame(rbind(quantified_only, 
+                             list(non_quantified_gos, 
+                                  rep(0, length(non_quantified_gos))))))
 }
 
 #' GAPGOM internal - .term_id_to_ext_id()

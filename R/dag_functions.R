@@ -19,7 +19,7 @@ NULL
 
 #' Common Ancestor for two GOIDs
 #' @rdname dag_funcs
-.common_ancestors <- function(go_id1, go_id2, ontology, organism, go_annotation, 
+.common_ancestors <- function(go_id1, go_id2, ontology, organism, go_annotation,
   information_content) {
   root_count <- max(information_content[information_content != Inf])
   information_content["all"] = 0
