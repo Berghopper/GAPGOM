@@ -14,7 +14,9 @@ GAPGOM::example_score_dataframe for formatting.}
 
 \item{id_select_vector}{gene rowname(s) that you want to keep in the
 dataset. For example, let's say you need to only include protein coding
-genes. You then make a vector including only ids that are protein coding.}
+genes. You then make a vector including only ids that are protein coding.
+Most importantly, this is used in the GO term enrichment. Meaning that this
+vector should only contain genes that are annotated in the GO databases.}
 
 \item{id_translation_df}{dataframe that has translation between rowname,
 entrez id and GO ids (generated internally using GOSemSim+entrez ids).}

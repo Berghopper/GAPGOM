@@ -43,6 +43,8 @@
 #' @param id_select_vector gene rowname(s) that you want to keep in the
 #' dataset. For example, let's say you need to only include protein coding
 #' genes. You then make a vector including only ids that are protein coding.
+#' Most importantly, this is used in the GO term enrichment. Meaning that this
+#' vector should only contain genes that are annotated in the GO databases.
 #' @param id_translation_df df with translations between ID and GOID. col1 = ID,
 #' col2 = GOID.
 #' @param go_data from set_go_data function. A GoSemSim go_data object.
@@ -62,7 +64,7 @@
 #' 
 #' library(Biobase)
 #' 
-#' # keep everything that is a protein coding gene
+#' # keep everything that is a protein coding gene (for annotation)
 #' filter_vector <- pData(featureData(GAPGOM::expset))[(
 #' pData(featureData(GAPGOM::expset))$GeneType=="protein_coding"),]$GeneID
 #' # set gid and run.

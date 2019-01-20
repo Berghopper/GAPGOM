@@ -42,7 +42,7 @@ library(Biobase)
 
 ### Background
 
-Benchmarks are an important part of getting to know how fast algorithms perform and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are compared to others. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. 
+Benchmarks are an important part of getting to know how fast algorithms perform and what to expect. Thus, we will compare multiple example use cases to give an idea how fast the GAPGOM algorithms are. As well as try give an insight as to why certain algorithms have certain speeds. The profvis library will be used to determine the amount of time spent on each calculation as well as ram usage. **Since profvis can hugely impact performance depending on the specifics of the code and its timings, timings might not be accurate or be an accurate representation of real-time performance. It still does show the important relations between analyses however.**
 
 Because this package is mainly made for human gene research, this is the model organism that will be used for all testing here. The Biological Process or BP ontology will be used as the model ontology. Some internal function are used because they are needed for doing some of the operations required by base algorithsm/showing off the performance. Most of these results are based on random samples and shouldn't neccesarily be taken as-is/as a baseline. Instead, this benchmarking is more to give an idea about how well the processes scale.
 
@@ -212,9 +212,9 @@ DirectMap1G:    265289728 kB
 
 **All processes are singlecore.** (Some functions might be mutli-threadable however)
 
-## lncRNApred `expression_prediction`
+## lncRNA2GOA `expression_prediction`
 
-Since lncRNApred is based on expression values, we'll use the standard example that is included with the pacakge to make life easier. This algorithm should be linear depending on how many expression values you add. This will however not be shown because the actual calculations on the expression data are actually very fast. The main thing that slows down this algorithm is querying the GO terms and attaching them to the correct ID for the results.
+Since lncRNA2GOA is based on expression values, we'll use the standard example that is included with the pacakge to make life easier. This algorithm should be linear depending on how many expression values you add. This will however not be shown because the actual calculations on the expression data are actually very fast. The main thing that slows down this algorithm is querying the GO terms and attaching them to the correct ID for the results.
 
 ```{r, eval=FALSE}
 # Example with default dataset, take a look at the data documentation
@@ -240,10 +240,10 @@ mem <- max(p$x$message$prof$memalloc)
 ```
 ```{r}
 # laptop
-310
 # time
-124.91
+310
 # mem
+124.91
 # ---
 # server
 # time
@@ -454,6 +454,8 @@ p + stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1)
 
 As you can see, TopoICSim seems to scale reasonably well. The underlying algorithm should be exponential however. It is also visible that there's a certain "stepping" occuring. This is probably because genes share similar GO terms, which are stored temporarily as to prevent unnecesary calculations. However this prevention method loses it's grip the more genes you keep adding, especially unrelated/less related genes. This shows that the underlying curve is exponential. This is logical because the amount of calculations done is completely dependent on the list-lengths. The confidence interval between the two machines are shared in the beginning of the curve mostly, the curve is a bit more steep on the server because of lower single-core performance.
 
+To give you an idea of actual performance; the "genelist mode" example on the `topo_ic_sim_genes()` function takes roughly ~16 seconds (turn verbose to `TRUE` to see time taken in seconds). This is for a 5x5 genematrix put in the analysis.
+
 ```{r, fig.width=3, fig.height=3}
 mems_geneset_df <- data.frame(GAPGOM:::benchmarks$server_mems_genset, 
                           GAPGOM:::benchmarks$laptop_mems_genset, 
@@ -487,9 +489,11 @@ Although the speed can be reasonably determined for the algorithms, RAM is a bit
 
 Speed might vary hugely depending on the organism, ontology and geneset used. This is because, again, GO paths may differ drastically.
 
+Also, profvis' timings can be inaccurate, since it impacts performance hugely.
+
 ## Benchmarks
 
-In the following benchmark, lncRNApred will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNApred will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset (leave-one-out method). With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
+In the following benchmark, lncRNA2GOA will be tested. We will use the Glycolosis hallmark geneset together with the GSE63733 expression dataset to test how well lncRNA2GOA will perform. First, we only take a small selection of the geneset based on the most variance in the expression (otherwise calculations take too long). After this, we predict annotation of this subset for each of its members, using the full expressionset (leave-one-out method). With this prediction, we then compare the semantic similarity scores of the original genes vs the custom ones.
 
 ```{r, eval=FALSE}
 ## set stringsasfactors to false to ensure data is loaded properly.

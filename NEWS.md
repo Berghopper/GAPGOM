@@ -23,6 +23,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Basic user input checks.
 - Tests for checking precalculated matrices versions.
 - Package added to Bioconductor*
+- Extra script for potential addition in the future (chromosome position calculations. File is in inst folder: "chrom_pos.R")
 
 ### Changed
 
@@ -30,6 +31,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - How test results are stored -> they are now stored in a list instead of seperately.
 - Examples, tests and vignette calculations to make sure they don't last too long.
 - Readme, more verbose.
+- Vignettes/Documentation - typo fixes and general small improvements.
 
 ### Removed
 
@@ -43,6 +45,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Compliance with R CMD BiocCheck.
 - Dependency issues.
 - Download function of fantom data.
+- Fantom 5 functions
 
 ## [0.3.0 - Vignette Benchy] - 2018-11-22
 

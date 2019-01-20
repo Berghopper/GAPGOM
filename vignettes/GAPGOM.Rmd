@@ -226,14 +226,14 @@ pulls back the Euclidean metric on the surface of the sphere to the Fisher infor
 
 #### Scores + Enrichment
 
-The following example is an arbitrary use-case. Meaning that this is just an example and does not (necessarily) imply a certain question/real life use-case.
+The following example is an arbitrary use-case. Meaning that this is just an example and does not (necessarily) imply a certain question/real life use-case. `id_select_vector` represents a vector of gene ids that you'd want to use for annotation enrichment (if left empty, algorithm will use all available gene ids in the ExpressionSet).
 
 ```{r lncRNApred}
 # Example with default dataset, take a look at the data documentation
 # to fully grasp what's going on with the making of the filter etc. (Biobase 
 # ExpressionSet)
  
-# keep everything that is a protein coding gene
+# keep everything that is a protein coding gene (for annotation)
 filter_vector <- fData(GAPGOM::expset)[(
   fData(GAPGOM::expset)$GeneType=="protein_coding"),]$GeneID
 # set gid and run.
