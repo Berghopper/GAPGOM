@@ -3,7 +3,7 @@
 
 ## ORIGINAL DATA
 
-# link: https://tare.medisin.ntnu.no/pred_lncRNA/
+# link: https://tare.medisin.ntnu.no/pred_lncRNA/ based on lncRNA2Function: http://bio-annotation.cn/lncrna2function/
 
 # expression data containing fpkm expression values. fpkm is fragements per kilobase million. fragments means that is is for paired-end data.
 options(stringsAsFactors = FALSE)

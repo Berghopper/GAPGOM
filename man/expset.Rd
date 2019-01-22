@@ -11,19 +11,19 @@ pData(featureData(GAPGOM::expset))
 and expression values under;
 assayData(GAPGOM::expset)[["exprs"]]}
 \source{
-\url{https://tare.medisin.ntnu.no/pred_lncRNA/}
+\url{http://bio-annotation.cn/lncrna2function/}
 }
 \usage{
 expset
 }
 \description{
-An ExpressionSet from Bioconductor containing a subset from the 
+A Bioconductor ExpressionSet object containing a subset from the 
 lncRNA2Function data.[1]
-The original lncRNA2Function data sadly seems permanently unavailable,
-however, an intermediary selection of the dataset is still available.
-}
-\details{
-https://tare.medisin.ntnu.no/pred_lncRNA/
+Because the original lncRNA2Function data was unavailable for some time,
+this subset is selected with expression data from (this is based on the
+lncRNA2Function however): https://tare.medisin.ntnu.no/pred_lncRNA/ .
+The original lncRNA2Function data is now online on a new domain:
+http://bio-annotation.cn/lncrna2function/
 }
 \references{
 [1]. Jiang Q et al.: \strong{LncRNA2Function: a comprehensive 

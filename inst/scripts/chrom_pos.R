@@ -75,7 +75,7 @@ geneset_table <- data.frame(list(Position = c("17:46,805,705", "8:128,077,146",
 
 ## ORIGINAL lncRNA2GOA DATA
 
-# link: https://tare.medisin.ntnu.no/pred_lncRNA/
+# link: https://tare.medisin.ntnu.no/pred_lncRNA/ based on lncRNA2Function: http://bio-annotation.cn/lncrna2function/
 
 expression_vals <- '/run/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/lncRNA2function_data.txt'
 ensembl_to_go <- '/run/media/casper/USB_ccpeters/internship_thesis/data/rezvan_lncrna2function/EG2GO.txt'
