@@ -48,6 +48,7 @@
 #' @param id_translation_df df with translations between ID and GOID. col1 = ID,
 #' col2 = GOID.
 #' @param go_data from set_go_data function. A GoSemSim go_data object.
+#' @param random_cutoff random selection of correlated genes
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -86,7 +87,8 @@
 expression_prediction <- function(gene_id, expression_set, organism, ontology,
   enrichment_cutoff = 250, method = "combine", significance = 0.05,
   go_amount = 5, filter_pvals = FALSE, idtype = "ENTREZID", verbose = FALSE,
-  id_select_vector = NULL, id_translation_df = NULL, go_data = NULL) {
+  id_select_vector = NULL, id_translation_df = NULL, go_data = NULL, 
+  random_cutoff = FALSE) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
@@ -163,7 +165,8 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
     "enrichment_cutoff" = enrichment_cutoff,
     "significance" = significance,
     "go_amount" = go_amount,
-    "filter_pvals" = filter_pvals)
+    "filter_pvals" = filter_pvals,
+    "random_cutoff" = random_cutoff)
 
 
   # these functions calculate score between target expression of target gene
@@ -244,7 +247,8 @@ NULL
     args$enrichment_cutoff,
     args$significance,
     args$filter_pvals,
-    args$go_amount
+    args$go_amount,
+    random_cutoff = args$random_cutoff
   )
   return(enrichment_result)
 }

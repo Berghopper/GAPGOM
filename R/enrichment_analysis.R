@@ -40,6 +40,7 @@
 #' @param significance normalized p-values (fdr) that are below this number 
 #' will be kept. has to be a float/double between 0-1. Default is 0.05
 #' @param filter_pvals filters pvalues that are equal to 0 (Default=FALSE).
+#' @param random_cutoff random selection of correlated genes
 #'
 #' @return The resulting dataframe with prediction of similar GO terms.
 #' These are ordered with respect to FDR values. The following columns will be
@@ -57,7 +58,7 @@
 #' @keywords internal
 .enrichment_analysis <- function(ordered_score_df, id_select_vector, 
   id_translation_df, organism, ontology, enrichment_cutoff, significance,
-  filter_pvals, go_amount) {
+  filter_pvals, go_amount, random_cutoff = FALSE) {
   old <- options(stringsAsFactors = FALSE, warn=-1)
   on.exit(options(old), add = TRUE)
   # extracted_genes -> Extracted genes with correct gene ontology.
@@ -66,7 +67,11 @@
   extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
                                         id_select_vector), ]
   # List of top n (cutoff) genes (Ensembl ID)
-  list_top_genes <- ordered_score_df[c(seq_len(enrichment_cutoff)), 1]
+  if (random_cutoff) {
+    list_top_genes <- ordered_score_df[sample(nrow(ordered_score_df), enrichment_cutoff), 1]
+  } else {
+    list_top_genes <- ordered_score_df[c(seq_len(enrichment_cutoff)), 1] 
+  }
   
   # List of gene ontologies given the Extracted genes that are in the top
   # 250 genes of the score dataframe.  for each ensemble ID there are more

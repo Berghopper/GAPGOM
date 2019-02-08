@@ -8,7 +8,7 @@ expression_prediction(gene_id, expression_set, organism, ontology,
   enrichment_cutoff = 250, method = "combine", significance = 0.05,
   go_amount = 5, filter_pvals = FALSE, idtype = "ENTREZID",
   verbose = FALSE, id_select_vector = NULL, id_translation_df = NULL,
-  go_data = NULL)
+  go_data = NULL, random_cutoff = FALSE)
 }
 \arguments{
 \item{gene_id}{gene rowname to be compared to the other GO terms.}
@@ -63,6 +63,8 @@ vector should only contain genes that are annotated in the GO databases.}
 col2 = GOID.}
 
 \item{go_data}{from set_go_data function. A GoSemSim go_data object.}
+
+\item{random_cutoff}{random selection of correlated genes}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.

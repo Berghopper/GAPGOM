@@ -6,7 +6,7 @@
 \usage{
 .enrichment_analysis(ordered_score_df, id_select_vector, id_translation_df,
   organism, ontology, enrichment_cutoff, significance, filter_pvals,
-  go_amount)
+  go_amount, random_cutoff = FALSE)
 }
 \arguments{
 \item{ordered_score_df}{the score dataframe see documentation on
@@ -43,6 +43,8 @@ enriched in the enrichment analysis. (default is 250)}
 will be kept. has to be a float/double between 0-1. Default is 0.05}
 
 \item{filter_pvals}{filters pvalues that are equal to 0 (Default=FALSE).}
+
+\item{random_cutoff}{random selection of correlated genes}
 }
 \value{
 The resulting dataframe with prediction of similar GO terms.
