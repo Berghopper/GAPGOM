@@ -285,6 +285,20 @@
   return(ids)
 }
 
+#' GAPGOM internal - .organism_to_species_lib()
+#'
+#' This function is an internal function and should not be called by the user.
+#'
+#' Makes conversion of organism names to package names a little easier
+#'
+#' @section Notes:
+#' Internal function used in set_go_data().
+#'
+#' @param organism the desired organism
+#' 
+#' @return the lib name
+#'
+#' @keywords internal
 .organism_to_species_lib <- function(organism) {
   return(switch(tolower(organism), human = "org.Hs.eg.db",
            fly = "org.Dm.eg.db",
@@ -308,6 +322,21 @@
            message("Error, invalid organism; \"", organism , "\"!")))
 }
 
+#' GAPGOM internal - .get_package_version()
+#'
+#' This function is an internal function and should not be called by the user.
+#'
+#' Gets the version number of a package.
+#'
+#' @section Notes:
+#' Internal function used in checking precalculated values for topoicsim.
+#'
+#' @param pckg_name package name 
+#' 
+#' @return package version
+#'
+#' @importFrom utils installed.packages
+#' @keywords internal
 .get_package_version <- function(pckg_name) {
   inst_pckgs <- installed.packages()
   return(inst_pckgs[inst_pckgs[,"Package"] == pckg_name,"Version"])
