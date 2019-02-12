@@ -380,8 +380,8 @@
 #' list1 <- c("126133","221","218","216","8854","220","219","160428","224",
 #' "222","8659","501","64577","223","217","4329","10840","7915","5832")
 #' # ONLY A PART OF THE GENELIST IS USED BECAUSE OF R CHECK TIME CONTRAINTS
-#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:5], 
-#'                                                    list1[1:5])
+#' result <- GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:3], 
+#'                                                    list1[1:3])
 #'
 #' # with custom gene
 #' custom <- list(cus1=c("GO:0016787", "GO:0042802", "GO:0005524"))
