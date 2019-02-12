@@ -4,12 +4,15 @@
 \alias{fantom_load_raw}
 \title{GAPGOM - fantom_load_raw()}
 \usage{
-fantom_load_raw(filepath, verbose = FALSE)
+fantom_load_raw(filepath, verbose = FALSE, example = FALSE)
 }
 \arguments{
 \item{filepath}{filename of fantom5 file.}
 
 \item{verbose}{Switch to TRUE for extra messages. Default=FALSE}
+
+\item{example}{Boolean switch for R CMD Check (NOT MEANT TO BE TURNED ON FOR
+END-USERS).}
 }
 \value{
 The resulting datatable containing raw fantom5 data. (Most of the
@@ -24,5 +27,5 @@ data.frame object.
 }
 \examples{
 fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
-ft5 <- fantom_load_raw(fantom_file, verbose=TRUE)
+ft5 <- fantom_load_raw(fantom_file, verbose = TRUE, example = TRUE)
 }

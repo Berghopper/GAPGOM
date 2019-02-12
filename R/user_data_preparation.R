@@ -7,16 +7,18 @@
 #'
 #' @param filepath filename of fantom5 file.
 #' @param verbose Switch to TRUE for extra messages. Default=FALSE
+#' @param example Boolean switch for R CMD Check (NOT MEANT TO BE TURNED ON FOR
+#' END-USERS).
 #'
 #' @return The resulting datatable containing raw fantom5 data. (Most of the
 #' time very large!)
 #' 
 #' @examples 
 #' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
-#' ft5 <- fantom_load_raw(fantom_file, verbose=TRUE)
+#' ft5 <- fantom_load_raw(fantom_file, verbose = TRUE, example = TRUE)
 #' @importFrom data.table fread
 #' @export
-fantom_load_raw <- function(filepath, verbose = FALSE) {
+fantom_load_raw <- function(filepath, verbose = FALSE, example = FALSE) {
   old <- options(stringsAsFactors = FALSE)
   on.exit(options(old), add = TRUE)
   # first parse fantom column variables.
@@ -42,7 +44,11 @@ fantom_load_raw <- function(filepath, verbose = FALSE) {
   if (verbose) print("DONE")
   if (verbose) print("loading dataframe...")
   # load df
-  fan <- fread(filepath, skip=linecount, showProgress = verbose)
+  if (example) {
+    fan <- fread(filepath, skip=linecount, showProgress = verbose, nrows = 10)
+  } else {
+    fan <- fread(filepath, skip=linecount, showProgress = verbose)
+  }
   if (verbose) print("DONE")
   if (verbose) print("formatting column names...")
   # and touch up column names
@@ -78,7 +84,7 @@ fantom_load_raw <- function(filepath, verbose = FALSE) {
 #' 
 #' @examples 
 #' fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
-#' ft5 <- fantom_load_raw(fantom_file, verbose = TRUE)
+#' ft5 <- fantom_load_raw(fantom_file, verbose = TRUE, example = TRUE)
 #' expset <- fantom_to_expset(ft5, "mouse", verbose = TRUE)
 #' @importFrom Biobase ExpressionSet annotatedDataFrameFrom
 #' @importFrom methods new

@@ -34,6 +34,6 @@ This function only accepts the RLE normalized data!
 }
 \examples{
 fantom_file <- fantom_download(organism = "mouse", noprompt = TRUE)
-ft5 <- fantom_load_raw(fantom_file, verbose = TRUE)
+ft5 <- fantom_load_raw(fantom_file, verbose = TRUE, example = TRUE)
 expset <- fantom_to_expset(ft5, "mouse", verbose = TRUE)
 }
