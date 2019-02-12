@@ -19,12 +19,12 @@ testgenesettopo <- function() {
              "222","8659","501","64577","223","217","4329","10840","7915",
              "5832")
   return(
-    GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:5], list1[1:5],
+    GAPGOM::topo_ic_sim_genes("human", "MF", list1[1:3], list1[1:3],
                               use_precalculation = TRUE, 
                               progress_bar = FALSE)
   )
 }
 
 test_that("topoicsim geneset level", {
-  expect_equal(testgenesettopo(), gapgom_tests$maintopo_baseresult)
+  expect_equal(testgenesettopo(), gapgom_tests$maintopo_baseresult[1:3])
 })
