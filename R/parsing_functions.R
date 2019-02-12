@@ -306,4 +306,9 @@
            pig = "org.Ss.eg.db",
            xenopus = "org.Xl.eg.db",
            message("Error, invalid organism; \"", organism , "\"!")))
-  }
+}
+
+.get_package_version <- function(pckg_name) {
+  inst_pckgs <- installed.packages()
+  return(inst_pckgs[inst_pckgs[,"Package"] == pckg_name,"Version"])
+}

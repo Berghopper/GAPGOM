@@ -146,8 +146,8 @@
       
       if (organism == "human") {
         if (freq_go_pairs$
-            sessioninfo$otherPkgs$org.Hs.eg.db$Version != 
-            sessionInfo()$otherPkgs$org.Hs.eg.db$Version) {
+            sessioninfo$otherPkgs$org.Hs.eg.db$Version
+            != .get_package_version("org.Hs.eg.db")) {
           topoargs$use_precalculation <- FALSE
           message(sprintf(err_msg_both, "org.Hs.eg.db", "org.Hs.eg.db", 
                           freq_go_pairs$
@@ -155,8 +155,8 @@
         }
       } else {
         if (freq_go_pairs$
-            sessioninfo$otherPkgs$org.Mm.eg.db$Version != 
-            sessionInfo()$otherPkgs$org.Mm.eg.db$Version) {
+            sessioninfo$otherPkgs$org.Mm.eg.db$Version
+            != .get_package_version("org.Mm.eg.db")) {
           topoargs$use_precalculation <- FALSE
           message(sprintf(err_msg_both, "org.Mm.eg.db", "org.Mm.eg.db", 
                           freq_go_pairs$
