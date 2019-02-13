@@ -22,6 +22,10 @@ The prediction is done by comparing expression patterns between a query gene and
 
 For more info, read the package vignette after building and installing the package (This will later be available on Bioconductor).
 
+# Installation
+
+simply run `BiocManager::install("GAPGOM")` with Bioconductor version 3.9 or above.
+
 # Issues
 
 To let us help you better, please conform with the following rules so bug-squashing/issue tracking becomes easier and faster:
@@ -53,7 +57,7 @@ Note: list is subject to changes and is not necessarily definetive.
 - [x] Optimization and refactors of original algorithms.
 - [x] Adding benchmarks and discussion vignettes of both algorithms.
 - [x] Adding documentation and mostly comply with package conventions.
-- [] Become part of the Bioconductor repository.
+- [x] Become part of the Bioconductor repository.
 - [] Add geneset analysis for scoring expression similarities.
 - [] Add chromosomal distance correlations on top of regular scoring.
 - [] Along with the previously two mentioned GREAT-like features, include Enrichr into the pipeline.

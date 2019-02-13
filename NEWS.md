@@ -10,11 +10,10 @@ x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not 
 All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
 use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
 
-## [1.0.0 - Unreleased]
+## [1.0.0 - Bioconductor BBQ] - 2018-02-13
 
 ---
 
-### Planned changes/features (subject to changes) *=not yet implemented/finished
 
 ### Added
 
@@ -22,7 +21,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Extra tests.
 - Basic user input checks.
 - Tests for checking precalculated matrices versions.
-- Package added to Bioconductor*
+- Package added to Bioconductor
 - Extra script for potential addition in the future (chromosome position calculations. File is in inst folder: "chrom_pos.R")
 
 ### Changed
@@ -45,7 +44,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Compliance with R CMD BiocCheck.
 - Dependency issues.
 - Download function of fantom data.
-- Fantom 5 functions
+- Fantom 5 functions.
 
 ## [0.3.0 - Vignette Benchy] - 2018-11-22
 
