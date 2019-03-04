@@ -17,22 +17,22 @@ NULL
 
 #' @rdname misc_functions
 misc_pearson <- function(x, args) {
-  return(abs(cor(as.numeric(x), args$target_expression_data)))}
+  return(abs(cor(as.numeric(x), as.numeric(args$target_expression_data))))}
 
 #' @rdname misc_functions
 misc_sobolev <- function(x, args) {
-  return(sobolev_metric(as.numeric(x), args$target_expression_data))}
+  return(sobolev_metric(as.numeric(x), as.numeric(args$target_expression_data)))}
 
 #' @rdname misc_functions
 misc_fisher <- function(x, args) {
-  return(fisher_metric(as.numeric(x), args$target_expression_data))}
+  return(fisher_metric(as.numeric(x), as.numeric(args$target_expression_data)))}
 
 #' @rdname misc_functions
 misc_kendall <- function(x, args) {
-  return(abs(cor(as.numeric(x), args$target_expression_data, 
+  return(abs(cor(as.numeric(x), as.numeric(args$target_expression_data),
                  method = "kendall")))}
 
 #' @rdname misc_functions
 misc_spearman <- function(x, args) {
-  return(abs(cor(as.numeric(x), args$target_expression_data, 
+  return(abs(cor(as.numeric(x), as.numeric(args$target_expression_data),
                  method = "spearman")))}
