@@ -46,9 +46,9 @@ expression_semantic_scoring <- function(gene_id, expression_set,
   starttime <- Sys.time()
   
   # check inputs
-  if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &&
+  if (!(.check_ifclass(gene_id, "character", "gene_id", accept_null = FALSE) &
         .check_ifclass(expression_set, "ExpressionSet", "expression_set",
-                       accept_null = FALSE) &&
+                       accept_null = FALSE) &
         .check_method(method)
   )) {
     stop("Error: one or more arguments are faulty!")

@@ -77,7 +77,7 @@
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
   
-  if (dim(extracted_genes)[1] == 0 || dim(extracted_genes)[2] == 0) {
+  if (dim(extracted_genes)[1] == 0 | dim(extracted_genes)[2] == 0) {
     return(data.frame()) # return empty dataframe if there's no extracted genes.
   } 
   

@@ -67,10 +67,10 @@
 #' @keywords internal
 .set_values <- function(item1, item2, the_matrix, value) {
   # set opposite pair to the same value if it exists
-  if (item1 %in% rownames(the_matrix) && item2 %in% colnames(the_matrix)) {
+  if (item1 %in% rownames(the_matrix) & item2 %in% colnames(the_matrix)) {
     the_matrix[item1, item2] <- value
   }
-  if (item2 %in% rownames(the_matrix) && item1 %in% colnames(the_matrix)) {
+  if (item2 %in% rownames(the_matrix) & item1 %in% colnames(the_matrix)) {
     the_matrix[item2, item1] <- value 
   }
   return(the_matrix)
@@ -283,6 +283,41 @@
     ids <- rawid
   }
   return(ids)
+}
+
+.resolve_genes_unique_gos <- function(unique_pairs_genes, topoargs) {
+  all_gos1 <- c()
+  all_gos2 <- c()
+  for (i in seq_len(nrow(unique_pairs_genes))) {
+    pair <- unique_pairs_genes[i,]
+    gene1 <- pair[[1]]
+    gene2 <- pair[[2]]
+    # first check if gene is custom gene or not.
+    # gene1
+    if (gene1 %in% names(topoargs$custom_genes1)) {
+      gos1 <- topoargs$custom_genes1[[gene1]]
+    } else if (gene1 %in% names(topoargs$custom_genes2)) {
+      gos1 <- topoargs$custom_genes2[[gene1]]
+    } else {
+      gos1 <- as.character(topoargs$translation_to_goids[
+        topoargs$translation_to_goids$ID==gene1,]$GO)
+    }
+    
+    #gene2
+    if (gene2 %in% names(topoargs$custom_genes1)) {
+      gos2 <- topoargs$custom_genes1[[gene2]]
+    } else if (gene1 %in% names(topoargs$custom_genes2)) {
+      gos2 <- topoargs$custom_genes2[[gene2]]
+    } else {
+      gos2 <- as.character(topoargs$translation_to_goids[
+        topoargs$translation_to_goids$ID==gene2,]$GO)
+    }
+    all_gos1 <- c(all_gos1, gos1)
+    all_gos2 <- c(all_gos2, gos2)
+  }
+  all_go_pairs_df <- .unique_combos(unique(all_gos1), unique(all_gos2))
+  colnames(all_go_pairs_df) <- c("GO1", "GO2")
+  return(all_go_pairs_df)
 }
 
 #' GAPGOM internal - .organism_to_species_lib()

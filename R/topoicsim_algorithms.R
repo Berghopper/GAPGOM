@@ -146,12 +146,14 @@
   }
   
   # return NA if goids sums are both 0 (no goids available to measure)
-  if (sum(!is.na(gos1)) == 0 || sum(!is.na(gos2)) == 0) {
+  if (sum(!is.na(gos1)) == 0 | sum(!is.na(gos2)) == 0) {
     return(list(GeneSim = NA, 
                 AllGoPairs = topoargs$all_go_pairs))
   }
+  # prepare score matrix
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   
+  # get unique go pairs and loop through them.
   unique_pairs <- .unique_combos(gos1, gos2)
   if (topoargs$progress_bar) {
     pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
@@ -166,37 +168,8 @@
     if (topoargs$verbose) {
       message("Working on gopair; ", go1, ", ", go2)
     }
-    # if this is not the case (row is not present), then run topo_ic_sim 
-    # between 2 terms.
-    if (!is.na(topoargs$all_go_pairs[go1, go2])) {
-      # set already existing value.
-      scores <- .set_values(go1, go2, scores, topoargs$all_go_pairs[go1, go2])
-    } else if(topoargs$use_precalculation && 
-              go1 %in% colnames(topoargs$selected_freq_go_pairs) && 
-              go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
-      # set precalculated value.
-      scores <- .set_values(go1, go2, scores, 
-                            topoargs$selected_freq_go_pairs[go1, go2])
-      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
-                                           topoargs$selected_freq_go_pairs[
-                                             go1, go2])
-    } else {
-      score <-
-        .topo_ic_sim_titj(go1,
-                          go2,
-                          topoargs)
-      
-      if (topoargs$garbage_collection) {
-        # garbage collection (topo term algorithm uses a lot of ram) only done
-        # every 500th item/at end of loop
-        if ((i %% 500) == 0) {
-          gc()
-        }
-      }
-      scores <- .set_values(go1, go2, scores, score)
-      topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
-                                           score)
-    }
+    # grab gos out of all_gos (calculated before initialization)
+    scores <- .set_values(go1, go2, scores, topoargs$all_go_pairs[go1, go2])
   }
   if (topoargs$progress_bar) {
     cat("\n")
@@ -209,6 +182,8 @@
     return(list(GeneSim = NA,
            AllGoPairs = topoargs$all_go_pairs))
   }
+  # set all NA's to 0 for square root.
+  scores[is.na(scores)] <- 0
   scores <- sqrt(scores)
   m <- length(gos1)
   n <- length(gos2)
@@ -273,13 +248,9 @@
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
-    if (topoargs$progress_bar) {
-      pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
-    }
-    
-    ## ALL_GO_PAIRS UPDATE HERE ##
-    topoargs$all_go_pairs <- .all_go_similarities(unique_pairs, topoargs, drop=NULL)
-    ####
+    # if (topoargs$progress_bar) {
+    #   pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
+    # }
     
     # make a copy of topo arguments to turn off progressbar for genelevel
     topoargs_gen <- topoargs
@@ -287,9 +258,9 @@
     
     for (i in seq_len(nrow(unique_pairs))) {
       pair <- unique_pairs[i,]
-      if (topoargs$progress_bar) {
-        setTxtProgressBar(pb, i)
-      }
+      # if (topoargs$progress_bar) {
+      #   setTxtProgressBar(pb, i)
+      # }
       gene1 <- pair[[1]]
       gene2 <- pair[[2]]
       genepair_result <- .topo_ic_sim_g1g2(gene1,
@@ -402,23 +373,23 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
   on.exit(options(old), add = TRUE)
   starttime <- Sys.time()
   
-  if (!(.check_organism(organism) &&
-        .check_ontology(ontology) &&
-        .check_ifclass(genes1, "character", "genes1") &&
-        .check_ifclass(genes2, "character", "genes2") &&
-        .check_custom_gene(custom_genes1) &&
-        .check_custom_gene(custom_genes2) &&
-        .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &&
+  if (!(.check_organism(organism) &
+        .check_ontology(ontology) &
+        .check_ifclass(genes1, "character", "genes1") &
+        .check_ifclass(genes2, "character", "genes2") &
+        .check_custom_gene(custom_genes1) &
+        .check_custom_gene(custom_genes2) &
+        .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &
         .check_ifclass(progress_bar, "logical", "progress_bar", 
-                       accept_null = FALSE) &&
+                       accept_null = FALSE) &
         .check_ifclass(garbage_collection, "logical", "garbage_collection", 
-                       accept_null = FALSE) &&
+                       accept_null = FALSE) &
         .check_ifclass(use_precalculation, "logical", "use_precalculation", 
-                       accept_null = FALSE) &&
-        .check_ifclass(drop, "character", "drop") &&
-        (.check_ifclass(all_go_pairs, "matrix", all_go_pairs) ||
-         .check_ifclass(all_go_pairs, "Matrix", all_go_pairs)) &&
-        .check_ifclass(go_data, "GOSemSimDATA", "go_data") &&
+                       accept_null = FALSE) &
+        .check_ifclass(drop, "character", "drop") &
+        (.check_ifclass(all_go_pairs, "matrix", all_go_pairs) |
+         .check_ifclass(all_go_pairs, "Matrix", all_go_pairs)) &
+        .check_ifclass(go_data, "GOSemSimDATA", "go_data") &
         .check_idtype(idtype, organism))
   ) {
     stop("Error: one or more arguments are faulty!")
@@ -428,7 +399,6 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     custom_genes1, custom_genes2, drop, verbose, progress_bar, 
     use_precalculation, garbage_collection, all_go_pairs, keytype = idtype,
     go_data = go_data)
-  assign("topoargs", topoargs, .GlobalEnv)
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
@@ -437,7 +407,17 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     genes2 <- c(names(topoargs$custom_genes2), genes2)
   }
   
-  if ((length(genes1)) == 1 &&
+  # resolve unique genes and gos, also update all_go_pairs
+  
+  # only loop through necesary vectors (unique pairs)
+  unique_pairs_genes <- .unique_combos(genes1, genes2)
+  unique_pairs_gos <- .resolve_genes_unique_gos(unique_pairs_genes, topoargs)
+  # update all_go_terms with .all_go_similarities, this function resolves only
+  # necessary go's and skips one's that are 0 or not relevant.
+  topoargs$all_go_pairs <- .all_go_similarities(unique_pairs_gos, topoargs, 
+    drop=NULL, verbose=verbose)
+  
+  if ((length(genes1)) == 1 &
       (length(genes2)) == 1) {
     # single gene topo
     if (verbose) {
@@ -500,10 +480,10 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
 #' @importFrom RBGL sp.between
 #' @export
 topo_ic_sim_term <- function(organism, ontology, go1, go2, go_data = NULL) {
-  if (!(.check_organism(organism) &&
-        .check_ontology(ontology) &&
-        .check_ifclass(go1, "character", "go1", accept_null = FALSE) &&
-        .check_ifclass(go2, "character", "go2", accept_null = FALSE) &&
+  if (!(.check_organism(organism) &
+        .check_ontology(ontology) &
+        .check_ifclass(go1, "character", "go1", accept_null = FALSE) &
+        .check_ifclass(go2, "character", "go2", accept_null = FALSE) &
         .check_ifclass(go_data, "GOSemSimDATA", "go_data"))
   ) {
     stop("Error: one or more arguments are faulty!")

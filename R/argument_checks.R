@@ -24,7 +24,7 @@ NULL
 #' @importFrom methods is
 .check_ifclass <- function(obj, classname, objname, accept_null = TRUE) {
   if(!is(obj, classname)) {
-    if(is.null(obj) && accept_null) {
+    if(is.null(obj) & accept_null) {
       return(TRUE)
     }
     message("\"", objname, "\" should be a \"", classname, "\"!")

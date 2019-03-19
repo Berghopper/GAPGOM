@@ -5,6 +5,9 @@
 \alias{.common_ancestors}
 \alias{.set_edge_weight}
 \alias{.longest_path}
+\alias{.get_last_common_ancestors}
+\alias{.get_short_path_info}
+\alias{.all_go_similarities}
 \title{GAPGOM internal - Directed acyclic graph (DAG) mathematical functions/DAG 
 navigation functions.}
 \usage{
@@ -15,6 +18,15 @@ navigation functions.}
 
 .longest_path(weighted_dag, go_annotation, last_common_ancestor, root,
   information_content)
+
+.get_last_common_ancestors(go1, go2, ontology, organism, root,
+  go_annotation, information_content)
+
+.get_short_path_info(go_id, last_common_ancestor, weighted_graph,
+  go_annotation, information_content)
+
+.all_go_similarities(all_go_pairs_df, topoargs, drop = NULL,
+  verbose = FALSE)
 }
 \value{
 output is different on a case-to-case basis

@@ -79,7 +79,7 @@ NULL
   # make weighted subgraph (Subgraph from a disjunctive common ancestor to root)
   weighted_subgraph <- subGraph(c(get(last_common_ancestor, go_annotation), 
     last_common_ancestor), weighted_dag)
-  weighted_subgraph <- .set_edge_weight(weighted_subgraph, topoargs$IC)
+  weighted_subgraph <- .set_edge_weight(weighted_subgraph, information_content)
   tsg <- topological.sort(weighted_subgraph)
   # Set root path attributes Root distance
   V(weighted_subgraph)[tsg[1]]$rdist <- 0
@@ -115,111 +115,171 @@ NULL
   return(lpl * L)
 }
 
-
-.filter_last_common_ancestors<-function(go1, go2, ontology, organism, root, GA, information_content){
-  COMANC <- .common_ancestors(go1, go2, ontology, organism, GA, information_content)
-  L=length(COMANC)
-  if (length(COMANC)!=0 & !is.na(COMANC)) return(data.frame(GO1=rep(go1, L), GO2=rep(go2, L), LCA=COMANC))
+#' Gets last common ancestors in a special data.frame format.
+#' @rdname dag_funcs
+.get_last_common_ancestors<-function(go1, go2, ontology, organism, root, 
+  go_annotation, information_content) {
+  common_ancestors <- .common_ancestors(go1, go2, ontology, organism,
+    go_annotation, information_content)
+  len_comanc <- length(common_ancestors)
+  if (len_comanc != 0 & !is.na(common_ancestors)) {
+    return(data.table(GO1=rep(go1, len_comanc), GO2=rep(go2, len_comanc), 
+      LCA=common_ancestors)) # only return df if there's results. otherwise NA.
+  }
 }
 
-.get_short_path_info <- function(GOID, LCA, WDG, GA, information_content){
-  sg <- subGraph(c(get(GOID, GA), GOID), WDG)
+#' Gets short path info between a go_id and its last common ancestor.
+#' @importFrom igraph igraph.from.graphNEL
+#' @importFrom graph ftM2graphNEL subGraph
+#' @importFrom AnnotationDbi get
+#' @importFrom RBGL sp.between
+#' @rdname dag_funcs
+.get_short_path_info <- function(go_id, last_common_ancestor, weighted_graph, 
+  go_annotation, information_content) {
+  sg <- subGraph(c(get(go_id, go_annotation), go_id), weighted_graph)
   sg <- .set_edge_weight(sg, information_content)
   sg <- igraph.to.graphNEL(sg)
-  sp <- sp.between(sg, GOID, LCA)
+  sp <- sp.between(sg, go_id, last_common_ancestor)
   ic_sp <- sp[[1]]$length
   length_sp <- length(sp[[1]]$path_detail)
-  ICGO <- information_content[GOID]
-  if (!is.na(ICGO) & ICGO!=0) ic_sp <- ic_sp+(1/(2*ICGO))
-  return(data.frame(ICGo_x=ic_sp, LGo_x=length_sp))
+  ic_go <- information_content[go_id]
+  if (!is.na(ic_go) & ic_go != 0) {
+    # return only if ic is present/not 0.
+    ic_sp <- ic_sp+(1/(2*ic_go))
+    return(data.frame(ICGo_x=ic_sp, LGo_x=length_sp))
+  } 
 }
 
-.all_go_similarities <-function(unique_pairs_genes, topoargs, drop=NULL) {
-  organism <- topoargs$organism
-  ontology <- topoargs$ontology
+#' Evaluaties all_go_pairs_df and calculates topoicsim scores for only
+#' necessary go's. E.g. go pairs that will be 0 will be skipped.
+#' @importFrom utils txtProgressBar
+#' @importFrom plyr summarise
+#' @importFrom dplyr group_by
+#' @importFrom data.table as.data.table rbindlist
+#' @rdname dag_funcs
+.all_go_similarities <-function(all_go_pairs_df, topoargs, drop=NULL, 
+  verbose=FALSE) {
+  #####
+  # else if(topoargs$use_precalculation &
+  #         go1 %in% colnames(topoargs$selected_freq_go_pairs) &
+  #         go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
+  #   # set precalculated value.
+  #   scores <- .set_values(go1, go2, scores, 
+  #                         topoargs$selected_freq_go_pairs[go1, go2])
+  #   topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
+  #                                        topoargs$selected_freq_go_pairs[
+  #                                          go1, go2])
+  # }
+  #### ADD PRECALCULATED MATRIX SOMEHOW
   
-  GA <- topoargs$go_annotation
-  WDG <- topoargs$weighted_dag
-  root <- topoargs$root
-  # make wa dataframe of all pairs GOs that needed to compute
-  All_pairs_GOs <- data.frame(GO1="go2", GO2="go2", stringsAsFactors=F)
-  goAnno <- topoargs$go_annotation
+  # Filter out go's present in pre-calculation (ADD)
   
-  all_gos1 <- c()
-  all_gos2 <- c()
-  for (i in seq_len(nrow(unique_pairs_genes))) {
-    pair <- unique_pairs_genes[i,]
-    gene1 <- pair[[1]]
-    gene2 <- pair[[2]]
-    gos1 <- as.character(topoargs$translation_to_goids[
-      topoargs$translation_to_goids$ID==gene1,]$GO)
-    gos2 <- as.character(topoargs$translation_to_goids[
-      topoargs$translation_to_goids$ID==gene2,]$GO)
-    all_gos1 <- c(all_gos1, gos1)
-    all_gos2 <- c(all_gos2, gos2)
+  if (verbose) {message("Started calculating all go's.")}
+  if (verbose) {message("Resolving all common ancestors...")}
+  if (topoargs$progress_bar) {
+    pb <- txtProgressBar(min = 0, max = nrow(all_go_pairs_df), style = 3)
   }
-  All_pairs_GOs <- .unique_combos(all_gos1, all_gos2)
-  colnames(All_pairs_GOs)<-c("GO1", "GO2")
+  # find last common ancestors (lcas)
+  all_lcas <- apply(all_go_pairs_df[, c(1, 2)], 1, function(go_pair) {
+    if (topoargs$progress_bar) {
+      setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+    }
+    return(.get_last_common_ancestors(go_pair[1], go_pair[2], topoargs$ontology, 
+       topoargs$organism, root, topoargs$go_annotation, topoargs$IC))
+    })
+  if (verbose) {message("\nDone!")}
+  # adding lcas to go pairs
+  if (is.null(all_lcas)) {
+    go_lca_pairs <- as.data.frame(cbind("GO1", "GO2", "LCA"))  
+  }
+  else {
+    go_lca_pairs <- as.data.frame(rbindlist(all_lcas)) 
+  }
   
-  # find last common ancestors (LCAs)
-  ALL_LCAs <- apply(All_pairs_GOs[,c(1,2)], 1, function(x) .filter_last_common_ancestors(x[1], x[2], ontology, organism, root, GA, topoargs$IC))
-  # adding LCAs to go pairs
-  if(is.null(ALL_LCAs)) Pairs_GOs_LCAs <- as.data.frame(cbind("go1","go2","lca"))
-  else Pairs_GOs_LCAs <- as.data.frame(bind_rows(ALL_LCAs))
+  # remove "all" and "root" as lca's
+  go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != "all"),]
+  go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != topoargs$root),]
+  colnames(go_lca_pairs)<-c("GO", "GO", "LCA")
+  # convert "go1 go2 -> LCA" to "go1->LCA and go2->LCA" so we get all unique
+  # go - lca pairs
+  gos_lcas <- rbind(go_lca_pairs[,c(1, 3)], go_lca_pairs[,c(2, 3)])
+  colnames(go_lca_pairs)<-c("GO1", "GO2", "LCA")
+  gos_lcas <- unique(gos_lcas)
   
-  # remove "all" and "root" as LCAs
-  Pairs_GOs_LCAs<-Pairs_GOs_LCAs[(Pairs_GOs_LCAs[,3]!="all"),]
-  Pairs_GOs_LCAs<-Pairs_GOs_LCAs[(Pairs_GOs_LCAs[,3]!=root),]
-  colnames(Pairs_GOs_LCAs)<-c("GO", "GO", "LCA")
-  # convert "go1 go2->LCA" to "go1->LCA and go2->LCA"
-  GOs_LCAs <- rbind(Pairs_GOs_LCAs[,c(1,3)], Pairs_GOs_LCAs[,c(2,3)])
-  colnames(Pairs_GOs_LCAs)<-c("GO1", "GO2", "LCA")
-  GOs_LCAs <- unique(GOs_LCAs)
+  # prepare lca's
+  lcas <- unique(gos_lcas[,2])
+  lcas <- lcas[!is.na(lcas)]
+  lcas <- lcas[lcas!="all"]
+  lcas <- lcas[lcas!=topoargs$root]
   
-  # compute scores (IC and short pathe length) for "go1->LCA and go2->LCA"
-  Pairs_GOs_LCAs_Scores_ <- apply(GOs_LCAs[,c(1,2)], 1, function(x) {
-    InfoGO <- .get_short_path_info(x[1], x[2], WDG, GA, topoargs$IC)
+  if (verbose) {message("Calculating short paths...")}
+  if (topoargs$progress_bar) {
+    pb <- txtProgressBar(min = 0, max = nrow(gos_lcas), style = 3)
+  }
+  # compute scores (IC and short path length) for "go1->LCA and go2->LCA"
+  go_lca_pair_scores_list <- apply(gos_lcas[,c(1, 2)], 1, function(go_terms) {
+    InfoGO <- .get_short_path_info(go_terms[1], go_terms[2], 
+      topoargs$weighted_dag, topoargs$go_annotation, topoargs$IC)
     ic_sp <- as.numeric(InfoGO$ICGo_x) 
     length_sp <- as.numeric(InfoGO$LGo_x)
-    return(data.frame(GO1=x[1], LCA=x[2], ICSP=ic_sp, LengthSP=length_sp))
+    if (topoargs$progress_bar) {
+      setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+    }
+    return(data.table(GO1=go_terms[1], LCA=go_terms[2], ICSP=ic_sp, 
+      LengthSP=length_sp))
   })
-  Pairs_GOs_LCAs_Scores <- do.call("rbind", Pairs_GOs_LCAs_Scores_)
-  # LCAs
-  LCAs<-unique(GOs_LCAs[,2])
-  LCAs<-LCAs[!is.na(LCAs)]
-  LCAs<-LCAs[LCAs!="all"]
-  LCAs<-LCAs[LCAs!=root]
-  # compute scores for longest path from LCAs to root
-  LCAs_Scores_ <- sapply(LCAs, function(x) {
-    wLP_x_root <- .longest_path(topoargs$weighted_dag, topoargs$go_annotation, x, topoargs$root, topoargs$IC)
-    return(cbind(LCA=x, wLP=wLP_x_root))
-  })
-  LCAs_Scores <- as.data.frame(cbind(LCA=LCAs_Scores_[1,], wLP=LCAs_Scores_[2,]),stringsAsFactors=F)
-  rownames(LCAs_Scores)<-c()
+  # bind results
+  go_lca_pair_scores <- rbindlist(go_lca_pair_scores_list)
   
+  if (verbose) {message("\nCalculating long paths...")}
+  
+  if (topoargs$progress_bar) {
+    pb <- txtProgressBar(min = 0, max = length(lcas), style = 3)
+  }
+  # compute scores for longest path from lcas to root
+  lca_scores_list <- sapply(lcas, function(lca) {
+    wLP_x_root <- .longest_path(topoargs$weighted_dag, topoargs$go_annotation,
+      lca, topoargs$root, topoargs$IC)
+    if (topoargs$progress_bar) {
+      setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+    }
+    return(cbind(LCA=lca, wLP=wLP_x_root))
+  })
+  lca_scores <- as.data.frame(cbind(LCA=lca_scores_list[1,], 
+                                    wLP=lca_scores_list[2,]))
+  rownames(lca_scores) <- c()
+  
+  if (verbose) {message("\nMerging...")}
   # merge scores
-  AA<-merge(Pairs_GOs_LCAs, Pairs_GOs_LCAs_Scores, by = NULL,by.x = c("GO1", "LCA"), by.y = c("GO1", "LCA"))
-  AA1<-merge(AA, Pairs_GOs_LCAs_Scores, by = NULL,by.x = c("GO2", "LCA"), by.y = c("GO1", "LCA"))
-  AA2<-merge(AA1, LCAs_Scores, by = NULL,by.x = "LCA", by.y = "LCA")
+  merged_scores <- merge(go_lca_pairs, go_lca_pair_scores, by = NULL, 
+    by.x = c("GO1", "LCA"), by.y = c("GO1", "LCA"))
+  merged_scores <- merge(merged_scores, go_lca_pair_scores, by = NULL, 
+    by.x = c("GO2", "LCA"), by.y = c("GO1", "LCA"))
+  merged_scores <- merge(merged_scores, lca_scores, by = NULL, by.x = "LCA", 
+    by.y = "LCA")
   
   # compute final scores
-  wSP_ti_tj_x <- (AA2$ICSP.x + AA2$ICSP.y)*(AA2$LengthSP.x + AA2$LengthSP.y - 2)
-  D_ti_tj <- wSP_ti_tj_x/as.numeric(AA2$wLP)
+  wSP_ti_tj_x <- (merged_scores$ICSP.x + merged_scores$ICSP.y)*
+    (merged_scores$LengthSP.x + merged_scores$LengthSP.y - 2)
+  D_ti_tj <- wSP_ti_tj_x/as.numeric(merged_scores$wLP)
   
-  AA4<-data.frame(GO1=AA2$GO1, GO2=AA2$GO2, D=D_ti_tj)
-  AA5 <- summarise(group_by(AA4, GO1, GO2), a_min=min(D))
-  Sim_ti_tj <- round(1-(atan(AA5$a_min)/(pi/2)), 3)
-  AA5 <- data.frame(AA5, Sim_ti_tj)
+  AA4 <- data.frame(GO1=merged_scores$GO1, GO2=merged_scores$GO2,
+    Distance=D_ti_tj)
+  AA5 <- summarise(group_by(AA4, GO1, GO2), a_min=min(Distance))
+  sim_ti_tj <- round(1-(atan(AA5$a_min)/(pi/2)), 3)
+  AA5 <- data.frame(AA5, sim_ti_tj)
   AA5 <- AA5[,-3]
+  assign("AA5", AA5, .GlobalEnv) ## LEFT OFF HERE subscript out of bounds
   # AA5 = final dataframe as "GO1 GO2 Sim_ti_tj"
   # update all go pairs
-  #assign("AA5", AA5, .GlobalEnv)
   for (i in seq_len(nrow(AA5))) {
     row <- AA5[i,]
     go1 <- row[[1]]
     go2 <- row[[2]]
     topo_score <- row[[3]]
-    topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, topo_score)
+    topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
+      topo_score)
   }
+  if (verbose) {message("Done!")}
   return(topoargs$all_go_pairs)
 }

@@ -74,6 +74,7 @@
   topoargs$custom_genes2 <- custom_genes2
   topoargs$use_precalculation <- use_precalculation
   
+  
   if (verbose) {
     message("Preparing topoICSim data...")
     message("Preparing term data.")
@@ -94,6 +95,7 @@
     }
     topoargs$IC <- go_data@IC
   }
+  
   # xx_parents --> weighted dag
   if (is.null(topoargs$weighted_dag)) {
     xx_parents <- switch(ontology, MF = toTable(GOMFPARENTS),
@@ -123,7 +125,7 @@
     topoargs$garbage_collection <- garbage_collection
     
     # precalculated values
-    if (is.null(topoargs$selected_freq_go_pairs) && 
+    if (is.null(topoargs$selected_freq_go_pairs) &
         topoargs$use_precalculation) {
       if (keytype == "ENTREZID") {
         tmpkeytype <- "ENTREZ"
@@ -171,8 +173,8 @@
         go_data <- set_go_data(organism = organism, ontology = ontology, 
                                computeIC = FALSE, keytype = keytype)
       }
-      if ((is.null(gene_list1) && is.null(custom_genes1)) || 
-          (is.null(gene_list2) && is.null(custom_genes2))) {
+      if ((is.null(gene_list1) & is.null(custom_genes1)) |
+          (is.null(gene_list2) & is.null(custom_genes2))) {
         topoargs$translation_to_goids <- NULL
       } else {
         topoargs$translation_to_goids <- .go_ids_lookup(unique(c(gene_list1, 
