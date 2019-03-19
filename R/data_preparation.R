@@ -25,7 +25,8 @@
 #' @param gene_list1 The first gene vector of gene IDs. Note; THIS IS NOT THE
 #' ENSEMBLID. Instead use the gene ID adopted by NCBI.
 #' @param gene_list2 Same type as gene_list1, will be compared to gene_list1.
-#' @param drop vector of GOID you want to exclude from the analysis.
+#' @param drop vector of evidences in go data structure you want to
+#' skip (see set_go_data).
 #' @param verbose set to true for more informative/elaborate output.
 #' @param progress_bar Whether to show the progress of the calculation 
 #' (default = FALSE)

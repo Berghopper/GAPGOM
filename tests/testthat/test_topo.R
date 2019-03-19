@@ -8,7 +8,7 @@ test_that("topoicsim term level", {
 })
 
 test_that("topoicsim gene level", {
-  skip("R cmd check time constraints")
+  #skip("R cmd check time constraints")
   expect_equal(GAPGOM::topo_ic_sim_genes("human", "MF", "218", "501",
                                          use_precalculation = FALSE,
                                          drop=NULL, progress_bar = FALSE),
@@ -27,6 +27,6 @@ testgenesettopo <- function() {
 }
 
 test_that("topoicsim geneset level", {
-  skip("R cmd check time constraints")
+  #skip("R cmd check time constraints")
   expect_equal(testgenesettopo(), gapgom_tests$maintopo_baseresult)
 })

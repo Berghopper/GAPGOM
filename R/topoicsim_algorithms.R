@@ -59,12 +59,9 @@
                                      CC = GOCCCHILDREN[[x]])
       if (x != "all" & x != topoargs$root & !is.na(x) &
         length(intersect(immediate_children_x, common_ancestors)) == 0) {
-        # Subgraph from a disjunctive common ancestor to root
-        sglca <- subGraph(c(get(x, topoargs$go_annotation), x), 
-                          topoargs$weighted_dag)
-        sglca <- .set_edge_weight(sglca, topoargs$IC)
         
-        wLP_x_root <- .longest_path(sglca, x, topoargs$root, topoargs$IC)
+        wLP_x_root <- .longest_path(topoargs$weighted_dag, 
+          topoargs$go_annotation, x, topoargs$root, topoargs$IC)
         
         sp1 <- sp.between(sg1, go_id1, x)
         ic_sp1 <- sp1[[1]]$length
@@ -156,7 +153,6 @@
   scores <- .prepare_score_matrix_topoicsim(gos1, gos2)
   
   unique_pairs <- .unique_combos(gos1, gos2)
-  
   if (topoargs$progress_bar) {
     pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
   } 
@@ -281,6 +277,10 @@
       pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
     }
     
+    ## ALL_GO_PAIRS UPDATE HERE ##
+    topoargs$all_go_pairs <- .all_go_similarities(unique_pairs, topoargs, drop=NULL)
+    ####
+    
     # make a copy of topo arguments to turn off progressbar for genelevel
     topoargs_gen <- topoargs
     topoargs_gen$progress_bar <- FALSE
@@ -350,7 +350,8 @@
 #' Only available for human, mouse with ids entrez/ensembl. Default is False
 #' because this is the safest and most accurate option. Every update of org.Db
 #' libraries makes this matrix outdated, so use at your own risk.
-#' @param drop vector of GOID you want to exclude from the analysis.
+#' @param drop vector of evidences in go data structure you want to
+#' skip (see set_go_data).
 #' @param all_go_pairs dataframe of GO Term pairs with a column
 #' representing similarity between the two. You can add the dataframe from
 #' previous runs to improve performance (only works if the last result has
@@ -423,20 +424,11 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     stop("Error: one or more arguments are faulty!")
   }
   # if everything is ok, start preparing...
-  topoargs <- .prepare_variables_topoicsim(organism, 
-                                           ontology, 
-                                           genes1, 
-                                           genes2, 
-                                           custom_genes1,
-                                           custom_genes2,
-                                           drop,
-                                           verbose,
-                                           progress_bar, 
-                                           use_precalculation,
-                                           garbage_collection, 
-                                           all_go_pairs, 
-                                           keytype = idtype,
-                                           go_data = go_data)
+  topoargs <- .prepare_variables_topoicsim(organism, ontology, genes1, genes2, 
+    custom_genes1, custom_genes2, drop, verbose, progress_bar, 
+    use_precalculation, garbage_collection, all_go_pairs, keytype = idtype,
+    go_data = go_data)
+  assign("topoargs", topoargs, .GlobalEnv)
   # append gene_lists with custom genes if neccesary
   if(!is.null(topoargs$custom_genes1)) {
     genes1 <- c(names(topoargs$custom_genes1), genes1)
@@ -507,8 +499,7 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
 #' @importFrom AnnotationDbi get
 #' @importFrom RBGL sp.between
 #' @export
-topo_ic_sim_term <- function(organism, ontology, go1, go2,
-  go_data = NULL) {
+topo_ic_sim_term <- function(organism, ontology, go1, go2, go_data = NULL) {
   if (!(.check_organism(organism) &&
         .check_ontology(ontology) &&
         .check_ifclass(go1, "character", "go1", accept_null = FALSE) &&

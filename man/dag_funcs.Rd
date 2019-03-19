@@ -13,7 +13,7 @@ navigation functions.}
 
 .set_edge_weight(sub_graph, information_content)
 
-.longest_path(weighted_subgraph, last_common_ancestor, root,
+.longest_path(weighted_dag, go_annotation, last_common_ancestor, root,
   information_content)
 }
 \value{

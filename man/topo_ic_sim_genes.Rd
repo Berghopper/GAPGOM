@@ -51,7 +51,8 @@ Only available for human, mouse with ids entrez/ensembl. Default is False
 because this is the safest and most accurate option. Every update of org.Db
 libraries makes this matrix outdated, so use at your own risk.}
 
-\item{drop}{vector of GOID you want to exclude from the analysis.}
+\item{drop}{vector of evidences in go data structure you want to
+skip (see set_go_data).}
 
 \item{all_go_pairs}{dataframe of GO Term pairs with a column
 representing similarity between the two. You can add the dataframe from

@@ -32,7 +32,8 @@ ENSEMBLID. Instead use the gene ID adopted by NCBI.}
 
 \item{gene_list2}{Same type as gene_list1, will be compared to gene_list1.}
 
-\item{drop}{vector of GOID you want to exclude from the analysis.}
+\item{drop}{vector of evidences in go data structure you want to
+skip (see set_go_data).}
 
 \item{verbose}{set to true for more informative/elaborate output.}
 
