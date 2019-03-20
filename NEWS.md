@@ -26,6 +26,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 
 ### Changed
 
+- The way TopoICSim is calculated for genes/genelists, skipping certain unnecessary calculations, improving performance greatly.
 - `apply` functions.
 - How test results are stored -> they are now stored in a list instead of seperately.
 - Examples, tests and vignette calculations to make sure they don't last too long.

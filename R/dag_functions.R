@@ -122,7 +122,7 @@ NULL
   common_ancestors <- .common_ancestors(go1, go2, ontology, organism,
     go_annotation, information_content)
   len_comanc <- length(common_ancestors)
-  if (len_comanc != 0 & !is.na(common_ancestors)) {
+  if (len_comanc != 0 & all(!is.na(common_ancestors))) {
     return(data.table(GO1=rep(go1, len_comanc), GO2=rep(go2, len_comanc), 
       LCA=common_ancestors)) # only return df if there's results. otherwise NA.
   }
@@ -152,12 +152,17 @@ NULL
 
 #' Evaluaties all_go_pairs_df and calculates topoicsim scores for only
 #' necessary go's. E.g. go pairs that will be 0 will be skipped.
-#' @importFrom utils txtProgressBar
+#' @importFrom utils txtProgressBar getTxtProgressBar setTxtProgressBar
 #' @importFrom dplyr summarise group_by
 #' @importFrom data.table as.data.table rbindlist
 #' @rdname dag_funcs
 .all_go_similarities <-function(all_go_pairs_df, topoargs, drop=NULL, 
   verbose=FALSE) {
+  # set internal df refrences to null to appease R CMD check
+  GO1 <- NULL
+  GO2 <- NULL
+  Distance <- NULL
+  
   if (verbose) {message("Started calculating all go's.")}
   
   # Filter out go's present in pre-calculation or ones already present in
@@ -198,7 +203,7 @@ NULL
       setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
     }
     return(.get_last_common_ancestors(go_pair[1], go_pair[2], topoargs$ontology, 
-       topoargs$organism, root, topoargs$go_annotation, topoargs$IC))
+       topoargs$organism, topoargs$root, topoargs$go_annotation, topoargs$IC))
     })
   # adding lcas to go pairs
   if (is.null(all_lcas)) {
@@ -278,10 +283,10 @@ NULL
   
   go_distance_df <- data.frame(GO1=merged_scores$GO1, GO2=merged_scores$GO2,
     Distance=D_ti_tj)
-  go_similarity_df <- summarise(group_by(go_distance_df, GO1, GO2), a_min=min(Distance))
+  go_similarity_df <- summarise(group_by(go_distance_df, GO1, GO2), 
+    a_min=min(Distance))
   sim_ti_tj <- round(1-(atan(go_similarity_df$a_min)/(pi/2)), 3)
   go_similarity_df <- data.frame(go_similarity_df, sim_ti_tj)
-  assign("go_similarity_df", go_similarity_df, .GlobalEnv)
   go_similarity_df <- go_similarity_df[,-3]
   
   # AA5 = final dataframe as "GO1 GO2 Sim_ti_tj"
