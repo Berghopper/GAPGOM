@@ -60,7 +60,9 @@ Most importantly, this is used in the GO term enrichment. Meaning that this
 vector should only contain genes that are annotated in the GO databases.}
 
 \item{id_translation_df}{df with translations between ID and GOID. col1 = ID,
-col2 = GOID.}
+col2 = GOID. (this may be generated with ".generate_translation_df()" but 
+this is not officially supported. It might be useful for running anylyses on
+the same expressionset because it improves performance.)}
 
 \item{go_data}{from set_go_data function. A GoSemSim go_data object.}
 }

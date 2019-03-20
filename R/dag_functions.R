@@ -25,16 +25,16 @@ NULL
   information_content["all"] = 0
   p1 <- information_content[go_id1]/root_count
   p2 <- information_content[go_id2]/root_count
-  if (is.na(p1) || is.na(p2))
+  if (is.na(p1) | is.na(p2))
     return(NA)
-  if (p1 == 0 || p2 == 0)
+  if (p1 == 0 | p2 == 0)
     return(NA)
 
   ancestor1 <- unlist(go_annotation[[go_id1]], FALSE, FALSE)
   ancestor2 <- unlist(go_annotation[[go_id2]], FALSE, FALSE)
   # always intersect all GOIDs, even if they are the same.
-  common_ancestor <- intersect(ancestor1, ancestor2)
-  return(common_ancestor)
+  common_ancestors <- intersect(ancestor1, ancestor2)
+  return(common_ancestors)
 }
 
 #' Weighting subgraphs to get shortest and longest paths. Weighting edges is 
@@ -153,30 +153,43 @@ NULL
 #' Evaluaties all_go_pairs_df and calculates topoicsim scores for only
 #' necessary go's. E.g. go pairs that will be 0 will be skipped.
 #' @importFrom utils txtProgressBar
-#' @importFrom plyr summarise
-#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise group_by
 #' @importFrom data.table as.data.table rbindlist
 #' @rdname dag_funcs
 .all_go_similarities <-function(all_go_pairs_df, topoargs, drop=NULL, 
   verbose=FALSE) {
-  #####
-  # else if(topoargs$use_precalculation &
-  #         go1 %in% colnames(topoargs$selected_freq_go_pairs) &
-  #         go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
-  #   # set precalculated value.
-  #   scores <- .set_values(go1, go2, scores, 
-  #                         topoargs$selected_freq_go_pairs[go1, go2])
-  #   topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
-  #                                        topoargs$selected_freq_go_pairs[
-  #                                          go1, go2])
-  # }
-  #### ADD PRECALCULATED MATRIX SOMEHOW
-  
-  # Filter out go's present in pre-calculation (ADD)
-  
   if (verbose) {message("Started calculating all go's.")}
-  if (verbose) {message("Resolving all common ancestors...")}
+  
+  # Filter out go's present in pre-calculation or ones already present in
+  # all_go_pairs (happens if user has specified it).
+  if (verbose) {message("Filtering out precalculated values...")}
+  removal_rows <- c()
+  for (i in seq_len(nrow(all_go_pairs_df))) {
+    pair <- all_go_pairs_df[i,]
+    go1 <- pair[[1]]
+    go2 <- pair[[2]]
+    if (!is.na(topoargs$all_go_pairs[go1, go2])) {
+      removal_rows <- c(removal_rows, i)
+    } else if (!is.na(topoargs$all_go_pairs[go2, go1])) {
+      removal_rows <- c(removal_rows, i)
+    } else if (topoargs$use_precalculation) {
+      if (go1 %in% colnames(topoargs$selected_freq_go_pairs) &
+        go2 %in% colnames(topoargs$selected_freq_go_pairs)) {
+        # set precalculated value.
+        topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs,
+          topoargs$selected_freq_go_pairs[go1, go2])
+        # set row for removal.
+        removal_rows <- c(removal_rows, i)
+      }
+    }
+  }
+  # filter out gos (if necessary)
+  if (!is.null(removal_rows)) {
+    all_go_pairs_df <- as.data.frame(all_go_pairs_df)[-removal_rows,]
+  }
+  # set progress bar
   if (topoargs$progress_bar) {
+    message("Resolving all common ancestors...")
     pb <- txtProgressBar(min = 0, max = nrow(all_go_pairs_df), style = 3)
   }
   # find last common ancestors (lcas)
@@ -187,7 +200,6 @@ NULL
     return(.get_last_common_ancestors(go_pair[1], go_pair[2], topoargs$ontology, 
        topoargs$organism, root, topoargs$go_annotation, topoargs$IC))
     })
-  if (verbose) {message("\nDone!")}
   # adding lcas to go pairs
   if (is.null(all_lcas)) {
     go_lca_pairs <- as.data.frame(cbind("GO1", "GO2", "LCA"))  
@@ -212,8 +224,9 @@ NULL
   lcas <- lcas[lcas!="all"]
   lcas <- lcas[lcas!=topoargs$root]
   
-  if (verbose) {message("Calculating short paths...")}
   if (topoargs$progress_bar) {
+    message("\nDone!")
+    message("Calculating short paths...")
     pb <- txtProgressBar(min = 0, max = nrow(gos_lcas), style = 3)
   }
   # compute scores (IC and short path length) for "go1->LCA and go2->LCA"
@@ -231,9 +244,9 @@ NULL
   # bind results
   go_lca_pair_scores <- rbindlist(go_lca_pair_scores_list)
   
-  if (verbose) {message("\nCalculating long paths...")}
-  
   if (topoargs$progress_bar) {
+    message("\nDone!")
+    message("Calculating long paths...")
     pb <- txtProgressBar(min = 0, max = length(lcas), style = 3)
   }
   # compute scores for longest path from lcas to root
@@ -249,7 +262,7 @@ NULL
                                     wLP=lca_scores_list[2,]))
   rownames(lca_scores) <- c()
   
-  if (verbose) {message("\nMerging...")}
+  if (topoargs$progress_bar) {message("\nMerging...")}
   # merge scores
   merged_scores <- merge(go_lca_pairs, go_lca_pair_scores, by = NULL, 
     by.x = c("GO1", "LCA"), by.y = c("GO1", "LCA"))
@@ -263,17 +276,18 @@ NULL
     (merged_scores$LengthSP.x + merged_scores$LengthSP.y - 2)
   D_ti_tj <- wSP_ti_tj_x/as.numeric(merged_scores$wLP)
   
-  AA4 <- data.frame(GO1=merged_scores$GO1, GO2=merged_scores$GO2,
+  go_distance_df <- data.frame(GO1=merged_scores$GO1, GO2=merged_scores$GO2,
     Distance=D_ti_tj)
-  AA5 <- summarise(group_by(AA4, GO1, GO2), a_min=min(Distance))
-  sim_ti_tj <- round(1-(atan(AA5$a_min)/(pi/2)), 3)
-  AA5 <- data.frame(AA5, sim_ti_tj)
-  AA5 <- AA5[,-3]
-  assign("AA5", AA5, .GlobalEnv) ## LEFT OFF HERE subscript out of bounds
+  go_similarity_df <- summarise(group_by(go_distance_df, GO1, GO2), a_min=min(Distance))
+  sim_ti_tj <- round(1-(atan(go_similarity_df$a_min)/(pi/2)), 3)
+  go_similarity_df <- data.frame(go_similarity_df, sim_ti_tj)
+  assign("go_similarity_df", go_similarity_df, .GlobalEnv)
+  go_similarity_df <- go_similarity_df[,-3]
+  
   # AA5 = final dataframe as "GO1 GO2 Sim_ti_tj"
   # update all go pairs
-  for (i in seq_len(nrow(AA5))) {
-    row <- AA5[i,]
+  for (i in seq_len(nrow(go_similarity_df))) {
+    row <- go_similarity_df[i,]
     go1 <- row[[1]]
     go2 <- row[[2]]
     topo_score <- row[[3]]

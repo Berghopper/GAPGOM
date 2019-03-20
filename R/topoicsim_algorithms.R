@@ -155,14 +155,8 @@
   
   # get unique go pairs and loop through them.
   unique_pairs <- .unique_combos(gos1, gos2)
-  if (topoargs$progress_bar) {
-    pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
-  } 
   for (i in seq_len(nrow(unique_pairs))) {
     pair <- unique_pairs[i,]
-    if (topoargs$progress_bar) {
-      setTxtProgressBar(pb, i)
-    }
     go1 <- pair[[1]]
     go2 <- pair[[2]]
     if (topoargs$verbose) {
@@ -248,19 +242,12 @@
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
-    # if (topoargs$progress_bar) {
-    #   pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
-    # }
-    
     # make a copy of topo arguments to turn off progressbar for genelevel
     topoargs_gen <- topoargs
     topoargs_gen$progress_bar <- FALSE
     
     for (i in seq_len(nrow(unique_pairs))) {
       pair <- unique_pairs[i,]
-      # if (topoargs$progress_bar) {
-      #   setTxtProgressBar(pb, i)
-      # }
       gene1 <- pair[[1]]
       gene2 <- pair[[2]]
       genepair_result <- .topo_ic_sim_g1g2(gene1,
@@ -408,10 +395,16 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
   }
   
   # resolve unique genes and gos, also update all_go_pairs
-  
   # only loop through necesary vectors (unique pairs)
   unique_pairs_genes <- .unique_combos(genes1, genes2)
   unique_pairs_gos <- .resolve_genes_unique_gos(unique_pairs_genes, topoargs)
+  # last check before calculating...
+  if (!.check_ifclass(unique_pairs_gos, "data.table", "unique_pairs_gos", 
+                     accept_null = FALSE) |
+      nrow(unique_pairs_gos) == 0) {
+    message("NO GO PAIRS FOUND! (using correct keytype?)")
+    return(NULL)
+  }
   # update all_go_terms with .all_go_similarities, this function resolves only
   # necessary go's and skips one's that are 0 or not relevant.
   topoargs$all_go_pairs <- .all_go_similarities(unique_pairs_gos, topoargs, 

@@ -285,6 +285,21 @@
   return(ids)
 }
 
+#' GAPGOM internal - .resolve_genes_unique_gos()
+#'
+#' This function is an internal function and should not be called by the user.
+#'
+#' Resolves all unique go pairs given unique gene pairs.
+#'
+#' @section Notes:
+#' Internal function used in topo_ic_sim_genes().
+#'
+#' @param unique_pairs_genes data.table with unique pairs of gene combinations.
+#' @param topoargs topoicsim args, see data_prep
+#' 
+#' @return return a data.table with all unique go combination pairs.
+#' 
+#' @keywords internal
 .resolve_genes_unique_gos <- function(unique_pairs_genes, topoargs) {
   all_gos1 <- c()
   all_gos2 <- c()
