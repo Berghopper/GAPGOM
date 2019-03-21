@@ -21,8 +21,6 @@
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
 #'
-#' @importFrom GO.db GOMFCHILDREN GOBPCHILDREN GOCCCHILDREN GOMFPARENTS
-#' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
 #' @importFrom igraph igraph.from.graphNEL
 #' @importFrom graph ftM2graphNEL subGraph
 #' @importFrom AnnotationDbi get
@@ -54,9 +52,9 @@
     D_ti_tj_x <- lapply(common_ancestors, function(x) {
       # To identify all disjunctive common ancestors
       immediate_children_x <- switch(topoargs$ontology,
-                                     MF = GOMFCHILDREN[[x]],
-                                     BP = GOBPCHILDREN[[x]],
-                                     CC = GOCCCHILDREN[[x]])
+                                     MF = topoargs$GOMFCHILDREN[[x]],
+                                     BP = topoargs$GOBPCHILDREN[[x]],
+                                     CC = topoargs$GOCCCHILDREN[[x]])
       if (x != "all" & x != topoargs$root & !is.na(x) &
         length(intersect(immediate_children_x, common_ancestors)) == 0) {
         
@@ -123,7 +121,7 @@
 .topo_ic_sim_g1g2 <- function(gene1, gene2, topoargs) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
   on.exit(options(old), add = TRUE)
-  if (topoargs$verbose) {
+  if (topoargs$debug) {
     message("\nWorking on genepair; ", gene1, ", ", gene2)
   }
   # get goids for both genes
@@ -159,7 +157,7 @@
     pair <- unique_pairs[i,]
     go1 <- pair[[1]]
     go2 <- pair[[2]]
-    if (topoargs$verbose) {
+    if (topoargs$debug) {
       message("Working on gopair; ", go1, ", ", go2)
     }
     # grab gos out of all_gos (calculated before initialization)
@@ -298,6 +296,7 @@
 #' of GO terms.
 #' @param custom_genes2 same as custom_genes1 but added to second gene list.
 #' @param verbose set to true for more informative/elaborate output.
+#' @param debug verbosity for debugging.
 #' @param progress_bar Whether to show the progress of the calculation 
 #' (default = FALSE)
 #' @param garbage_collection whether to do R garbage collection. This is
@@ -353,7 +352,7 @@
 #'
 #' @export
 topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
-  custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE,
+  custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE, debug = FALSE,
   progress_bar = TRUE, garbage_collection = FALSE, use_precalculation = FALSE,
   drop = NULL, all_go_pairs = NULL, idtype = "ENTREZID", go_data = NULL) {
   old <- options(stringsAsFactors = FALSE, warn = -1)
@@ -367,6 +366,7 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
         .check_custom_gene(custom_genes1) &
         .check_custom_gene(custom_genes2) &
         .check_ifclass(verbose, "logical", "verbose", accept_null = FALSE) &
+        .check_ifclass(debug, "logical", "debug", accept_null = FALSE) &
         .check_ifclass(progress_bar, "logical", "progress_bar", 
                        accept_null = FALSE) &
         .check_ifclass(garbage_collection, "logical", "garbage_collection", 
@@ -383,7 +383,7 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
   }
   # if everything is ok, start preparing...
   topoargs <- .prepare_variables_topoicsim(organism, ontology, genes1, genes2, 
-    custom_genes1, custom_genes2, drop, verbose, progress_bar, 
+    custom_genes1, custom_genes2, drop, verbose, debug, progress_bar, 
     use_precalculation, garbage_collection, all_go_pairs, keytype = idtype,
     go_data = go_data)
   # append gene_lists with custom genes if neccesary
@@ -465,12 +465,6 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
 #' similarity measure based on gene ontology.} \emph{BMC Bioinformatics} 2016,
 #' \strong{17}(1):296)
 #'
-#' @importFrom GO.db GOMFCHILDREN GOBPCHILDREN GOCCCHILDREN GOMFPARENTS
-#' GOBPPARENTS GOCCPARENTS GOMFANCESTOR GOBPANCESTOR GOCCANCESTOR
-#' @importFrom igraph igraph.from.graphNEL
-#' @importFrom graph ftM2graphNEL subGraph
-#' @importFrom AnnotationDbi get
-#' @importFrom RBGL sp.between
 #' @export
 topo_ic_sim_term <- function(organism, ontology, go1, go2, go_data = NULL) {
   if (!(.check_organism(organism) &

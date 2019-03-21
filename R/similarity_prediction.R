@@ -83,6 +83,7 @@
 #'                                         filter_pvals = TRUE
 #' )
 #' @importFrom plyr ddply .
+#' @importFrom fastmatch %fin%
 #' @import Biobase
 #' @export
 expression_prediction <- function(gene_id, expression_set, organism, ontology,
@@ -127,7 +128,7 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
   
   id_select_vector
   expression_data_sorted <- assayData(expression_set)[["exprs"]][(rownames(
-    assayData(expression_set)[["exprs"]]) %in% id_select_vector),]
+    assayData(expression_set)[["exprs"]]) %fin% id_select_vector),]
   expression_data_sorted_ids <- rownames(expression_data_sorted)
   
   # check if expression_data sorted has anything at all

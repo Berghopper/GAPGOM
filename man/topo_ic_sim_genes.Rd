@@ -6,7 +6,7 @@
 \usage{
 topo_ic_sim_genes(organism, ontology, genes1, genes2,
   custom_genes1 = NULL, custom_genes2 = NULL, verbose = FALSE,
-  progress_bar = TRUE, garbage_collection = FALSE,
+  debug = FALSE, progress_bar = TRUE, garbage_collection = FALSE,
   use_precalculation = FALSE, drop = NULL, all_go_pairs = NULL,
   idtype = "ENTREZID", go_data = NULL)
 }
@@ -37,6 +37,8 @@ of GO terms.}
 \item{custom_genes2}{same as custom_genes1 but added to second gene list.}
 
 \item{verbose}{set to true for more informative/elaborate output.}
+
+\item{debug}{verbosity for debugging.}
 
 \item{progress_bar}{Whether to show the progress of the calculation 
 (default = FALSE)}

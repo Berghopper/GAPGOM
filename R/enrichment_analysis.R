@@ -54,6 +54,7 @@
 #' @import AnnotationDbi
 #' @importFrom plyr ddply .
 #' @importFrom stats phyper p.adjust na.omit
+#' @importFrom fastmatch %fin%
 #' @keywords internal
 .enrichment_analysis <- function(ordered_score_df, id_select_vector, 
   id_translation_df, organism, ontology, enrichment_cutoff, significance,
@@ -63,7 +64,7 @@
   # extracted_genes -> Extracted genes with correct gene ontology.
   # now filter EG to also extract only genes that are present in user defined
   # expression data rows
-  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %in%
+  extracted_genes <- id_translation_df[(id_translation_df$ORIGID %fin%
                                         id_select_vector), ]
   # List of top n (cutoff) genes (Ensembl ID)
   list_top_genes <- ordered_score_df[c(seq_len(enrichment_cutoff)), 1]
@@ -72,7 +73,7 @@
   # 250 genes of the score dataframe.  for each ensemble ID there are more
   # gene ontologies.
   # list_of_gos, n genes but all unqiue corresponding GO IDs
-  list_of_gos <- extracted_genes[(extracted_genes$ORIGID %in%
+  list_of_gos <- extracted_genes[(extracted_genes$ORIGID %fin%
                                     list_top_genes),]$GO
   list_of_gos <- unique(list_of_gos)
   list_of_gos <- list_of_gos[which(!is.na(list_of_gos))]
@@ -88,7 +89,7 @@
 
   # Filter the quantification to only have the top genes where the go ID
   # corresponds
-  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$GO %in%
+  qterm_id_to_ext_id <- term_id_to_ext_id[(term_id_to_ext_id$GO %fin%
                                               list_of_gos), ]
   # now order qterm so go's correspond later
   qterm_id_to_ext_id <- qterm_id_to_ext_id[order(qterm_id_to_ext_id$GO),]
@@ -101,7 +102,7 @@
                                                     list_top_genes)
   # After this, filter it for existing Gene ontologies within the top GOs
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[(
-      quantified_ext_id_to_term_id[, 1] %in% list_of_gos), ]
+      quantified_ext_id_to_term_id[, 1] %fin% list_of_gos), ]
   # now order the thing so go's correspond with others
   quantified_ext_id_to_term_id <- quantified_ext_id_to_term_id[
     order(quantified_ext_id_to_term_id$GO), 2]

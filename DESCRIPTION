@@ -1,7 +1,7 @@
 Package: GAPGOM
 Type: Package
 Title: GAPGOM (novel Gene Annotation Prediction and other GO Metrics)
-Version: 0.99.29
+Version: 0.99.30
 Authors@R: c(
     person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
     person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
@@ -15,6 +15,7 @@ Imports:
   utils,
   methods,
   Matrix,
+  fastmatch,
   plyr,
   dplyr,
   magrittr,

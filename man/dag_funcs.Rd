@@ -7,6 +7,7 @@
 \alias{.longest_path}
 \alias{.get_last_common_ancestors}
 \alias{.get_short_path_info}
+\alias{.find_disjunctive_lcas}
 \alias{.all_go_similarities}
 \title{GAPGOM internal - Directed acyclic graph (DAG) mathematical functions/DAG 
 navigation functions.}
@@ -24,6 +25,8 @@ navigation functions.}
 
 .get_short_path_info(go_id, last_common_ancestor, weighted_graph,
   go_annotation, information_content)
+
+.find_disjunctive_lcas(lcas, topoargs)
 
 .all_go_similarities(all_go_pairs_df, topoargs, drop = NULL,
   verbose = FALSE)

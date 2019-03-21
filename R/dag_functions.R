@@ -150,9 +150,29 @@ NULL
   } 
 }
 
+#' Evaluaties disjunctive common ancestors for a particular common ancestor.
+#' @importFrom utils txtProgressBar getTxtProgressBar setTxtProgressBar
+#' @importFrom dplyr summarise group_by
+#' @importFrom data.table as.data.table rbindlist
+#' @rdname dag_funcs
+.find_disjunctive_lcas <- function(lcas, topoargs){
+  disjunctive_lcas <- c()
+  for (lca in lcas) {
+    immediate_children_x <- switch(topoargs$ontology, 
+      MF = topoargs$GOMFCHILDREN[[lca]],
+      BP = topoargs$GOBPCHILDREN[[lca]],
+      CC = topoargs$GOCCCHILDREN[[lca]])
+    if(length(intersect(immediate_children_x, lcas)) == 0) {
+      disjunctive_lcas <- c(disjunctive_lcas, lca)
+    } 
+  }
+  return(disjunctive_lcas)
+}
+
 #' Evaluaties all_go_pairs_df and calculates topoicsim scores for only
 #' necessary go's. E.g. go pairs that will be 0 will be skipped.
 #' @importFrom utils txtProgressBar getTxtProgressBar setTxtProgressBar
+#' @importFrom plyr ddply
 #' @importFrom dplyr summarise group_by
 #' @importFrom data.table as.data.table rbindlist
 #' @rdname dag_funcs
@@ -194,7 +214,7 @@ NULL
   }
   # set progress bar
   if (topoargs$progress_bar) {
-    message("Resolving all common ancestors...")
+    message("Resolving common ancestors...")
     pb <- txtProgressBar(min = 0, max = nrow(all_go_pairs_df), style = 3)
   }
   # find last common ancestors (lcas)
@@ -216,6 +236,22 @@ NULL
   # remove "all" and "root" as lca's
   go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != "all"),]
   go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != topoargs$root),]
+  # set progress bar
+  if (topoargs$progress_bar) {
+    message("\nDone!")
+    message("Resolving disjunctive common ancestors...")
+    pb <- txtProgressBar(min = 0, max = # grab amount of dplyr rows.
+      nrow(ddply(go_lca_pairs, .(GO1, GO2), function(x) {return("row")})),
+      style = 3)
+  }
+  # resolve disjunctive common ancestors too.
+  go_lca_pairs <- ddply(go_lca_pairs, .(GO1, GO2), function(x) {
+    if (topoargs$progress_bar) {
+      setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+    }
+    lcas <- x$LCA
+    return(x[(lcas %in% .find_disjunctive_lcas(lcas, topoargs)),])
+  })
   colnames(go_lca_pairs)<-c("GO", "GO", "LCA")
   # convert "go1 go2 -> LCA" to "go1->LCA and go2->LCA" so we get all unique
   # go - lca pairs
@@ -267,7 +303,7 @@ NULL
                                     wLP=lca_scores_list[2,]))
   rownames(lca_scores) <- c()
   
-  if (topoargs$progress_bar) {message("\nMerging...")}
+  if (topoargs$progress_bar) {message("\nMerging into all_go_pairs...")}
   # merge scores
   merged_scores <- merge(go_lca_pairs, go_lca_pair_scores, by = NULL, 
     by.x = c("GO1", "LCA"), by.y = c("GO1", "LCA"))

@@ -63,16 +63,24 @@
 #' @keywords internal
 .prepare_variables_topoicsim <- function(organism, ontology, gene_list1 = NULL, 
   gene_list2 = NULL, custom_genes1 = NULL, custom_genes2 = NULL, drop = NULL,
-  verbose = FALSE, progress_bar = NULL, use_precalculation = TRUE,
-  garbage_collection = NULL, all_go_pairs = NULL, topoargs = list(),
-  term_only = FALSE, keytype = "ENTREZID", go_data = NULL) {
+  verbose = FALSE, debug = FALSE, progress_bar = NULL, 
+  use_precalculation = TRUE, garbage_collection = NULL, all_go_pairs = NULL, 
+  topoargs = list(), term_only = FALSE, keytype = "ENTREZID", go_data = NULL) {
   # first get term arguments
   topoargs$organism <- organism
   topoargs$ontology <- ontology
   topoargs$verbose <- verbose
+  topoargs$debug <- debug
   topoargs$custom_genes1 <- custom_genes1
   topoargs$custom_genes2 <- custom_genes2
   topoargs$use_precalculation <- use_precalculation
+  # prepare go.db lookup environments
+  topoargs$GOMFANCESTOR <- list2env(as.list(GOMFANCESTOR))
+  topoargs$GOBPANCESTOR <- list2env(as.list(GOBPANCESTOR))
+  topoargs$GOCCANCESTOR <- list2env(as.list(GOCCANCESTOR))
+  topoargs$GOMFCHILDREN <- list2env(as.list(GOMFCHILDREN))
+  topoargs$GOBPCHILDREN <- list2env(as.list(GOBPCHILDREN))
+  topoargs$GOCCCHILDREN <- list2env(as.list(GOCCCHILDREN))
   
   
   if (verbose) {
@@ -106,9 +114,9 @@
   # go_annotation
   if (is.null(topoargs$go_annotation)) {
     topoargs$go_annotation <- switch(ontology, 
-                                     MF = GOMFANCESTOR, 
-                                     BP = GOBPANCESTOR,
-                                     CC = GOCCANCESTOR)
+                                     MF = topoargs$GOMFANCESTOR, 
+                                     BP = topoargs$GOBPANCESTOR,
+                                     CC = topoargs$GOCCANCESTOR)
   }
   # root
   if (is.null(topoargs$root)) {
@@ -301,6 +309,7 @@ set_go_data <- function(organism, ontology, computeIC = TRUE,
 #' 
 #' @return The score matrix with names and NA's.
 #' @importFrom Matrix Matrix
+#' @importFrom fastmatch %fin%
 #' @keywords internal
 .prepare_score_matrix_topoicsim <- function(vec1, vec2, sparse = FALSE, 
   old_scores = FALSE) {
@@ -321,15 +330,15 @@ set_go_data <- function(organism, ontology, computeIC = TRUE,
     ### Add old scores (only intersecting)
     
     # first check which rownames/colnames intersect
-    intersecting_rn <- rownames(old_scores)[rownames(old_scores) %in%
+    intersecting_rn <- rownames(old_scores)[rownames(old_scores) %fin%
                                               rownames(score_matrix)]
     intersecting_cn <- colnames(old_scores)[colnames(old_scores)
-                                            %in% colnames(score_matrix)]
+                                            %fin% colnames(score_matrix)]
     # also do this for the transposed old score matrix (to get all intersecting
     # pairs)
-    intersecting_rn_t <- rownames(t(old_scores))[rownames(t(old_scores)) %in%
+    intersecting_rn_t <- rownames(t(old_scores))[rownames(t(old_scores)) %fin%
                                                    rownames(score_matrix)]
-    intersecting_cn_t <- colnames(t(old_scores))[colnames(t(old_scores)) %in%
+    intersecting_cn_t <- colnames(t(old_scores))[colnames(t(old_scores)) %fin%
                                                    colnames(score_matrix)]
     # set values
     score_matrix[intersecting_rn, intersecting_cn] <- old_scores[
@@ -352,10 +361,12 @@ set_go_data <- function(organism, ontology, computeIC = TRUE,
 #' @param score_matrix score matrix for topoclsim
 #' 
 #' @return Same matrix with correct sets set to 1.
+#' 
+#' @importFrom fastmatch fmatch
 #' @keywords internal
 .set_identical_items <- function(score_matrix) {
   # set all matching names of matrix to 1 (Same genes).
-  matched_by_row <- match(rownames(score_matrix), colnames(score_matrix))
+  matched_by_row <- fmatch(rownames(score_matrix), colnames(score_matrix))
   for (row in which(!is.na(matched_by_row))) {
     col <- matched_by_row[row]
     score_matrix[row, col] <- 1.0

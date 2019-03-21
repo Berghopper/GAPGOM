@@ -64,13 +64,14 @@
 #' @param value value to be set
 #' 
 #' @return return the matrix with newly set items.
+#' @importFrom fastmatch %fin%
 #' @keywords internal
 .set_values <- function(item1, item2, the_matrix, value) {
   # set opposite pair to the same value if it exists
-  if (item1 %in% rownames(the_matrix) & item2 %in% colnames(the_matrix)) {
+  if (item1 %in% rownames(the_matrix) & item2 %fin% colnames(the_matrix)) {
     the_matrix[item1, item2] <- value
   }
-  if (item2 %in% rownames(the_matrix) & item1 %in% colnames(the_matrix)) {
+  if (item2 %in% rownames(the_matrix) & item1 %fin% colnames(the_matrix)) {
     the_matrix[item2, item1] <- value 
   }
   return(the_matrix)
@@ -110,6 +111,7 @@
 #' 
 #' @import data.table
 #' @importFrom Biobase featureData pData assayData
+#' @importFrom fastmatch %fin%
 #' @keywords internal
 .generate_translation_df <- function(expression_set, organism, ontology, 
   keytype, verbose = FALSE, go_data = NULL) {
@@ -131,12 +133,12 @@
                      .entrezraw_to_entrez)
   all_keys <- unique(unlist(all_keys, FALSE, FALSE))
   # grab correct go data
-  go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %in% 
+  go_gene_anno <- unique(go_gene_anno[go_gene_anno[[1]] %fin% 
                                         all_keys,])
   # keep track of row to properly bind main ID
   rowtracker <- 0
   passed_ids <- list()
-  id_go_df <- data.frame()
+  id_go_dfs <- list()
   
   for (i in seq_len(nrow(pData(featureData(expression_set))))) {
     rawid <- as.character(pData(featureData(expression_set))[i, keys_col])
@@ -144,7 +146,7 @@
     # test if id has already occurred earlier
     goids <- passed_ids[[rawid]]
     if (is.null(goids)) {
-      goids <- go_gene_anno[go_gene_anno[[1]] %in% 
+      goids <- go_gene_anno[go_gene_anno[[1]] %fin% 
                               ids,]$GO
       non_duplicated_goids <- goids[!duplicated(goids)]
       passed_ids[[rawid]] <- 
@@ -152,12 +154,13 @@
     }
     # check if an output exists, if so return.
     if (length(goids) != 0){
-      id_go_df <- rbind(CJ(ORIGID=rownames(
+      id_go_dfs[[i]] <- CJ(ORIGID=rownames(
         assayData(expression_set)[["exprs"]])[i], 
-        ID=rawid, GO=goids), id_go_df)
+        ID=rawid, GO=goids)
     }
   }
   # bind the results, filter uniques and return.
+  id_go_df <- rbindlist(id_go_dfs)
   id_go_df <- unique(as.data.frame(id_go_df))
   return(id_go_df)
 }
@@ -298,7 +301,7 @@
 #' @param topoargs topoicsim args, see data_prep
 #' 
 #' @return return a data.table with all unique go combination pairs.
-#' 
+#'
 #' @keywords internal
 .resolve_genes_unique_gos <- function(unique_pairs_genes, topoargs) {
   all_gos1 <- c()
