@@ -176,8 +176,7 @@ NULL
 #' @importFrom dplyr summarise group_by
 #' @importFrom data.table as.data.table rbindlist
 #' @rdname dag_funcs
-.all_go_similarities <-function(all_go_pairs_df, topoargs, drop=NULL, 
-  verbose=FALSE) {
+.all_go_similarities <-function(all_go_pairs_df, topoargs, drop=NULL) {
   # set internal df refrences to null to appease R CMD check
   GO1 <- NULL
   GO2 <- NULL
@@ -187,11 +186,11 @@ NULL
     message("Could not resolve any GOs!")
     return(NULL)
   }
-  if (verbose) {message("Started calculating all go's.")}
+  if (topoargs$verbose) {message("Started calculating all go's.")}
   
   # Filter out go's present in pre-calculation or ones already present in
   # all_go_pairs (happens if user has specified it).
-  if (verbose) {message("Filtering out precalculated values...")}
+  if (topoargs$verbose) {message("Filtering out precalculated values...")}
   removal_rows <- c()
   for (i in seq_len(nrow(all_go_pairs_df))) {
     pair <- all_go_pairs_df[i,]
@@ -220,6 +219,8 @@ NULL
   if (topoargs$progress_bar) {
     message("Resolving common ancestors...")
     pb <- txtProgressBar(min = 0, max = nrow(all_go_pairs_df), style = 3)
+  } else if (topoargs$verbose) {
+    message("Resolving common ancestors...")
   }
   # find last common ancestors (lcas)
   all_lcas <- apply(all_go_pairs_df[, c(1, 2)], 1, function(go_pair) {
@@ -251,6 +252,9 @@ NULL
     pb <- txtProgressBar(min = 0, max = # grab amount of dplyr rows.
       nrow(ddply(go_lca_pairs, .(GO1, GO2), function(x) {return("row")})),
       style = 3)
+  } else if (topoargs$verbose) {
+    message("Done!")
+    message("Resolving disjunctive common ancestors...")
   }
   # resolve disjunctive common ancestors too.
   go_lca_pairs <- ddply(go_lca_pairs, .(GO1, GO2), function(x) {
@@ -277,6 +281,9 @@ NULL
     message("\nDone!")
     message("Calculating short paths...")
     pb <- txtProgressBar(min = 0, max = nrow(gos_lcas), style = 3)
+  } else if (topoargs$verbose) {
+    message("Done!")
+    message("Calculating short paths...")
   }
   # compute scores (IC and short path length) for "go1->LCA and go2->LCA"
   go_lca_pair_scores_list <- apply(gos_lcas[,c(1, 2)], 1, function(go_terms) {
@@ -297,6 +304,9 @@ NULL
     message("\nDone!")
     message("Calculating long paths...")
     pb <- txtProgressBar(min = 0, max = length(lcas), style = 3)
+  } else if (topoargs$verbose) {
+    message("Done!")
+    message("Calculating long paths...")
   }
   # compute scores for longest path from lcas to root
   lca_scores_list <- sapply(lcas, function(lca) {
@@ -311,7 +321,14 @@ NULL
                                     wLP=lca_scores_list[2,]))
   rownames(lca_scores) <- c()
   
-  if (topoargs$progress_bar) {message("\nMerging into all_go_pairs...")}
+  if (topoargs$progress_bar) {
+    message("\nDone!")
+    message("Merging into all_go_pairs...")
+  } else if (topoargs$verbose) {
+    message("Done!")
+    message("Merging into all_go_pairs...")
+  }
+  
   # merge scores
   merged_scores <- merge(go_lca_pairs, go_lca_pair_scores, by = NULL, 
     by.x = c("GO1", "LCA"), by.y = c("GO1", "LCA"))
@@ -343,6 +360,6 @@ NULL
     topoargs$all_go_pairs <- .set_values(go1, go2, topoargs$all_go_pairs, 
       topo_score)
   }
-  if (verbose) {message("Done!")}
+  if (topoargs$verbose | topoargs$progress_bar) {message("Done!")}
   return(topoargs$all_go_pairs)
 }

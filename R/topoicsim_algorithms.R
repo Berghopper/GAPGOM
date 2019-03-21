@@ -408,9 +408,12 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
   # update all_go_terms with .all_go_similarities, this function resolves only
   # necessary go's and skips one's that are 0 or not relevant.
   topoargs$all_go_pairs <- .all_go_similarities(unique_pairs_gos, topoargs, 
-    drop=NULL, verbose=verbose)
+    drop=NULL)
   if (is.null(topoargs$all_go_pairs)) {
     return(list(GeneSim = NULL, AllGoPairs = NULL))
+  }
+  if (verbose) {
+    message("Merging gene(set) results...")
   }
   
   if ((length(genes1)) == 1 &
@@ -428,6 +431,9 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     } else {
       result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))
     }
+  }
+  if (verbose) {
+    message("Done!")
   }
   if (verbose) {message(Sys.time()-starttime)}
   return(result)

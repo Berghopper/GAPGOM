@@ -28,8 +28,7 @@ navigation functions.}
 
 .find_disjunctive_lcas(lcas, topoargs)
 
-.all_go_similarities(all_go_pairs_df, topoargs, drop = NULL,
-  verbose = FALSE)
+.all_go_similarities(all_go_pairs_df, topoargs, drop = NULL)
 }
 \value{
 output is different on a case-to-case basis
