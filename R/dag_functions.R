@@ -183,6 +183,10 @@ NULL
   GO2 <- NULL
   Distance <- NULL
   
+  if (nrow(all_go_pairs_df) < 1) {
+    message("Could not resolve any GOs!")
+    return(NULL)
+  }
   if (verbose) {message("Started calculating all go's.")}
   
   # Filter out go's present in pre-calculation or ones already present in
@@ -236,6 +240,10 @@ NULL
   # remove "all" and "root" as lca's
   go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != "all"),]
   go_lca_pairs <- go_lca_pairs[(go_lca_pairs[,3] != topoargs$root),]
+  if (nrow(go_lca_pairs) < 1) {
+    message("\nCould not resolve any GOs!")
+    return(NULL)
+  }
   # set progress bar
   if (topoargs$progress_bar) {
     message("\nDone!")

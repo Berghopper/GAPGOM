@@ -403,12 +403,15 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
                      accept_null = FALSE) |
       nrow(unique_pairs_gos) == 0) {
     message("NO GO PAIRS FOUND! (using correct keytype?)")
-    return(NULL)
+    return(list(GeneSim = NULL, AllGoPairs = NULL))
   }
   # update all_go_terms with .all_go_similarities, this function resolves only
   # necessary go's and skips one's that are 0 or not relevant.
   topoargs$all_go_pairs <- .all_go_similarities(unique_pairs_gos, topoargs, 
     drop=NULL, verbose=verbose)
+  if (is.null(topoargs$all_go_pairs)) {
+    return(list(GeneSim = NULL, AllGoPairs = NULL))
+  }
   
   if ((length(genes1)) == 1 &
       (length(genes2)) == 1) {
