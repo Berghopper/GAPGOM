@@ -163,9 +163,6 @@
     # grab gos out of all_gos (calculated before initialization)
     scores <- .set_values(go1, go2, scores, topoargs$all_go_pairs[go1, go2])
   }
-  if (topoargs$progress_bar) {
-    cat("\n")
-  }
   if (topoargs$garbage_collection) {
     gc()
   }
@@ -240,26 +237,33 @@
     # only loop through necesary vectors (unique pairs)
     unique_pairs <- .unique_combos(gene_list1, gene_list2)
     
-    # make a copy of topo arguments to turn off progressbar for genelevel
-    topoargs_gen <- topoargs
-    topoargs_gen$progress_bar <- FALSE
+    if (topoargs$progress_bar) {
+      message("Merging gene(set) results...")
+      pb <- txtProgressBar(min = 0, max = nrow(unique_pairs), style = 3)
+    } else if (topoargs$verbose) {
+      message("Merging gene(set) results...")
+    }
     
     for (i in seq_len(nrow(unique_pairs))) {
+      if (topoargs$progress_bar) {
+        setTxtProgressBar(pb, getTxtProgressBar(pb)+1)
+      }
       pair <- unique_pairs[i,]
       gene1 <- pair[[1]]
       gene2 <- pair[[2]]
       genepair_result <- .topo_ic_sim_g1g2(gene1,
                                           gene2, 
-                                          topoargs_gen)
+                                          topoargs)
       score_matrix <- .set_values(gene1, gene2, score_matrix, 
                                   genepair_result$GeneSim)
-      topoargs_gen$all_go_pairs <- genepair_result$AllGoPairs
+      topoargs$all_go_pairs <- genepair_result$AllGoPairs
     }
-    topoargs$all_go_pairs <- topoargs_gen$all_go_pairs
     if (topoargs$progress_bar) {
-      cat("\n")
+      message("\nDone!")
+    } else if (topoargs$verbose) {
+      message("Done!")
     }
-    return(list(GeneSim=score_matrix, 
+    return(list(GeneSim = score_matrix, 
                 AllGoPairs = topoargs$all_go_pairs))
 }
 
@@ -412,28 +416,14 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
   if (is.null(topoargs$all_go_pairs)) {
     return(list(GeneSim = NULL, AllGoPairs = NULL))
   }
-  if (verbose) {
-    message("Merging gene(set) results...")
-  }
   
   if ((length(genes1)) == 1 &
       (length(genes2)) == 1) {
     # single gene topo
-    if (verbose) {
-      result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)
-    } else {
-      result <- suppressMessages(.topo_ic_sim_g1g2(genes1, genes2, topoargs))
-    }
+    result <- .topo_ic_sim_g1g2(genes1, genes2, topoargs)
   } else {
     # multi gene topo
-    if (verbose) {
-      result <- .topo_ic_sim_geneset(genes1, genes2, topoargs)
-    } else {
-      result <- suppressMessages(.topo_ic_sim_geneset(genes1, genes2, topoargs))
-    }
-  }
-  if (verbose) {
-    message("Done!")
+    result <- .topo_ic_sim_geneset(genes1, genes2, topoargs)
   }
   if (verbose) {message(Sys.time()-starttime)}
   return(result)
