@@ -121,6 +121,12 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
   # prepare the data with some special operations/vars that are needed later
   
   gene_id <- as.character(gene_id)
+  # first check if gene_id is even in the expressionset
+  if (!(gene_id %in% rownames(assayData(expression_set)[["exprs"]]))) {
+    message("Could not find any similar genes! (gene id not present...)")
+    return(NULL)
+  }
+  
   # check if selection vector is defined, if not, include everything.
   if (is.null(id_select_vector)) {
     id_select_vector <- rownames(assayData(expression_set)[["exprs"]])
@@ -135,7 +141,7 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
   if (nrow(expression_data_sorted) == 0) {
     stop("Selection of id_select_vector is empty!")
   }
-
+  
   # Target expression data where gene id matches
   target_expression_data <- assayData(expression_set)[["exprs"]][gene_id,]
   
@@ -196,6 +202,7 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
     return(enrichment_result)
   } else {
     message("Could not find any similar genes!")
+    return (NULL)
   }
 }
 

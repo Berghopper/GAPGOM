@@ -56,6 +56,10 @@ expression_semantic_scoring <- function(gene_id, expression_set,
   
   # prepare the data with some special operations/vars that are needed later
   gene_id <- as.character(gene_id)
+  if (!(gene_id %in% rownames(assayData(expression_set)[["exprs"]]))) {
+    message("Could not calculate any scores! (gene id not present...)")
+    return(NULL)
+  }
   # Target expression data where gene id matches
   target_expression_data <- assayData(expression_set)[["exprs"]][gene_id,]
   
