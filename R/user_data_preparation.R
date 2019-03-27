@@ -32,7 +32,11 @@ fantom_load_raw <- function(filepath, verbose = FALSE, example = FALSE) {
       break
     } else {
       filtered_line <- vapply(strsplit(line, "##|\\[|\\]|\\="), 
-                              function(x){x[!x ==""]}, character(3))
+                              function(x){
+                                x <- x[!x ==""]
+                                x <- x[!x ==" "]
+                                return(x)
+                              }, character(3))
       translation_df <- data.frame(translation_df, filtered_line)
     }
     linecount <- linecount + 1
