@@ -132,7 +132,6 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
     id_select_vector <- rownames(assayData(expression_set)[["exprs"]])
   }
   
-  id_select_vector
   expression_data_sorted <- assayData(expression_set)[["exprs"]][(rownames(
     assayData(expression_set)[["exprs"]]) %fin% id_select_vector),]
   expression_data_sorted_ids <- rownames(expression_data_sorted)
@@ -196,8 +195,8 @@ expression_prediction <- function(gene_id, expression_set, organism, ontology,
     enrichment_result[factor_index] <- lapply(enrichment_result[factor_index], 
                                               as.character)
     if (verbose) {
-      message("Calculation time (seconds):")
-      message(Sys.time()-starttime)
+      message("Calculation time (in seconds):")
+      message(difftime(Sys.time(), starttime, units = "secs"))
     }
     return(enrichment_result)
   } else {

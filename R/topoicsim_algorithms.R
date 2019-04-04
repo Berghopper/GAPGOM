@@ -425,7 +425,10 @@ topo_ic_sim_genes <- function(organism, ontology, genes1, genes2,
     # multi gene topo
     result <- .topo_ic_sim_geneset(genes1, genes2, topoargs)
   }
-  if (verbose) {message(Sys.time()-starttime)}
+  if (verbose) {
+    message("Calculation time (in seconds):")
+    message(difftime(Sys.time(), starttime, units = "secs"))
+  }
   return(result)
 }
 

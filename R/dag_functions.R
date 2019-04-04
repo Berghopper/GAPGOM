@@ -245,13 +245,19 @@ NULL
     message("\nCould not resolve any GOs!")
     return(NULL)
   }
+  # grab amount of dplyr rows.
+  go_lca_pairs_n <- nrow(ddply(go_lca_pairs, .(GO1, GO2), 
+                               function(x) {return("row")}))
+  # and quit if it is 0...
+  if (go_lca_pairs_n < 1) {
+    message("\nCould not resolve any GOs!")
+    return(NULL)
+  }
   # set progress bar
   if (topoargs$progress_bar) {
     message("\nDone!")
     message("Resolving disjunctive common ancestors...")
-    pb <- txtProgressBar(min = 0, max = # grab amount of dplyr rows.
-      nrow(ddply(go_lca_pairs, .(GO1, GO2), function(x) {return("row")})),
-      style = 3)
+    pb <- txtProgressBar(min = 0, max = go_lca_pairs_n, style = 3)
   } else if (topoargs$verbose) {
     message("Done!")
     message("Resolving disjunctive common ancestors...")

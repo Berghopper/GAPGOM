@@ -47,6 +47,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Dependency issues.
 - Download function of fantom data.
 - Fantom 5 functions.
+- Calculation time output (actually in seconds now).
 
 ## [0.3.0 - Vignette Benchy] - 2018-11-22
 
