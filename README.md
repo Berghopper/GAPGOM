@@ -46,9 +46,23 @@ Please only comment if you have valuable information to add/can add to further d
 
 - Please keep them small and managable :). Also please make sure your PR version complies with all of Bioconductors package submission guidelines.
 
+# Info on news file:
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\*
+
+\*Changes of commit versions will not be kept track of, instead only major and minor versions will keep a changelog;
+
+x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not the small "z" version changes, because this changes with every commit.
+All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
+use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
+
 # Feature roadplan and versions
 
-Here the roadplan of features is described with any upcoming/planned features. ETA's will not be provided, already implemented features will be ticked off. Only major features will be listed here, for further details on package development history, instead, refer to the [NEWS.md](NEWS.md) file.
+Here the roadplan of features is described with any upcoming/planned features. ETA's will not be provided, already implemented features will be ticked off. Only major features will be listed here, for further details on package development history, instead, refer to the [NEWS](NEWS) file.
+
 
 Note: list is subject to changes and is not necessarily definetive.
 
@@ -59,8 +73,8 @@ Note: list is subject to changes and is not necessarily definetive.
 - [x] Adding documentation and mostly comply with package conventions.
 - [x] Become part of the Bioconductor repository.
 - [] Add geneset analysis for scoring expression similarities.
-- [] Add chromosomal distance correlations on top of regular scoring.
-- [] Along with the previously two mentioned GREAT-like features, include Enrichr into the pipeline.
+- [] Add chromosomal distance correlations on top of regular scoring. (THIS IS ALREADY ADDED AS CONCEPT SCRIPT)
+- [] Along with the previously two mentioned GREAT-like features, include Enrichr into the pipeline. (THIS IS ALREADY ADDED AS CONCEPT SCRIPT)
 - [] Added AnnotationHub intergration so more annotation data can be used.
 
 # Building package from scratch

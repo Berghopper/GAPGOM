@@ -392,10 +392,8 @@ set_go_data <- function(organism, ontology, computeIC = TRUE,
 #' @import data.table
 #' @importFrom plyr .
 #' @keywords internal
-.unique_combos <- function(v1, v2) {
-  V1 <- NULL
-  V2 <- NULL
-  intermediate <- unique(CJ(v1, v2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
+.unique_combos <- function(V1, V2) {
+  intermediate <- unique(CJ(V1, V2)[V1 > V2, c("V1", "V2") := .(V2, V1)])
   return(intermediate[V1 != V2])
 }
 

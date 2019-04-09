@@ -1,21 +1,8 @@
-# Changelog of GAPGOM
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\*
-
-\*Changes of commit versions will not be kept track of, instead only major and minor versions will keep a changelog;
-
-x.y.z (e.g. 1.2.5) --> changes of 1.2.z and 1.3.z will be kept track of but not the small "z" version changes, because this changes with every commit.
-All z changes will be kept track of in the unreleased minor (y) version. There was an exception for the first version however, because this version didn't
-use correct convention yet (0.0.1). Failed implementations might be re-evaluated in later updates.
-
-## [1.0.0 - Bioconductor BBQ] - 2018-02-13
+CHANGES IN VERSION 1.0.0 (2018-02-13)
 
 ---
 
-
-### Added
+Added
 
 - Installation chapter to main vignette.
 - Extra tests.
@@ -24,7 +11,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Package added to Bioconductor
 - Extra script for potential addition in the future (chromosome position calculations. File is in inst folder: "chrom_pos.R")
 
-### Changed
+Changed
 
 - Interfacing with GO.db to increase performance (gets converted to environment first).
 - The way TopoICSim is calculated for genes/genelists, skipping certain unnecessary calculations, improving performance greatly.
@@ -34,13 +21,14 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Readme, more verbose.
 - Vignettes/Documentation - typo fixes and general small improvements.
 
-### Removed
+Removed
 
 - All global assignments.
 - Class accessors (where possible).
 
-### Fixed
+Fixed
 
+- "Fixed" news file to plain text format.
 - Precalculated topoicsim matrix.
 - Compliance with R CMD check.
 - Compliance with R CMD BiocCheck.
@@ -49,12 +37,12 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Fantom 5 functions.
 - Calculation time output (actually in seconds now).
 
-## [0.3.0 - Vignette Benchy] - 2018-11-22
+
+CHANGES IN VERSION 0.3.0 (2018-11-22)
 
 ---
 
-
-### Added
+Added
 
 - Re-added data which lncRNApred's paper is based on.
 - Support for all AnnotationDbi Key types.
@@ -67,7 +55,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Some more arguments for the algorithms to make the user have more control.
 - Custom gene interface for topoicsim.
 
-### Changed
+Changed
 
 - `DESCRIPTION` file, now adheres to some smaller requirements Bioconductor enforces.
 - Data preparation functions, they are now updated and more clear.
@@ -80,13 +68,13 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Some `lapply` loops, now for loops, as they were using global assignments and this is forbidden/unfavorable in conventions.
 - Updated data-raw files, they now work properly for current version and are better documented.
 
-### Removed
+Removed
 
 - All forms of parallelization support. It was buggy/inconsistent and where it could be implemented insignificant performance gains were made.
 - Fantom5 example data
 - Direct interface from fantom5 file to expset `fantom_load_expressionset()`.
 
-### Fixed
+Fixed
 
 - Inconsistent result of lncrnapred compared to original algorithm. Now is exactly the same.
 - Documentation of internal functions is now hidden.
@@ -95,12 +83,12 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - `R CMD check` failing because of `T` and `F` usage instead of `TRUE`/`FALSE`.
 - `fantom_to_expset()` not always loading correctly; mouse and human had different metadata.
 
-## [0.2.0 - Polished Potato] - 2018-10-20
+
+CHANGES IN VERSION 0.2.0 (2018-10-20)
 
 ---
 
-
-### Added
+Added
 
 - TopoICSim performance improvements.
 - LncRNApred performance improvements.
@@ -113,7 +101,7 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Some small tests for the main algorithms.
 - LICENSE file.
 
-### Changed
+Changed
 
 - Return value of main TopoICSim between gene sets to better match return value of TopoICSim between two genes.
 - All functions are now pre-compiled (except for data_gen.R).
@@ -125,11 +113,11 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Changed some loops back to for loops instead of apply --> some weren't a good use case for apply.
 - Some matrixes now use the Matrix library.
 
-### Removed
+Removed
 
 - Nothing.
 
-### Fixed
+Fixed
 
 - R depends version (3.4.4 --> 3.5.1).
 - Performance bug in TopoICSim (#4).
@@ -140,12 +128,11 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Newline loading bar bug (#9).
 
 
-## [0.1.0 - Technically Tidied] - 2018-10-04
+CHANGES IN VERSION 0.1.0 (2018-10-04)
 
 ---
 
-
-### Added
+Added
 
 - Changelog (NEWS.md).
 - Better input interface and refactoring towards ExpressionSet based system.
@@ -153,17 +140,17 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - Documentation file for previously mentioned new data.
 - EntrezID based system for looking up GO ids instead of hardcoded translation table without source.
 
-### Changed
+Changed
 
 - Small refactor to switch case in expression_prediction_function().
 - A lot of refactoring in expression_prediction_function() and enrichment_analysis() to make it work with ExpressionSets.
 - Documentation of lncRNApred related functions
 
-### Removed
+Removed
 
 - Old example/expression data and their documentation, this will be re-added later once proper source is known.
 
-### Fixed
+Fixed
 
 - Bumped up y version number to correct Bioconductor version conventions.
 - Small typo in zzz.R
@@ -171,12 +158,11 @@ use correct convention yet (0.0.1). Failed implementations might be re-evaluated
 - File typo data_preperation.R --> data_preparation.R
 
 
-## [0.0.1 - baby steps] - 2018-09-25
+CHANGES IN VERSION 0.0.1 (2018-09-25)
 
 ---
 
-
-### Added
+Added
 
 - Expression metric prediction algorithm made by Rezvan Ehsani and Finn Drablos.
 - TopoICSim algorithm/measure made by Rezvan Ehsani and Finn Drablos.
