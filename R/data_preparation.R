@@ -383,8 +383,8 @@ set_go_data <- function(organism, ontology, computeIC = TRUE,
 #' @section Notes:
 #' Internal function used in various topoclsim algorithms.
 #'
-#' @param v1 first vector to be combined with second.
-#' @param v2 second vector to be combined with first.
+#' @param V1 first vector to be combined with second.
+#' @param V2 second vector to be combined with first.
 #' 
 #' @return datatable with unique combinations of the vectors excluding items
 #' with same name and double combinations

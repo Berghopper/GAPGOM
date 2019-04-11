@@ -4,12 +4,12 @@
 \alias{.unique_combos}
 \title{GAPGOM internal - .unique_combos()}
 \usage{
-.unique_combos(v1, v2)
+.unique_combos(V1, V2)
 }
 \arguments{
-\item{v1}{first vector to be combined with second.}
+\item{V1}{first vector to be combined with second.}
 
-\item{v2}{second vector to be combined with first.}
+\item{V2}{second vector to be combined with first.}
 }
 \value{
 datatable with unique combinations of the vectors excluding items
