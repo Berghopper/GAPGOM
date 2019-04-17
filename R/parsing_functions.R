@@ -324,7 +324,7 @@
     #gene2
     if (gene2 %in% names(topoargs$custom_genes1)) {
       gos2 <- topoargs$custom_genes1[[gene2]]
-    } else if (gene1 %in% names(topoargs$custom_genes2)) {
+    } else if (gene2 %in% names(topoargs$custom_genes2)) {
       gos2 <- topoargs$custom_genes2[[gene2]]
     } else {
       gos2 <- as.character(topoargs$translation_to_goids[
