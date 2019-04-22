@@ -2,6 +2,7 @@
 context("topoicsim prediction functions")
 
 test_that("topoicsim term level", {
+  skip("R cmd check time constraints")
   expect_equal(GAPGOM::topo_ic_sim_term("human", "MF", "GO:0018478", 
                                         "GO:0047105"), 
                gapgom_tests$termtopo_baseresult)

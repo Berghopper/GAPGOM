@@ -3,7 +3,7 @@
 
 context("Miscellaneous tests")
 
-freq_gos_ismaintained <- TRUE
+freq_gos_ismaintained <- FALSE
 
 if (freq_gos_ismaintained) {
   
