@@ -1,9 +1,9 @@
 Package: GAPGOM
 Type: Package
 Title: GAPGOM (novel Gene Annotation Prediction and other GO Metrics)
-Version: 1.3.0
+Version: 1.3.1
 Authors@R: c(
-    person("Casper", "Peters", email = "cp100u@hotmail.com", role = c("aut", "cre")),
+    person("Casper", "van Mourik", email = "cp100u@hotmail.com", role = c("aut", "cre")),
     person("Finn", "Drabløs", email = "finn.drablos@ntnu.no", role = "aut"),
     person("Rezvan", "Ehsani", email = "rezvanehsani74@gmail.com", role = "aut"))
 Description: Collection of various measures and tools for lncRNA annotation prediction put inside a redistributable R package. The package contains two main algorithms; lncRNA2GOA and TopoICSim. lncRNA2GOA tries to annotate novel genes (in this specific case lncRNAs) by using various correlation/geometric scoring methods on correlated expression data. After correlating/scoring, the results are annotated and enriched. TopoICSim is a topologically based method, that compares gene similarity based on the topology of the GO DAG by information content (IC) between GO terms.
@@ -59,7 +59,7 @@ Suggests:
   kableExtra,
   profvis,
   reshape2
-Depends: R (>= 3.6.0)
+Depends: R (>= 4.0)
 biocViews: GO, GeneExpression, GenePrediction
 BugReports: https://github.com/Berghopper/GAPGOM/issues/
 URL: https://github.com/Berghopper/GAPGOM/

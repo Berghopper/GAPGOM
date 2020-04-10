@@ -11,9 +11,12 @@ test_that("GO quantification", {
   testdf <- data.frame(list(GO=c("GO:123", "GO:123", "GO:1234")))
   testdf2 <- data.frame(list(FAKEID=c("1", "2", "3"), 
                              GO=c("GO:123", "GO:123", "GO:1234")))
-  result_structure <- structure(list(
-    GO = structure(1:2, .Label = c("GO:123", "GO:1234"
-  ), class = "factor"), N = 2:1), row.names = c(NA, -2L), class = "data.frame")
+  #result_structure <- structure(
+  #  1:2, .Label = c("GO:123", "GO:1234"), class = "factor"), N = 2:1), 
+  #  row.names = c(NA, -2L), class = "data.frame")
+  result_structure <- structure(
+    list(GO = c("GO:123", "GO:1234"), N = 2:1), 
+    row.names = c(NA, -2L), class = "data.frame")
   expect_equal(.term_id_to_ext_id(testdf), result_structure)
   expect_equal(.term_id_to_ext_id(testdf2), result_structure)
 })
